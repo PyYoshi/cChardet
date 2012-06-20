@@ -1,5 +1,4 @@
 from distutils.core import setup, Extension
-import platform,os,sys
 from Cython.Distutils import build_ext # use cython's buld_ext
 
 setup(
