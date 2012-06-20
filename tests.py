@@ -1,4 +1,6 @@
-# coding:utf-8
+#!/usr/bin/env python
+# coding: utf-8
+
 # nosetests --nocapture tests.py
 from nose.tools import eq_
 
