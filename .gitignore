@@ -33,4 +33,5 @@ nosetests.xml
 .idea/
 ext
 *.c
-
+libcharsetdetect.dll
+charsetdetect.h
