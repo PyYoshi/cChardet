@@ -415,7 +415,7 @@ class TestCchardetSpeed():
     def test_speed(self):
         import chardet
         import time
-        path = r"testdata/wikipediaJa_One_Thousand_and_One_Nights.txt"
+        path = r"testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt"
         msg =file(path).read()
         # Test chardet
         start_chardet = time.time()
