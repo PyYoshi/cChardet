@@ -11,13 +11,18 @@ pip install or easy_install -U cython
 # Benchmark
 see tests.TestCchardetSpeed
 
-Sample(shift_jis): testdata/wikipediaJa_One_Thousand_and_One_Nights.txt
+### Sample(shift_jis):
+testdata/wikipediaJa_One_Thousand_and_One_Nights.txt
 
-## Result
+### PC Spec.:
+CPU: Intel Core i7 860 2.8GHz
 
+RAM: DDR3-1333 16GB
+
+### Result:
 chardet: 4.009999990463257s, shift_jis
 
-cchardet: 0.0009999275207519531s shift_jis
+cchardet: 0.0009999275207519531s, shift_jis
 
 # Contact
 [My blog](http://blog.remu.biz)
