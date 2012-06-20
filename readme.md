@@ -78,8 +78,8 @@ This library is faster than [chardet](http://pypi.python.org/pypi/chardet).
 ```python
 # coding: utf8
 import cchardet
-msg = u'One Thousand and One Nights'
-result = cchardet.detect(msg.encode('sjis'))
+msg = file(r"testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt").read()
+result = cchardet.detect(msg)
 print(result)
 ```
 
