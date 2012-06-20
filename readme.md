@@ -8,6 +8,12 @@ uchardet-enhanced: [https://bitbucket.org/medoc/uchardet-enhanced/overview](http
 
 pip install or easy_install -U cython
 
+# Benchmark
+see tests.TestCchardetSpeed
+Sample(shift_jis): testdata/wikipediaJa_One_Thousand_and_One_Nights.txt
+chardet: 4.009999990463257s, shift_jis
+cchardet: 0.0009999275207519531s shift_jis
+
 # Contact
 [My blog](http://blog.remu.biz)
 

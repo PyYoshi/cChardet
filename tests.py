@@ -48,7 +48,7 @@ class TestCchardet():
         path = r"testdata/bg/ISO-8859-5/wikitop_bg_ISO-8859-5.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_bg_utf8(self):
@@ -56,7 +56,7 @@ class TestCchardet():
         path = r"testdata/bg/UTF-8/wikitop_bg_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_bg_windows1251(self):
@@ -64,7 +64,7 @@ class TestCchardet():
         path = r"testdata/bg/WINDOWS-1251/wikitop_bg_WINDOWS-1251.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_cz_iso88592(self):
@@ -72,7 +72,7 @@ class TestCchardet():
         path = r"testdata/cz/ISO-8859-2/wikitop_cz_ISO-8859-2.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_cz_utf8(self):
@@ -80,7 +80,7 @@ class TestCchardet():
         path = r"testdata/cz/UTF-8/wikitop_cz_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_de_utf8(self):
@@ -88,7 +88,7 @@ class TestCchardet():
         path = r"testdata/de/UTF-8/wikitop_de_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_de_windows1252(self):
@@ -96,7 +96,7 @@ class TestCchardet():
         path = r"testdata/de/WINDOWS-1252/wikitop_de_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_dk_utf8(self):
@@ -104,7 +104,7 @@ class TestCchardet():
         path = r"testdata/dk/UTF-8/wikitop_dk_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_dk_windows1252(self):
@@ -112,7 +112,7 @@ class TestCchardet():
         path = r"testdata/dk/WINDOWS-1252/wikitop_dk_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_el_iso88597(self):
@@ -120,7 +120,7 @@ class TestCchardet():
         path = r"testdata/el/ISO-8859-7/wikitop_el_ISO-8859-7.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_el_utf8(self):
@@ -128,7 +128,7 @@ class TestCchardet():
         path = r"testdata/el/UTF-8/wikitop_el_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_en_utf8(self):
@@ -136,7 +136,7 @@ class TestCchardet():
         path = r"testdata/en/UTF-8/wikitop_en_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_en_windows1252(self):
@@ -144,7 +144,7 @@ class TestCchardet():
         path = r"testdata/en/WINDOWS-1252/wikitop_en_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_es_utf8(self):
@@ -152,7 +152,7 @@ class TestCchardet():
         path = r"testdata/es/UTF-8/wikitop_es_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_es_windows1252(self):
@@ -160,7 +160,7 @@ class TestCchardet():
         path = r"testdata/es/WINDOWS-1252/wikitop_es_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_fi_utf8(self):
@@ -168,7 +168,7 @@ class TestCchardet():
         path = r"testdata/fi/UTF-8/wikitop_fi_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_fi_windows1252(self):
@@ -176,7 +176,7 @@ class TestCchardet():
         path = r"testdata/fi/WINDOWS-1252/wikitop_fi_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_fr_utf8(self):
@@ -184,7 +184,7 @@ class TestCchardet():
         path = r"testdata/fr/UTF-8/wikitop_fr_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_fr_windows1252(self):
@@ -192,7 +192,7 @@ class TestCchardet():
         path = r"testdata/fr/WINDOWS-1252/wikitop_fr_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_he_utf8(self):
@@ -200,7 +200,7 @@ class TestCchardet():
         path = r"testdata/he/UTF-8/wikitop_he_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_he_windows1255(self):
@@ -208,7 +208,7 @@ class TestCchardet():
         path = r"testdata/he/WINDOWS-1255/wikitop_he_WINDOWS-1255.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_hu_utf8(self):
@@ -216,7 +216,7 @@ class TestCchardet():
         path = r"testdata/hu/UTF-8/wikitop_hu_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_hu_iso55892(self):
@@ -224,7 +224,7 @@ class TestCchardet():
         path = r"testdata/hu/ISO-8859-2/wikitop_hu_ISO-8859-2.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_it_utf8(self):
@@ -232,7 +232,7 @@ class TestCchardet():
         path = r"testdata/it/UTF-8/wikitop_it_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_it_windows1252(self):
@@ -240,7 +240,7 @@ class TestCchardet():
         path = r"testdata/it/WINDOWS-1252/wikitop_it_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_nl_utf8(self):
@@ -248,7 +248,7 @@ class TestCchardet():
         path = r"testdata/nl/UTF-8/wikitop_nl_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_nl_windows1252(self):
@@ -256,7 +256,7 @@ class TestCchardet():
         path = r"testdata/nl/WINDOWS-1252/wikitop_nl_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_no_utf8(self):
@@ -264,7 +264,7 @@ class TestCchardet():
         path = r"testdata/no/UTF-8/wikitop_no_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_no_windows1252(self):
@@ -272,7 +272,7 @@ class TestCchardet():
         path = r"testdata/no/WINDOWS-1252/wikitop_no_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_pl_utf8(self):
@@ -280,7 +280,7 @@ class TestCchardet():
         path = r"testdata/pl/UTF-8/wikitop_pl_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_pl_iso88592(self):
@@ -288,7 +288,7 @@ class TestCchardet():
         path = r"testdata/pl/ISO-8859-2/wikitop_pl_ISO-8859-2.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_pt_utf8(self):
@@ -296,7 +296,7 @@ class TestCchardet():
         path = r"testdata/pt/UTF-8/wikitop_pt_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_pt_windows1252(self):
@@ -304,7 +304,7 @@ class TestCchardet():
         path = r"testdata/pt/WINDOWS-1252/wikitop_pt_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_ru_utf8(self):
@@ -312,7 +312,7 @@ class TestCchardet():
         path = r"testdata/ru/UTF-8/wikitop_ru_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_ru_windows1251(self):
@@ -320,7 +320,7 @@ class TestCchardet():
         path = r"testdata/ru/WINDOWS-1251/wikitop_ru_WINDOWS-1251.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_ru_ibm855(self):
@@ -328,7 +328,7 @@ class TestCchardet():
         path = r"testdata/ru/IBM855/wikitop_ru_IBM855.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_ru_koi8r(self):
@@ -336,7 +336,7 @@ class TestCchardet():
         path = r"testdata/ru/KOI8-R/wikitop_ru_KOI8-R.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_se_utf8(self):
@@ -344,7 +344,7 @@ class TestCchardet():
         path = r"testdata/se/UTF-8/wikitop_se_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_se_windows1252(self):
@@ -352,7 +352,7 @@ class TestCchardet():
         path = r"testdata/se/WINDOWS-1252/wikitop_se_WINDOWS-1252.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_th_utf8(self):
@@ -360,7 +360,7 @@ class TestCchardet():
         path = r"testdata/th/UTF-8/wikitop_th_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_th_tis620_1(self):
@@ -368,7 +368,7 @@ class TestCchardet():
         path = r"testdata/th/TIS-620/utffool_th_TIS-620.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_th_tis620_2(self):
@@ -376,7 +376,7 @@ class TestCchardet():
         path = r"testdata/th/TIS-620/wikitop_th_TIS-620.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_tr_utf8(self):
@@ -384,7 +384,7 @@ class TestCchardet():
         path = r"testdata/tr/UTF-8/wikitop_tr_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_tr_iso88599(self):
@@ -392,7 +392,7 @@ class TestCchardet():
         path = r"testdata/tr/ISO-8859-9/wikitop_tr_ISO-8859-9.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_zh_utf8(self):
@@ -400,7 +400,7 @@ class TestCchardet():
         path = r"testdata/zh/UTF-8/wikitop_zh_UTF-8.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
     def test_detect_zh_gb18030(self):
@@ -408,6 +408,25 @@ class TestCchardet():
         path = r"testdata/zh/GB18030/wikitop_zh_GB18030.txt"
         msg =file(path).read()
         detected_encoding = cchardet.detect(msg)
-        print detected_encoding
+        print(detected_encoding)
         eq_(encoding.lower(),detected_encoding.lower())
 
+class TestCchardetSpeed():
+    def test_speed(self):
+        import chardet
+        import time
+        path = r"testdata/wikipediaJa_One_Thousand_and_One_Nights.txt"
+        msg =file(path).read()
+        # Test chardet
+        start_chardet = time.time()
+        detected_encoding_chardet = chardet.detect(msg)
+        end_chardet = time.time()
+        # Test cchardet
+        start_cchardet = time.time()
+        detected_encoding_cchardet = cchardet.detect(msg)
+        end_cchardet = time.time()
+        # print result
+        result_chardet = end_chardet - start_chardet
+        result_cchardet = end_cchardet - start_cchardet
+        print("chardet:",result_chardet,"detected charset:", detected_encoding_chardet['encoding'].lower())
+        print("cchardet:",result_cchardet,"detected charset:",detected_encoding_cchardet.lower())
