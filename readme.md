@@ -84,7 +84,7 @@ print(result)
 ```
 
 # Test
-*   sudo easy_install or pip install -U chardet nose
+*   $sudo easy_install or pip install -U chardet nose
 
 *   $nosetests --nocapture tests.py
 
