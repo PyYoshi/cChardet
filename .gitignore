@@ -35,3 +35,4 @@ ext
 *.c
 libcharsetdetect.dll
 charsetdetect.h
+MANIFEST
