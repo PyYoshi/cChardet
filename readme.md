@@ -89,7 +89,7 @@ print(result)
 *   $nosetests --nocapture tests.py
 
 # Benchmark
-see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/tests.py#L414)
+see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/tests.py#L416)
 
 ### Sample(shift_jis):
 *   [testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
