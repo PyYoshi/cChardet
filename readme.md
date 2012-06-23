@@ -1,3 +1,5 @@
+# Dev branch is too buggy!!! I recommend master branch.
+
 # cChardet
 This library is high speed universal character encoding detector. - binding to [charsetdetect](https://bitbucket.org/medoc/uchardet-enhanced/overview).
 
@@ -59,19 +61,6 @@ This library is faster than [chardet](http://pypi.python.org/pypi/chardet).
 7.   $ls -la /usr/local/lib
 
 8.   $ls -la /usr/local/include
-
-### Build cChardet
-1.   $cd /tmp
-
-2.   $git clone git://github.com/PyYoshi/cChardet.git
-
-3.   $cd cChardet
-
-4.   $sudo pip install or easy_install -U cython. (If your os is Ubuntu, I recommend that you do "sudo apt-get install python-dev cython")
-
-5.   $python setup.py build
-
-6.   $sudo python setup.py install
 
 # Example
 
