@@ -4,8 +4,6 @@
 # nosetests --nocapture tests.py
 from nose.tools import eq_
 
-import cchardet
-
 # http://docs.python.org/library/codecs.html
 # https://bitbucket.org/medoc/uchardet-enhanced/src/85fc77c3e058/libcharsetdetect/README.md
 
@@ -42,6 +40,7 @@ import cchardet
 # X-ISO-10646-UCS-4-2143
 # X-ISO-10646-UCS-4-3412
 # x-mac-cyrillic
+import cchardet
 
 class TestCchardet():
 

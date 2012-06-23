@@ -1,0 +1,30 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# XCode build artifacts
+build/
+
+# XCode user configuration
+*.mode1v3
+*.pbxuser
+
+# XCode something or other.. not sure if it should be checked in
+charsetdetectProj.xcconfig
+charsetdetectTarget.xcconfig
+
+# CMake generated build system
+Makefile
+
+# CMake build artifacts
+lib/
+
+# CMake junk
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+
+# prebuild junk
+configure.bat
+exec_make.bat

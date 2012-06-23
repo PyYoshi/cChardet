@@ -1,0 +1,27 @@
+#! /bin/bash
+unset CPATH
+unset C_INCLUDE_PATH
+unset CPLUS_INCLUDE_PATH
+unset OBJC_INCLUDE_PATH
+unset LIBS
+unset DYLD_FALLBACK_LIBRARY_PATH
+unset DYLD_FALLBACK_FRAMEWORK_PATH
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 sdk_version"
+    exit 1
+fi
+
+export SDKVER=$1
+shift
+
+export DEVROOT="/Developer/Platforms/iPhoneOS.platform/Developer"
+export SDKROOT="$DEVROOT/SDKs/iPhoneOS$SDKVER.sdk"
+export PKG_CONFIG_PATH="$SDKROOT/usr/lib/pkgconfig":"$SDKROOT/opt/iphone-$SDKVER/lib/pkgconfig":"$SDKROOT/usr/local/iphone-$SDKVER/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="$PKG_CONFIG_PATH"
+
+# OK, this is really weird... running CMake can fail the first few times. It looks like you need to run it a few times to get
+# the values that you SET to propagate around, because if you don't the linker flags etc that get used are outdated
+for i in 1 2 3; do
+    cmake . -DSDKVER=$SDKVER -DCMAKE_TOOLCHAIN_FILE="cmake-toolchains/iphone.toolchain" -DCMAKE_INSTALL_PREFIX="/opt/iphone-$SDKVER" "$@"
+done

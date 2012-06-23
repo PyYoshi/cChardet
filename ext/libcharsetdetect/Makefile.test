@@ -1,0 +1,6 @@
+trchardet: trchardet.o build/libcharsetdetect.a
+	$(CXX) -g -o trchardet trchardet.o build/libcharsetdetect.a
+
+
+trchardet.o : trchardet.c charsetdetect.h 
+	$(CC) -g $(CFLAGS) -c trchardet.c

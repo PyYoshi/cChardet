@@ -106,6 +106,11 @@ see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/te
 
 *   cchardet: 0.0009999275207519531s, shift_jis
 
+# License
+* This library files("cchardet.pyx","setup.py","tests.py") are "The MIT License".
+
+* Other Library License: Please, look at the "ext" directory.
+
 # Contact
 [My blog](http://blog.remu.biz)
 

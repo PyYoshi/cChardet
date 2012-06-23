@@ -1,0 +1,18 @@
+Overview:
+
+This package implements improvements forr the mozilla universalchardet
+module described in: 
+ http://www-archive.mozilla.org/projects/intl/UniversalCharsetDetection.html
+
+The interface uses the C wrapper described here:
+  https://github.com/batterseapower/libcharsetdetect
+
+Modifications / improvements affect the core universalchardet module, not
+the C wrapper (which is useful and necessary anyway for integration and
+testing)
+
+Directory contents:
+
+libcharsetdetect/
+ - The C API from the reference above, with the modified mozilla code
+   inside libcharsetdetect/mozilla/extensions/universalchardet/src/base/
