@@ -1,0 +1,4 @@
+include ez_setup.py *.txt
+recursive-include src *.pyx *.pxd *.pxi *.py
+recursive-include src/ext *.*
+recursive-include test *.*
