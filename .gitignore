@@ -34,6 +34,7 @@ nosetests.xml
 ext__
 ext/libcharsetdetect/mozilla_
 src/cchardet/*.c
+src/cchardet/*.o
 src/cchardet/*.cpp
 libcharsetdetect.dll
 charsetdetect.h

@@ -24,7 +24,3 @@ CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 install_manifest.txt
-
-# prebuild junk
-configure.bat
-exec_make.bat
