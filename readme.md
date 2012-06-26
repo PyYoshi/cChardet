@@ -70,10 +70,10 @@ print(result)
 *   $nosetests --nocapture tests.py
 
 # Benchmark
-see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/tests.py#L416)
+see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L415)
 
 ### Sample(shift_jis):
-*   [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
+*   [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
 
 ### PC Spec.:
 *   CPU: Intel Core i7 860 2.8GHz
