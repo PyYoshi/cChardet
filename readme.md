@@ -42,32 +42,24 @@ This library is faster than [chardet](http://pypi.python.org/pypi/chardet).
 # Requires
 *   Cython: [http://www.cython.org/](http://www.cython.org/)
 
-*   uchardet-enhanced: [https://bitbucket.org/medoc/uchardet-enhanced/overview](https://bitbucket.org/medoc/uchardet-enhanced/overview)
-
 # Install
 ### Build uchardet-enhanced
 1.   $cd /tmp
 
-2.   $hg clone https://bitbucket.org/medoc/uchardet-enhanced
+2.   $git clone git://github.com/PyYoshi/cChardet.git
 
-3.   $cd uchardet-enhanced/libcharsetdetect
+3.   $cd cChardet
 
-4.   $./configure
+4.   $python setup.py build
 
-5.   $make
-
-6.   $sudo make install
-
-7.   $ls -la /usr/local/lib
-
-8.   $ls -la /usr/local/include
+5.   $sudo python setup.py install
 
 # Example
 
 ```python
 # coding: utf8
 import cchardet
-msg = file(r"testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt").read()
+msg = file(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt").read()
 result = cchardet.detect(msg)
 print(result)
 ```
@@ -81,7 +73,7 @@ print(result)
 see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/tests.py#L416)
 
 ### Sample(shift_jis):
-*   [testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
+*   [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
 
 ### PC Spec.:
 *   CPU: Intel Core i7 860 2.8GHz
@@ -99,6 +91,11 @@ see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/te
 * This library files("cchardet.pyx","setup.py","tests.py") are "The MIT License".
 
 * Other Library License: Please, look at the "ext" directory.
+
+# Thanks
+* [https://bitbucket.org/medoc/uchardet-enhanced/overview](https://bitbucket.org/medoc/uchardet-enhanced/overview)
+
+* [http://www.cython.org/](http://www.cython.org/)
 
 # Contact
 [My blog](http://blog.remu.biz)
