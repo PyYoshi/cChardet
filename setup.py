@@ -71,7 +71,6 @@ cchardet_module = Extension("cchardet._cchardet",
     include_dirs = [uchardet_dir,nspr_emu_dir,charsetdetect_dir],
     language = "c++",
     define_macros=macros,
-    extra_compile_args = ["-O3", "-Wall"],
 )
 
 setup(
