@@ -1,5 +1,3 @@
-# Dev branch is too buggy!!! I recommend master branch.
-
 # cChardet
 This library is high speed universal character encoding detector. - binding to [charsetdetect](https://bitbucket.org/medoc/uchardet-enhanced/overview).
 
