@@ -52,7 +52,7 @@ uchardet_sources = [
     "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsSJISProber.cpp",
     "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsUniversalDetector.cpp",
     "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsUTF8Prober.cpp",
-]
+    ]
 
 macros = []
 if platform.system() == "Windows":
@@ -75,12 +75,12 @@ This library is faster than chardet.
 """,
     version = '0.1',
     classifiers = [ # http://pypi.python.org/pypi?:action=list_classifiers
-        'Development Status :: 1 - Planning',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Cython',
-        'Programming Language :: Python',
-        'Topic :: Software Development :: Libraries',
-    ],
+                    'Development Status :: 1 - Planning',
+                    'License :: OSI Approved :: MIT License',
+                    'Programming Language :: Cython',
+                    'Programming Language :: Python',
+                    'Topic :: Software Development :: Libraries',
+                    ],
     keywords = [
         'cython',
         'chardet',
