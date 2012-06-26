@@ -32,7 +32,9 @@ nosetests.xml
 # PyGooglePlus
 .idea/
 ext__
-*.c
+ext/libcharsetdetect/mozilla_
+src/cchardet/*.c
+src/cchardet/*.cpp
 libcharsetdetect.dll
 charsetdetect.h
 MANIFEST
