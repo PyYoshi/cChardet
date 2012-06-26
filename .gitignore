@@ -38,4 +38,5 @@ src/cchardet/*.o
 src/cchardet/*.cpp
 libcharsetdetect.dll
 MANIFEST
-.o
+*.o
+*.def
