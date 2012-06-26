@@ -43,7 +43,6 @@ This library is faster than [chardet](http://pypi.python.org/pypi/chardet).
 *   Cython: [http://www.cython.org/](http://www.cython.org/)
 
 # Install
-### Build uchardet-enhanced
 1.   $cd /tmp
 
 2.   $git clone git://github.com/PyYoshi/cChardet.git

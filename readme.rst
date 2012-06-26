@@ -50,9 +50,6 @@ Requires
 Install
 =======
 
-Build uchardet-enhanced
-~~~~~~~~~~~~~~~~~~~~~~~
-
 1. $cd /tmp
 
 2. $git clone git://github.com/PyYoshi/cChardet.git
