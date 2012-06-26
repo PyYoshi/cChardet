@@ -1,118 +1,68 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# TODO: WinはMSVC9で行うようにする
-
 import ez_setup
 ez_setup.use_setuptools()
-import os,sys,platform,shutil
-import subprocess
+import os,platform
 from setuptools import setup, Extension
-import distutils.spawn as ds
 from Cython.Distutils import build_ext
 
 root = os.getcwd()
-ext_dir = os.path.join(root,'ext_')
+ext_dir = os.path.join(root,'ext')
 src_dir = os.path.join(root,'src')
 build_dir = os.path.join(root,'build')
 cchardet_dir = os.path.join(src_dir,'cchardet')
 cchardet_source = os.path.join(cchardet_dir,"cchardet.pyx")
 charsetdetect_dir = os.path.join(ext_dir, 'libcharsetdetect')
-charsetdetect_build_dir = os.path.join(charsetdetect_dir,'build')
+nspr_emu_dir = os.path.join(charsetdetect_dir,"nspr-emu")
+uchardet_dir = os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base")
 
-platform_os = platform.system()
-cmake_cmd = "cmake"
-if platform_os == "Windows":
-    cmake_args = " -DBUILD_SHARED_LIBS=NO -DCMAKE_BUILD_TYPE:STRING=Release -G \"NMake Makefiles\""
-else:
-    cmake_args = " -DBUILD_SHARED_LIBS=YES -DCMAKE_BUILD_TYPE:STRING=Release".split()
+uchardet_sources = [
+    "ext/libcharsetdetect/charsetdetect.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/CharDistribution.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/JpCntx.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangBulgarianModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangCyrillicModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangCzechModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangFinnishModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangFrenchModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangGermanModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangGreekModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangHebrewModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangHungarianModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangPolishModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangSpanishModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangSwedishModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangThaiModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/LangTurkishModel.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsBig5Prober.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsCharSetProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsEscCharsetProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsEscSM.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsEUCJPProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsEUCKRProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsEUCTWProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsGB2312Prober.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsHebrewProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsLatin1Prober.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsMBCSGroupProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsMBCSSM.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsSBCharSetProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsSBCSGroupProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsSJISProber.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsUniversalDetector.cpp",
+    "ext/libcharsetdetect/mozilla/extensions/universalchardet/src/base/nsUTF8Prober.cpp",
+]
 
-def build_charsetdetect():
-    if ds.find_executable(cmake_cmd) is None:
-        print("Error: unable to configure libcharsetdetect!")
-        print()
-        print("CMake build tool (http://www.cmake.org/) to configure.")
-        print("However, CMake is not found in your system.")
-        print("Please install CMake before running the setup file.")
-        sys.exit(-1)
-
-    print("Configuring libcharsetdetect via CMake...")
-    os.chdir(charsetdetect_dir)
-    if platform_os == "Windows":
-        import distutils.msvc9compiler as dm
-        msvc_version = dm.get_build_version()
-        vcvarsall_cmd = dm.find_vcvarsall(msvc_version)
-        if os.path.exists(vcvarsall_cmd) is None:
-            print("Error: Could not execute vcvarsall.bat!")
-            print("Require Microsoft Visual Studio 2008.")
-            sys.exit(-1)
-        configure_file = "configure.bat"
-        print("Create: %s" % configure_file)
-        fp = file(configure_file,"w")
-        fp_code_lines = [
-            'call "%s"' % vcvarsall_cmd,
-            '\n',
-            'cmake %s'% cmake_args,
-            '\n',
-        ]
-        fp.writelines(fp_code_lines)
-        fp.close()
-        print("Excec: %s"% configure_file)
-        configure_file = os.path.join(charsetdetect_dir,configure_file)
-        popen = subprocess.Popen(configure_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        print("===========================================")
-        print(popen.stdout.read())
-        print(popen.stderr.read())
-        print("===========================================")
-    else:
-        try:
-            ds.spawn(cmd=[cmake_cmd]+cmake_args,)
-        except ds.DistutilsExecError:
-            print("Error: error occurred while running CMake to configure libcharsetdetect!")
-            print("You may want to manually configure libcharsetdetect by running cmake's tools:")
-            print('cd %s' % charsetdetect_dir)
-            print("cmake-gui or cmake")
-            sys.exit(-1)
-
-    print("Building libcharsetdetect ...")
-
-    try:
-        if platform_os == "Windows":
-            execute_make_file = "exec_make.bat"
-            print("Create: %s" % execute_make_file)
-            fp = file(execute_make_file,"w")
-            fp_code_lines = [
-                'call "%s"' % vcvarsall_cmd,
-                '\n',
-                'nmake',
-                '\n',
-            ]
-            fp.writelines(fp_code_lines)
-            fp.close()
-            execute_make_file = os.path.join(charsetdetect_dir,execute_make_file)
-            popen = subprocess.Popen(execute_make_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            print("===========================================")
-            print(popen.stdout.read())
-            print(popen.stderr.read())
-            print("===========================================")
-        else:
-            ds.spawn(cmd=["make"])
-            if not os.path.exists(build_dir):
-                os.makedirs(build_dir)
-    except ds.DistutilsExecError as e:
-        print("Error: Could not build libchardet!")
-        print(e)
-        sys.exit(-1)
-    os.chdir(root)
-
-build_charsetdetect()
+macros = []
+if platform.system() == "Windows":
+    macros.append(("WIN32","1"))
 
 cchardet_module = Extension("_cchardet",
-    sources = [cchardet_source],
-    libraries = ['charsetdetect'],
-    include_dirs = [charsetdetect_dir],
-    library_dirs = [charsetdetect_build_dir],
+    sources = uchardet_sources+[cchardet_source],
+    include_dirs = [uchardet_dir,nspr_emu_dir,charsetdetect_dir],
     language = "c++",
+    define_macros=macros
 )
 
 setup(
