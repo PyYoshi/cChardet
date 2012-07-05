@@ -33,6 +33,7 @@ def detect(char *msg):
         return csd_close(csd)
 
 def detect_with_confidence(char *msg):
+    # TODO: fix "sometimes, to output invalid confidence value" bug.
     cdef csd_t csd = csd_open()
     cdef int length = strlen(msg)
     cdef int result = csd_consider(csd, msg, length)
