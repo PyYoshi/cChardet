@@ -68,6 +68,8 @@ public:
    virtual nsresult HandleData(const char* aBuf, PRUint32 aLen);
    virtual void DataEnd(void);
 
+   virtual void DataEnd2(float *confidence);
+
 protected:
    virtual void Report(const char* aCharset) = 0;
    virtual void Reset();

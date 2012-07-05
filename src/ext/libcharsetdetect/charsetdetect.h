@@ -21,7 +21,9 @@ int csd_consider(csd_t csd, const char *data, int length);
 // Closes the character set detector and returns the detected character set name as an ASCII string.
 // Returns NULL if detection failed.
 const char *csd_close(csd_t csd);
-    
+
+const char *csd_close2(csd_t csd,float *confidence);
+
 #ifdef __cplusplus
 }
 #endif

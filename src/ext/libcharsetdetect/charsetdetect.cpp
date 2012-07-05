@@ -48,7 +48,6 @@ const char *Detector::Close(void) {
 	return mDetectedCharset;
 }
 
-
 //
 // C API to the character set detector (we actually export this)
 //
@@ -68,3 +67,28 @@ const char *csd_close(csd_t csd) {
     delete ((Detector*)csd);
     return result;
 }
+
+///*
+const char *Detector::Close2(float *confidence) {
+    DataEnd2(confidence);
+
+    if (!mDone) {
+		if (mInputState == eEscAscii) {
+			return "ibm850";
+		}
+		else if (mInputState == ePureAscii) {
+			return "ASCII";
+		}
+
+		return NULL;
+	}
+
+	return mDetectedCharset;
+}
+
+const char *csd_close2(csd_t csd,float *confidence) {
+    const char *result = ((Detector*)csd)->Close2(confidence);
+    delete ((Detector*)csd);
+    return result;
+}
+//*/

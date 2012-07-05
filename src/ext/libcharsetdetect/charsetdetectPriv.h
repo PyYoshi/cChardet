@@ -11,6 +11,8 @@ public:
 	Detector(PRUint32 aLanguageFilter) : nsUniversalDetector(aLanguageFilter) {};
     int Consider(const char *data, int length);
     const char *Close(void);
+
+    const char *Close2(float *confidence);
 protected:
 	void Report(const char* aCharset);
     const char *mDetectedCharset;

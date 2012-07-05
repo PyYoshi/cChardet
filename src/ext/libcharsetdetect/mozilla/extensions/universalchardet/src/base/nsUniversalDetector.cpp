@@ -228,7 +228,6 @@ nsresult nsUniversalDetector::HandleData(const char* aBuf, PRUint32 aLen)
   return NS_OK;
 }
 
-
 //---------------------------------------------------------------------
 void nsUniversalDetector::DataEnd()
 {
@@ -278,3 +277,55 @@ void nsUniversalDetector::DataEnd()
   }
   return;
 }
+
+///*
+void nsUniversalDetector::DataEnd2(float *confidence)
+{
+  if (!mGotData)
+  {
+    // we haven't got any data yet, return immediately
+    // caller program sometimes call DataEnd before anything has been sent to detector
+    return;
+  }
+
+  if (mDetectedCharset)
+  {
+    mDone = PR_TRUE;
+    Report(mDetectedCharset);
+    return;
+  }
+
+  switch (mInputState)
+  {
+  case eHighbyte:
+    {
+      float proberConfidence;
+      float maxProberConfidence = (float)0.0;
+      PRInt32 maxProber = 0;
+
+      for (PRInt32 i = 0; i < NUM_OF_CHARSET_PROBERS; i++)
+      {
+        if (mCharSetProbers[i])
+        {
+          proberConfidence = mCharSetProbers[i]->GetConfidence();
+          if (proberConfidence > maxProberConfidence)
+          {
+            maxProberConfidence = proberConfidence;
+            maxProber = i;
+          }
+        }
+      }
+      //do not report anything because we are not confident of it, that's in fact a negative answer
+      if (maxProberConfidence > MINIMUM_THRESHOLD)
+        Report(mCharSetProbers[maxProber]->GetCharSetName());
+        *confidence = maxProberConfidence;
+    }
+    break;
+  case eEscAscii:
+    break;
+  default:
+    ;
+  }
+  return;
+}
+//*/
