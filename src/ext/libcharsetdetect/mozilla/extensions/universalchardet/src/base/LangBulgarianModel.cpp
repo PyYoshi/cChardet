@@ -242,6 +242,6 @@ const SequenceModel Win1251BulgarianModel =
   BulgarianLangModel,
   (float)0.969392,
   PR_FALSE,
-  "windows-1251",
+  "WINDOWS-1251",
   "Bulgarian"
 };

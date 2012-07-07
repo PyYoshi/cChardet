@@ -195,6 +195,6 @@ const SequenceModel iso_8859_2polishModel =
   polishLangModel,
   (float)0.974309,
   PR_TRUE,
-  "iso-8859-2",
+  "ISO-8859-2",
   "polish"
 };

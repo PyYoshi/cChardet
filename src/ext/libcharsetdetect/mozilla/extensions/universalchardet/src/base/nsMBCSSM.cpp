@@ -430,7 +430,7 @@ const SMModel SJISSMModel = {
    6,
   {eIdxSft4bits, eSftMsk4bits, eBitSft4bits, eUnitMsk4bits, SJIS_st },
   SJISCharLenTable,
-  "Shift_JIS",
+  "SHIFT_JIS",
 };
 
 

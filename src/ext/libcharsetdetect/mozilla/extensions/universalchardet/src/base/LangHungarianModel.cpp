@@ -239,6 +239,6 @@ const SequenceModel Win1250HungarianModel =
   HungarianLangModel,
   (float)0.965178,
   PR_TRUE,
-  "windows-1250",
+  "WINDOWS-1250",
   "hungarian"
 };

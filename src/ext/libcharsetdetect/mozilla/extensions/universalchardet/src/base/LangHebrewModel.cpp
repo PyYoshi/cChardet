@@ -214,7 +214,7 @@ const SequenceModel Win1255Model =
   HebrewLangModel,
   (float)0.984004,
   PR_FALSE,
-  "windows-1255",
+  "WINDOWS-1255",
   "Hebrew"
 };
 

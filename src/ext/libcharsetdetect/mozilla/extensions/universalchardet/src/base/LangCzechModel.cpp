@@ -195,6 +195,6 @@ const SequenceModel iso_8859_2czechModel =
   czechLangModel,
   (float)0.968107,
   PR_TRUE,
-  "iso-8859-2",
+  "ISO-8859-2",
   "czech"
 };

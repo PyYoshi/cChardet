@@ -195,15 +195,15 @@ float  JapaneseContextAnalysis::GetConfidence(void)
 PRInt32 SJISContextAnalysis::GetOrder(const char* str, PRUint32 *charLen)
 {
   //find out current char's byte length
-  if ((unsigned char)*str >= (unsigned char)0x81 && (unsigned char)*str <= (unsigned char)0x9f || 
+  if ((unsigned char)*str >= (unsigned char)0x81 && (unsigned char)*str <= (unsigned char)0x9f ||
       (unsigned char)*str >= (unsigned char)0xe0 && (unsigned char)*str <= (unsigned char)0xfc )
       *charLen = 2;
   else 
       *charLen = 1;
 
   //return its order if it is hiragana
-  if (*str == '\202' && 
-        (unsigned char)*(str+1) >= (unsigned char)0x9f && 
+  if (*str == '\202' &&
+        (unsigned char)*(str+1) >= (unsigned char)0x9f &&
         (unsigned char)*(str+1) <= (unsigned char)0xf1)
     return (unsigned char)*(str+1) - (unsigned char)0x9f;
   return -1;

@@ -195,6 +195,6 @@ const SequenceModel windows_1252spanishModel =
   spanishLangModel,
   (float)0.983906,
   PR_TRUE,
-  "windows-1252",
+  "WINDOWS-1252",
   "spanish"
 };
