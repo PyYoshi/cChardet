@@ -33,11 +33,10 @@ def detect(char *msg):
         return csd_close(csd)
 
 def detect_with_confidence(char *msg):
-    # TODO: fix "sometimes, to output invalid confidence value" bug.
     cdef csd_t csd = csd_open()
     cdef int length = strlen(msg)
     cdef int result = csd_consider(csd, msg, length)
-    cdef float confidence
+    cdef float confidence = 0.0
     cdef const_char_ptr detected_charset
     # ref: charsetdetect.cpp
     if result == -1: # Error, signal with a negative number

@@ -45,6 +45,8 @@
 #include "nsEscCharsetProber.h"
 #include "nsLatin1Prober.h"
 
+#include <iostream>
+
 nsUniversalDetector::nsUniversalDetector(PRUint32 aLanguageFilter)
 {
   mDone = PR_FALSE;
@@ -292,6 +294,8 @@ void nsUniversalDetector::DataEnd2(float *confidence)
   {
     mDone = PR_TRUE;
     Report(mDetectedCharset);
+    // no confidence
+    *confidence = (float)0.99;
     return;
   }
 
@@ -316,9 +320,10 @@ void nsUniversalDetector::DataEnd2(float *confidence)
         }
       }
       //do not report anything because we are not confident of it, that's in fact a negative answer
-      if (maxProberConfidence > MINIMUM_THRESHOLD)
+      if (maxProberConfidence > MINIMUM_THRESHOLD){
         Report(mCharSetProbers[maxProber]->GetCharSetName());
         *confidence = maxProberConfidence;
+      }
     }
     break;
   case eEscAscii:
