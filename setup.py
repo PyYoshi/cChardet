@@ -87,10 +87,10 @@ setup(
     long_description= """This library is high speed universal character encoding detector. - binding to charsetdetect.
 This library is faster than chardet.
 """,
-    version = '0.2',
+    version = '0.3',
     license = 'MIT License',
     classifiers = [ # http://pypi.python.org/pypi?:action=list_classifiers
-                    'Development Status :: 1 - Planning',
+                    'Development Status :: 4 - Beta',
                     'License :: OSI Approved :: MIT License',
                     'Programming Language :: Cython',
                     'Programming Language :: Python',
