@@ -42,7 +42,6 @@ def detect_with_confidence(char *msg):
     if result == -1: # Error, signal with a negative number
         raise Exception("Error, signal with a negative number")
     elif result == 1: # Need more data
-        warnings.warn("Need more data",UserWarning)
         detected_charset = csd_close2(csd, &confidence)
         ret = {
             "encoding":detected_charset,
