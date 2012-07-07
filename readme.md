@@ -69,8 +69,6 @@ import cchardet
 msg = file(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt").read()
 result = cchardet.detect(msg)
 print(result)
-result2 = cchardet.detect_with_confidence(msg)
-print(result2)
 ```
 
 # Test
