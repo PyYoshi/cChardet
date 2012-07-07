@@ -23,7 +23,5 @@ def detect_with_confidence(msg):
             "encoding": str,
             "confidence": float
         }
-    Warnings:
-        UserWarning
     """
     return _cchardet.detect_with_confidence(msg)
