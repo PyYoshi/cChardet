@@ -4,7 +4,6 @@
 This library is high speed universal character encoding detector. - binding to [charsetdetect](https://bitbucket.org/medoc/uchardet-enhanced/overview).
 
 This library is faster than [chardet](http://pypi.python.org/pypi/chardet).
-
 # Support codecs
 *   Big5
 *   EUC-JP
@@ -38,14 +37,12 @@ This library is faster than [chardet](http://pypi.python.org/pypi/chardet).
 *   X-ISO-10646-UCS-4-2143
 *   X-ISO-10646-UCS-4-3412
 *   x-mac-cyrillic
-
 # Requires
 *   Cython: [http://www.cython.org/](http://www.cython.org/)
 	
 e.g.) Ubuntu 12.04
 	
 	$sudo apt-get install build-essential python-dev cython
-
 # Installation
 	$cd /tmp
 
@@ -60,7 +57,6 @@ e.g.) Ubuntu 12.04
 or
 
 	$sudo easy_install cchardet
-
 # Example
 
 ```python
@@ -72,26 +68,22 @@ print(result)
 result2 = cchardet.detect_with_confidence(msg)
 print(result2)
 ```
-
 # Test
 	$sudo easy_install or pip install -U chardet nose
 	
 	$cd test
 
 	$nosetests --nocapture tests.py
-
 # Benchmark
 code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L415)
 
 sample: [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
-
 ### Performance:
 CPU: Intel Core i7 860 2.8GHz
 
 RAM: DDR3-1333 16GB
 
 Platform: Windows 7 HP x64, Python 2.7.3 32-bit
-
 ### Result:
 
 <table>
@@ -105,17 +97,14 @@ Platform: Windows 7 HP x64, Python 2.7.3 32-bit
     <td>cchardet</td><td>500.03</td><td>shift_jis</td>
   </tr>
 </table>
-
 # License
 * This library files("cchardet.pyx","setup.py","tests.py") are "The MIT License".
 
 * Other Libraries License: Please, look at the [ext](https://github.com/PyYoshi/cChardet/tree/master/src/ext) directory.
-
 # Thanks
 * [https://bitbucket.org/medoc/uchardet-enhanced/overview](https://bitbucket.org/medoc/uchardet-enhanced/overview)
 
 * [http://www.cython.org/](http://www.cython.org/)
-
 # Contact
 [My blog](http://blog.remu.biz)
 
