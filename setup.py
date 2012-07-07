@@ -60,11 +60,16 @@ uchardet_sources = [
 ]
 
 macros = []
+extra_compile_args = []
+extra_link_args = []
+
 if platform.system() == "Windows":
     macros.append(("WIN32","1"))
 
 if DEBUG:
     macros.append(("DEBUG_chardet","1"))
+    extra_compile_args.append("-g"),
+    extra_link_args.append("-g"),
 
 cchardet_module = Extension("cchardet._cchardet",
     sources = uchardet_sources+[cchardet_source],
