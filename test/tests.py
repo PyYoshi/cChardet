@@ -429,8 +429,5 @@ class TestCchardetSpeed():
         # print result
         result_chardet = end_chardet - start_chardet
         result_cchardet = end_cchardet - start_cchardet
-        print()
-        print(detected_encoding_cchardet)
-        print()
         print("chardet:",result_chardet,"detected charset:", detected_encoding_chardet['encoding'].lower(), "confidence:", detected_encoding_chardet['confidence'])
         print("cchardet:",result_cchardet,"detected charset:",detected_encoding_cchardet['encoding'].lower(), "confidence:", detected_encoding_cchardet['confidence'])
