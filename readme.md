@@ -29,29 +29,37 @@ This library is faster than [chardet](http://pypi.python.org/pypi/chardet).
 *   UTF-16LE
 *   UTF-32BE
 *   UTF-32LE
-*   windows-1250
-*   windows-1251
-*   windows-1252
-*   windows-1253
-*   windows-1255
-*   x-euc-tw
+*   WINDOWS-1250
+*   WINDOWS-1251
+*   WINDOWS-1252
+*   WINDOWS-1253
+*   WINDOWS-1255
+*   EUC-TW
 *   X-ISO-10646-UCS-4-2143
 *   X-ISO-10646-UCS-4-3412
 *   x-mac-cyrillic
 
 # Requires
 *   Cython: [http://www.cython.org/](http://www.cython.org/)
+	
+e.g.) Ubuntu 12.04
+	
+	$sudo apt-get install build-essential python-dev cython
 
-# Install
-1.   $cd /tmp
+# Installation
+	$cd /tmp
 
-2.   $git clone git://github.com/PyYoshi/cChardet.git
+	$git clone git://github.com/PyYoshi/cChardet.git
 
-3.   $cd cChardet
+	$cd cChardet
 
-4.   $python setup.py build
+	$python setup.py build
 
-5.   $sudo python setup.py install
+	$sudo python setup.py install
+
+or
+
+	$sudo easy_install cchardet
 
 # Example
 
@@ -66,32 +74,42 @@ print(result2)
 ```
 
 # Test
-*   $sudo easy_install or pip install -U chardet nose
+	$sudo easy_install or pip install -U chardet nose
+	
+	$cd test
 
-*   $nosetests --nocapture tests.py
+	$nosetests --nocapture tests.py
 
 # Benchmark
-see [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L415)
+code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L415)
 
-### Sample(shift_jis):
-*   [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
+sample: [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
 
-### PC Spec.:
-*   CPU: Intel Core i7 860 2.8GHz
+### Performance:
+CPU: Intel Core i7 860 2.8GHz
 
-*   RAM: DDR3-1333 16GB
+RAM: DDR3-1333 16GB
 
-*   Platform: Windows 7 HP x64, Python 2.7.3 32-bit
+Platform: Windows 7 HP x64, Python 2.7.3 32-bit
 
 ### Result:
-*   chardet: 4.009999990463257s, shift_jis
 
-*   cchardet: 0.0009999275207519531s, shift_jis
+<table>
+  <tr>
+    <th></th><th>Request (call/s)</th><th>Result of encoding</th>
+  </tr>
+  <tr>
+    <td>chardet</td><td>0.25</td><td>shift_jis</td>
+  </tr>
+  <tr>
+    <td>cchardet</td><td>500.03</td><td>shift_jis</td>
+  </tr>
+</table>
 
 # License
 * This library files("cchardet.pyx","setup.py","tests.py") are "The MIT License".
 
-* Other Library License: Please, look at the "ext" directory.
+* Other Libraries License: Please, look at the [ext](https://github.com/PyYoshi/cChardet/tree/master/src/ext) directory.
 
 # Thanks
 * [https://bitbucket.org/medoc/uchardet-enhanced/overview](https://bitbucket.org/medoc/uchardet-enhanced/overview)
