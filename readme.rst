@@ -1,6 +1,3 @@
-.. raw:: html
-
-   <!-- markdown to rst: http://johnmacfarlane.net/pandoc/try -->
 
 cChardet
 ========
@@ -112,73 +109,16 @@ Platform: Windows 7 HP x64, Python 2.7.3 32-bit
 Result:
 ~~~~~~~
 
-.. raw:: html
+::
 
-   <table>
-     <tr>
-       <th></th><th>
+	chardet:	0.25 (call/s)
 
-Request (call/s)
-
-.. raw:: html
-
-   </th><th>
-
-Result of encoding
-
-.. raw:: html
-
-   </th>
-     </tr>
-     <tr>
-       <td>
-
-chardet
-
-.. raw:: html
-
-   </td><td>
-
-0.25
-
-.. raw:: html
-
-   </td><td>
-
-shift\_jis
-
-.. raw:: html
-
-   </td>
-     </tr>
-     <tr>
-       <td>
-
-cchardet
-
-.. raw:: html
-
-   </td><td>
-
-500.03
-
-.. raw:: html
-
-   </td><td>
-
-shift\_jis
-
-.. raw:: html
-
-   </td>
-     </tr>
-   </table>
+	cchardet:	500.03 (call/s)
 
 License
 =======
 
--  This library files("cchardet.pyx","setup.py","tests.py") are "The MIT
-   License".
+-  This library files("cchardet.pyx","setup.py","tests.py") are "The MIT License".
 
 -  Other Libraries License: Please, look at the
    `ext <https://github.com/PyYoshi/cChardet/tree/master/src/ext>`_
