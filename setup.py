@@ -7,57 +7,24 @@ import ez_setup
 ez_setup.use_setuptools()
 import os,platform
 from setuptools import setup, Extension
-from Cython.Distutils import build_ext
+import glob
+import Cython.Compiler.Main as cython_compiler
+from distutils.command.build_ext import build_ext
 
 DEBUG = False
 
-root = os.getcwd()
-src_dir = os.path.join(root,'src')
+src_dir = 'src'
 ext_dir = os.path.join(src_dir,'ext')
-build_dir = os.path.join(root,'build')
-cchardet_dir = os.path.join(src_dir,'cchardet')
-cchardet_source = os.path.join(cchardet_dir,"cchardet.pyx")
-cchardet_source2 = os.path.join(cchardet_dir,"__init__.py")
-charsetdetect_dir = os.path.join(ext_dir, 'libcharsetdetect')
-nspr_emu_dir = os.path.join(charsetdetect_dir,"nspr-emu")
-uchardet_dir = os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base")
+build_dir = 'build'
+cchardet_dir = os.path.join(src_dir,'cchardet/')
+charsetdetect_dir = os.path.join(ext_dir, 'libcharsetdetect/')
+nspr_emu_dir = os.path.join(charsetdetect_dir,"nspr-emu/")
+uchardet_dir = os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/")
 
-uchardet_sources = [
-    os.path.join(charsetdetect_dir,"charsetdetect.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/CharDistribution.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/JpCntx.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangBulgarianModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangCyrillicModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangCzechModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangFinnishModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangFrenchModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangGermanModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangGreekModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangHebrewModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangHungarianModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangPolishModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangSpanishModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangSwedishModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangThaiModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/LangTurkishModel.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsBig5Prober.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsCharSetProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsEscCharsetProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsEscSM.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsEUCJPProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsEUCKRProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsEUCTWProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsGB2312Prober.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsHebrewProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsLatin1Prober.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsMBCSGroupProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsMBCSSM.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsSBCharSetProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsSBCSGroupProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsSJISProber.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsUniversalDetector.cpp"),
-    os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/nsUTF8Prober.cpp"),
-]
+pyx_sources = glob.glob(cchardet_dir+'*.pyx')
+cython_compiler.compile(pyx_sources,options=cython_compiler.CompilationOptions(cplus=True))
+cchardet_sources = glob.glob(cchardet_dir+'*.cpp')
+sources = cchardet_sources  + [os.path.join(charsetdetect_dir,"charsetdetect.cpp")] + glob.glob(uchardet_dir+'*.cpp')
 
 macros = []
 extra_compile_args = []
@@ -72,7 +39,7 @@ if DEBUG:
     extra_link_args.append("-g"),
 
 cchardet_module = Extension("cchardet._cchardet",
-    sources = uchardet_sources+[cchardet_source],
+    sources = sources,
     include_dirs = [uchardet_dir,nspr_emu_dir,charsetdetect_dir],
     language = "c++",
     define_macros=macros,
@@ -87,7 +54,7 @@ setup(
     long_description= """This library is high speed universal character encoding detector. - binding to charsetdetect.
 This library is faster than chardet.
 """,
-    version = '0.3',
+    version = '0.3.1',
     license = 'MIT License',
     classifiers = [ # http://pypi.python.org/pypi?:action=list_classifiers
                     'Development Status :: 4 - Beta',
