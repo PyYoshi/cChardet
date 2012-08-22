@@ -13,4 +13,5 @@ def detect(msg):
             "confidence": float
         }
     """
+    # TODO: Unicode t = u"あいうえお" があった時の対処 "isinstance(t,unicode) == True"
     return _cchardet.detect_with_confidence(msg)
