@@ -182,6 +182,7 @@ nsProbingState nsSBCSGroupProber::HandleData(const char* aBuf, PRUint32 aLen)
 
 done:
   PR_FREEIF(newBuf1);
+  PR_FREEIF(newBuf2);
 
   return mState;
 }
