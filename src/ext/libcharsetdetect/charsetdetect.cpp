@@ -44,7 +44,7 @@ const char *Detector::Close(void) {
         
 		return NULL;
 	}
-    
+
 	return mDetectedCharset;
 }
 
