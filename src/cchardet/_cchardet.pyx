@@ -1,4 +1,3 @@
-cimport cython
 from libc.stdlib cimport malloc, free
 import warnings
 
@@ -28,9 +27,10 @@ def detect(char *msg):
         raise Exception("Error, signal with a negative number")
     elif result == 1: # Need more data
         warnings.warn("Need more data",UserWarning)
-        return csd_close(csd)
+        ret = csd_close(csd)
     elif result == 0: # Detected early
-        return csd_close(csd)
+        ret = csd_close(csd)
+    return ret
 
 def detect_with_confidence(char *msg):
     cdef csd_t csd = csd_open()
@@ -45,14 +45,13 @@ def detect_with_confidence(char *msg):
             "encoding":detected_charset,
             "confidence":confidence
         }
-        return ret
     elif result == 0: # Detected early
         detected_charset = csd_close2(csd, &confidence)
         ret = {
             "encoding":detected_charset,
             "confidence":confidence
         }
-        return ret
     else: # Error, signal with a negative number
         raise Exception("Error, signal with a negative number")
+    return ret
 
