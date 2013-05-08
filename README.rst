@@ -76,7 +76,7 @@ Example
 
     # -*- coding: utf-8 -*-
     import cchardet as chardet
-    with open(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt") as f:
+    with open(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
         msg = f.read()
     result = chardet.detect(msg)
     print(result)
@@ -115,7 +115,7 @@ Result:
 
 	chardet:	0.32 (call/s)
 
-	cchardet:	1012.97 (call/s)
+	cchardet:	975.32 (call/s)
 
 License
 --------------

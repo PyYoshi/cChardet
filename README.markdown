@@ -67,7 +67,7 @@ $ sudo easy_install cchardet
 ```python
 # -*- coding: utf-8 -*-
 import cchardet as chardet
-with open(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt") as f:
+with open(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
     msg = f.read()
 result = chardet.detect(msg)
 print(result)
@@ -103,7 +103,7 @@ Platform: Kubuntu 12.04 amd64, Python 2.7.3 64-bit
     <td>chardet</td><td>0.32</td>
   </tr>
   <tr>
-    <td>cchardet</td><td>1012.97</td>
+    <td>cchardet</td><td>975.46</td>
   </tr>
 </table>
 
