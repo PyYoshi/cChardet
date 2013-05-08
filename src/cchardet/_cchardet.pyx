@@ -41,17 +41,9 @@ def detect_with_confidence(char *msg):
     # ref: charsetdetect.cpp
     if result == 1: # Need more data
         detected_charset = csd_close2(csd, &confidence)
-        ret = {
-            "encoding":detected_charset,
-            "confidence":confidence
-        }
     elif result == 0: # Detected early
         detected_charset = csd_close2(csd, &confidence)
-        ret = {
-            "encoding":detected_charset,
-            "confidence":confidence
-        }
     else: # Error, signal with a negative number
         raise Exception("Error, signal with a negative number")
-    return ret
+    return detected_charset,confidence
 
