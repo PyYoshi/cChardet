@@ -29,7 +29,6 @@ nosetests.xml
 #Translations
 *.mo
 
-# PyGooglePlus
 .idea/
 ext__
 ext/libcharsetdetect/mozilla_
@@ -41,3 +40,5 @@ MANIFEST
 *.o
 *.def
 None
+*.tar.gz
+.directory
