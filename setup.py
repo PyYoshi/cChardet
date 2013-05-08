@@ -5,10 +5,16 @@
 
 import ez_setup
 ez_setup.use_setuptools()
-import os,platform
+import os
+import sys
+import platform
 from setuptools import setup, Extension
 import glob
-import Cython.Compiler.Main as cython_compiler
+try:
+    import Cython.Compiler.Main as cython_compiler
+    have_cython = True
+except ImportError:
+    have_cython = False
 from distutils.command.build_ext import build_ext
 
 DEBUG = False
@@ -21,8 +27,10 @@ charsetdetect_dir = os.path.join(ext_dir, 'libcharsetdetect/')
 nspr_emu_dir = os.path.join(charsetdetect_dir,"nspr-emu/")
 uchardet_dir = os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/")
 
-pyx_sources = glob.glob(cchardet_dir+'*.pyx')
-cython_compiler.compile(pyx_sources,options=cython_compiler.CompilationOptions(cplus=True))
+if have_cython:
+    pyx_sources = glob.glob(cchardet_dir+'*.pyx')
+    sys.stderr.write("cythonize: %r\n" % (pyx_sources,))
+    cython_compiler.compile(pyx_sources,options=cython_compiler.CompilationOptions(cplus=True))
 cchardet_sources = glob.glob(cchardet_dir+'*.cpp')
 sources = cchardet_sources  + [os.path.join(charsetdetect_dir,"charsetdetect.cpp")] + glob.glob(uchardet_dir+'*.cpp')
 
