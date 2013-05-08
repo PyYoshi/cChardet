@@ -82,7 +82,7 @@ $ nosetests --nocapture tests.py
 ```
 
 ## Benchmark
-code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L415)
+code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L461)
 
 sample: [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
 
@@ -107,17 +107,17 @@ Platform: Kubuntu 12.04 amd64, Python 2.7.3 64-bit
   </tr>
 </table>
 
-### License
+## License
 * The MIT License: [src/cchardet](https://github.com/PyYoshi/cChardet/tree/master/src/cchardet)
 
 * Other Libraries License: Please, look at the [src/ext](https://github.com/PyYoshi/cChardet/tree/master/src/ext) directory.
 
-### Thanks
+## Thanks
 * [uchardet-enhanced](https://bitbucket.org/medoc/uchardet-enhanced/overview)
 
 * [Cython](http://www.cython.org/)
 
-### Contact
+## Contact
 [My blog](http://blog.remu.biz)
 
 [Issues](https://github.com/PyYoshi/cChardet/issues?page=1&state=open)

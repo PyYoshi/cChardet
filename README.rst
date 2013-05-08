@@ -94,7 +94,7 @@ Benchmark
 ---------
 
 code:
-`tests.TestCchardetSpeed <https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L415>`_
+`tests.TestCchardetSpeed <https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L461>`_
 
 sample:
 `test/testdata/wikipediaJa\_One\_Thousand\_and\_One\_Nights\_SJIS.txt <https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt>`_
@@ -118,7 +118,7 @@ Result:
 	cchardet:	1012.97 (call/s)
 
 License
-~~~~~~~
+--------------
 
 -  The MIT License:
    `src/cchardet <https://github.com/PyYoshi/cChardet/tree/master/src/cchardet>`_
@@ -128,14 +128,14 @@ License
    directory.
 
 Thanks
-~~~~~~
+--------------
 
 -  `uchardet-enhanced <https://bitbucket.org/medoc/uchardet-enhanced/overview>`_
 
 -  `Cython <http://www.cython.org/>`_
 
 Contact
-~~~~~~~
+--------------
 
 `My blog <http://blog.remu.biz>`_
 
