@@ -479,4 +479,4 @@ class TestCchardetSpeed():
             cchardet.detect(msg)
             result_cchardet += (time.time() - start_cchardet)
         print('chardet:',1/(result_chardet/do_times), 'call(s)/s')
-        print('chardet:',1/(result_cchardet/do_times), 'call(s)/s')
+        print('cchardet:',1/(result_cchardet/do_times), 'call(s)/s')
