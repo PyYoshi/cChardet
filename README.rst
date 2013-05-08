@@ -2,21 +2,17 @@
 cChardet
 ========
 
-This library is high speed universal character encoding detector. -
-binding to
+cChardet is high speed universal character encoding detector. - binding
+to
 `charsetdetect <https://bitbucket.org/medoc/uchardet-enhanced/overview>`_.
 
-This library is faster than
-`chardet <http://pypi.python.org/pypi/chardet>`_.
-
 Support codecs
-==============
+--------------
 
 -  Big5
 -  EUC-JP
 -  EUC-KR
 -  GB18030
--  gb18030
 -  HZ-GB-2312
 -  IBM855
 -  IBM866
@@ -46,7 +42,7 @@ Support codecs
 -  x-mac-cyrillic
 
 Requires
-========
+--------
 
 -  Cython: `http://www.cython.org/ <http://www.cython.org/>`_
 
@@ -54,42 +50,48 @@ e.g.) Ubuntu 12.04
 
 ::
 
-    $sudo apt-get install build-essential python-dev cython
+    $ sudo apt-get install build-essential python-dev cython
 
 Installation
-============
+------------
 
 ::
 
-    $cd /tmp
-
-    $git clone git://github.com/PyYoshi/cChardet.git
-
-    $cd cChardet
-
-    $python setup.py build
-
-    $sudo python setup.py install
+    $ cd /tmp
+    $ git clone git://github.com/PyYoshi/cChardet.git
+    $ cd cChardet
+    $ python setup.py build
+    $ sudo python setup.py install
 
 or
 
 ::
 
-    $sudo easy_install cchardet
+    $ sudo easy_install cchardet
 
-Test
-====
+Example
+-------
 
 ::
 
-    $sudo easy_install or pip install -U chardet nose
+    # -*- coding: utf-8 -*-
+    import cchardet as chardet
+    with open(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt") as f:
+        msg = f.read()
+    result = chardet.detect(msg)
+    print(result)
 
-    $cd test
+Test
+----
 
-    $nosetests --nocapture tests.py
+::
+
+    $ sudo easy_install or pip install -U chardet nose
+    $ cd test
+    $ nosetests --nocapture tests.py
 
 Benchmark
-=========
+---------
 
 code:
 `tests.TestCchardetSpeed <https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L415>`_
@@ -104,36 +106,39 @@ CPU: Intel Core i7 860 2.8GHz
 
 RAM: DDR3-1333 16GB
 
-Platform: Windows 7 HP x64, Python 2.7.3 32-bit
+Platform: Kubuntu 12.04 amd64, Python 2.7.3 64-bit
 
 Result:
 ~~~~~~~
 
 ::
 
-	chardet:	0.25 (call/s)
+	chardet:	0.32 (call/s)
 
-	cchardet:	500.03 (call/s)
+	cchardet:	1012.97 (call/s)
 
 License
-=======
+~~~~~~~
 
--  This library files("cchardet.pyx","setup.py","tests.py") are "The MIT License".
+-  The MIT License:
+   `src/cchardet <https://github.com/PyYoshi/cChardet/tree/master/src/cchardet>`_
 
 -  Other Libraries License: Please, look at the
-   `ext <https://github.com/PyYoshi/cChardet/tree/master/src/ext>`_
+   `src/ext <https://github.com/PyYoshi/cChardet/tree/master/src/ext>`_
    directory.
 
 Thanks
-======
+~~~~~~
 
--  `https://bitbucket.org/medoc/uchardet-enhanced/overview <https://bitbucket.org/medoc/uchardet-enhanced/overview>`_
+-  `uchardet-enhanced <https://bitbucket.org/medoc/uchardet-enhanced/overview>`_
 
--  `http://www.cython.org/ <http://www.cython.org/>`_
+-  `Cython <http://www.cython.org/>`_
 
 Contact
-=======
+~~~~~~~
 
 `My blog <http://blog.remu.biz>`_
+
+`Issues <https://github.com/PyYoshi/cChardet/issues?page=1&state=open>`_
 
 Sorry for my poor English :)
