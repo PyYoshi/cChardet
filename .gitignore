@@ -42,3 +42,4 @@ MANIFEST
 None
 *.tar.gz
 .directory
+.python-version
