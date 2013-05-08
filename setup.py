@@ -59,18 +59,21 @@ setup(
     author_email = 'yohihiro_dot_m_at_gmail_dot_com',
     url = r"https://github.com/PyYoshi/cChardet",
     description = 'Universal encoding detector. This library is faster than chardet.',
-    long_description= """This library is high speed universal character encoding detector. - binding to charsetdetect.
+    long_description= """cChardet is high speed universal character encoding detector. - binding to charsetdetect.
 This library is faster than chardet.
 """,
-    version = '0.3.2',
+    version = '0.3.3',
     license = 'MIT License',
-    classifiers = [ # http://pypi.python.org/pypi?:action=list_classifiers
-                    'Development Status :: 4 - Beta',
-                    'License :: OSI Approved :: MIT License',
-                    'Programming Language :: Cython',
-                    'Programming Language :: Python',
-                    'Topic :: Software Development :: Libraries',
-                    ],
+    classifiers = [
+        # http://pypi.python.org/pypi?:action=list_classifiers
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Cython',
+        'Programming Language :: Python',
+        'Topic :: Software Development :: Libraries',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+    ],
     keywords = [
         'cython',
         'chardet',
