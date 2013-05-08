@@ -17,6 +17,14 @@ except ImportError:
     have_cython = False
 from distutils.command.build_ext import build_ext
 
+try:
+    import pypissh
+except ImportError:
+    # non-developer
+    pass
+else:
+    pypissh.monkeypatch()
+
 DEBUG = False
 
 src_dir = 'src'
