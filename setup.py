@@ -3,12 +3,15 @@
 
 # python setup.py sdist --formats=gztar
 
-import ez_setup
-ez_setup.use_setuptools()
 import os
 import sys
 import platform
-from setuptools import setup, Extension
+
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
+
 import glob
 try:
     import Cython.Compiler.Main as cython_compiler
