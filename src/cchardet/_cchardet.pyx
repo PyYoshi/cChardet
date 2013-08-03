@@ -30,7 +30,8 @@ def detect(char *msg):
         ret = csd_close(csd)
     elif result == 0: # Detected early
         ret = csd_close(csd)
-    return ret
+    if ret:
+        return ret
 
 def detect_with_confidence(char *msg):
     cdef csd_t csd = csd_open()
@@ -45,5 +46,7 @@ def detect_with_confidence(char *msg):
         detected_charset = csd_close2(csd, &confidence)
     else: # Error, signal with a negative number
         raise Exception("Error, signal with a negative number")
-    return detected_charset,confidence
-
+    if detected_charset:
+        return detected_charset, confidence
+    else:
+        return None, None
