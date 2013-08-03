@@ -1,5 +1,4 @@
 /* The classes below are not exported */
-#pragma GCC visibility push(hidden)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,4 +17,3 @@ protected:
     const char *mDetectedCharset;
 };
 
-#pragma GCC visibility pop
