@@ -73,7 +73,7 @@ setup(
     long_description= """cChardet is high speed universal character encoding detector. - binding to charsetdetect.
 This library is faster than chardet.
 """,
-    version = '0.3.4',
+    version = '0.3.5',
     license = 'MIT License',
     classifiers = [
         # http://pypi.python.org/pypi?:action=list_classifiers
