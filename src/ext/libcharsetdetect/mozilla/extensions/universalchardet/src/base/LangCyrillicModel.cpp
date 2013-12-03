@@ -336,7 +336,7 @@ const SequenceModel MacCyrillicModel =
   RussianLangModel,
   (float)0.976601,
   PR_FALSE,
-  "x-mac-cyrillic",
+  "MAC-CYRILLIC",
   "Russian"
 };
 
