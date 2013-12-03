@@ -376,6 +376,15 @@ class TestCchardet():
         print(detected_encoding)
         eq_(encoding.lower(),detected_encoding['encoding'].lower())
 
+    def test_detect_ru_maccyrillic(self):
+        encoding = "MAC-CYRILLIC"
+        path = r"testdata/ru/X-MAC-CYRILLIC/wikitop_ru_MACCYRILLIC.txt"
+        with open(path, 'rb') as f:
+            msg = f.read()
+        detected_encoding = cchardet.detect(msg)
+        print(detected_encoding)
+        eq_(encoding.lower(),detected_encoding['encoding'].lower())
+
     def test_detect_se_utf8(self):
         encoding = "UTF-8"
         path = r"testdata/se/UTF-8/wikitop_se_UTF-8.txt"
