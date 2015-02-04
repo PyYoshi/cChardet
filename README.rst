@@ -86,7 +86,7 @@ Test
 
 ::
 
-    $ sudo easy_install or pip install -U chardet nose
+    $ sudo easy_install or pip install -U cchardet nose
     $ cd test
     $ nosetests --nocapture tests.py
 
