@@ -67,17 +67,15 @@ cchardet_module = Extension("cchardet._cchardet",
 setup(
     name = 'cchardet',
     author = 'PyYoshi',
-    author_email = 'yohihiro_dot_m_at_gmail_dot_com',
+    author_email = 'myoshi321go_at_gmail_dot_com',
     url = r"https://github.com/PyYoshi/cChardet",
     description = 'Universal encoding detector. This library is faster than chardet.',
     long_description= """cChardet is high speed universal character encoding detector. - binding to charsetdetect.
 This library is faster than chardet.
 """,
-    version = '0.3.5',
+    version = '1.0.0',
     license = 'MIT License',
     classifiers = [
-        # http://pypi.python.org/pypi?:action=list_classifiers
-        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Cython',
         'Programming Language :: Python',
