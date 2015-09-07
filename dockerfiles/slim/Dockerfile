@@ -1,4 +1,4 @@
-FROM python:slim
+FROM python:3.4-slim
 
 ENV BUILD_DEPS gcc g++
 
