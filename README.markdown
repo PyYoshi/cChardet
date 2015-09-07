@@ -1,5 +1,3 @@
-<!-- markdown to rst: http://johnmacfarlane.net/pandoc/try -->
-
 cChardet
 ========
 cChardet is high speed universal character encoding detector. - binding to [charsetdetect](https://bitbucket.org/medoc/uchardet-enhanced/overview).
@@ -39,9 +37,9 @@ cChardet is high speed universal character encoding detector. - binding to [char
 
 ## Requires
 *   Cython: [http://www.cython.org/](http://www.cython.org/)
-	
+
 e.g.) Ubuntu 12.04
-	
+
 ```bash
 $ sudo apt-get install build-essential python-dev cython
 ```
@@ -53,13 +51,13 @@ $ cd /tmp
 $ git clone git://github.com/PyYoshi/cChardet.git
 $ cd cChardet
 $ python setup.py build
-$ sudo python setup.py install
+$ python setup.py install
 ```
 
 or
 
 ```bash
-$ sudo easy_install cchardet
+$ pip install -U cchardet
 ```
 
 ## Example
@@ -76,13 +74,13 @@ print(result)
 ## Test
 
 ```bash
-$ sudo easy_install or pip install -U chardet nose
+$ pip install -U chardet nose
 $ cd test
 $ nosetests --nocapture tests.py
 ```
 
 ## Benchmark
-code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L461)
+code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L468)
 
 sample: [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
 
@@ -118,8 +116,5 @@ Platform: Kubuntu 12.04 amd64, Python 2.7.3 64-bit
 * [Cython](http://www.cython.org/)
 
 ## Contact
-[My blog](http://blog.remu.biz)
 
 [Issues](https://github.com/PyYoshi/cChardet/issues?page=1&state=open)
-
-Sorry for my poor English :)
