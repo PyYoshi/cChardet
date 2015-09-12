@@ -43,3 +43,6 @@ None
 *.tar.gz
 .directory
 .python-version
+
+src/cchardet/_version.py
+.cache/

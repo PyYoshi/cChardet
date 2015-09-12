@@ -3,79 +3,108 @@
 
 # python setup.py sdist --formats=gztar
 
-import os
-import sys
-import platform
+from os.path import join
+from glob import glob
 
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 
-import glob
-try:
-    import Cython.Compiler.Main as cython_compiler
-    have_cython = True
-except ImportError:
-    have_cython = False
-from distutils.command.build_ext import build_ext
-
-try:
-    import pypissh
-except ImportError:
-    # non-developer
-    pass
-else:
-    pypissh.monkeypatch()
+from distutils.ccompiler import CCompiler
+from distutils.unixccompiler import UnixCCompiler
+from distutils.msvccompiler import MSVCCompiler
 
 DEBUG = False
 
-src_dir = 'src'
-ext_dir = os.path.join(src_dir,'ext')
-build_dir = 'build'
-cchardet_dir = os.path.join(src_dir,'cchardet/')
-charsetdetect_dir = os.path.join(ext_dir, 'libcharsetdetect/')
-nspr_emu_dir = os.path.join(charsetdetect_dir,"nspr-emu/")
-uchardet_dir = os.path.join(charsetdetect_dir,"mozilla/extensions/universalchardet/src/base/")
-
-if have_cython:
-    pyx_sources = glob.glob(cchardet_dir+'*.pyx')
-    sys.stderr.write("cythonize: %r\n" % (pyx_sources,))
-    cython_compiler.compile(pyx_sources,options=cython_compiler.CompilationOptions(cplus=True))
-cchardet_sources = glob.glob(cchardet_dir+'*.cpp')
-sources = cchardet_sources  + [os.path.join(charsetdetect_dir,"charsetdetect.cpp")] + glob.glob(uchardet_dir+'*.cpp')
-
-macros = []
-extra_compile_args = []
-extra_link_args = []
-
-if platform.system() == "Windows":
-    macros.append(("WIN32","1"))
+compiler_opts = {
+    CCompiler: {},
+    MSVCCompiler: {
+        'extra_compile_args': ['/EHsc'],
+    },
+}
 
 if DEBUG:
-    macros.append(("DEBUG_chardet","1"))
-    extra_compile_args.append("-g"),
-    extra_link_args.append("-g"),
+    compiler_opts = {
+        CCompiler: {'define_macros': [('DEBUG_chardet', '1')]},
+        MSVCCompiler: {
+            'extra_compile_args': ['/EHsc', '/Z7'],
+            'extra_link_args': ['/DEBUG'],
+        },
+        UnixCCompiler: {
+            'extra_compile_args': ['-g'],
+            'extra_link_args': ['-g'],
+        }
+    }
 
-cchardet_module = Extension("cchardet._cchardet",
-    sources = sources,
-    include_dirs = [uchardet_dir,nspr_emu_dir,charsetdetect_dir],
-    language = "c++",
-    define_macros=macros,
+
+class BuildExtSubclass(build_ext):
+    def build_extensions(self):
+        c = self.compiler
+
+        # use the inheritance relationship and not names. That is
+        # CCompiler will match all compilers, UnixCCompiler will match
+        # mingw32 and cygwin as well and so on.
+        opts = [v for k, v in compiler_opts.items() if isinstance(c, k)]
+        for e in self.extensions:
+            for o in opts:
+                # the keys match the public attributes and are initialized
+                # to empty lists.
+                for attrib, value in o.items():
+                    getattr(e, attrib).extend(value)
+
+        build_ext.build_extensions(self)
+
+cchardet_dir = join('src', 'cchardet')
+charsetdetect_dir = join('src', 'ext', 'libcharsetdetect')
+nspr_emu_dir = join(charsetdetect_dir, 'nspr-emu')
+uchardet_dir = join(
+    charsetdetect_dir, 'mozilla/extensions/universalchardet/src/base')
+
+pyx_sources = glob(join(cchardet_dir, '*.pyx'))
+sources = pyx_sources + [join(charsetdetect_dir, 'charsetdetect.cpp')] + glob(
+    join(uchardet_dir, '*.cpp'))
+
+cchardet_module = Extension(
+    'cchardet._cchardet',
+    sources=sources,
+    include_dirs=[
+        uchardet_dir,
+        nspr_emu_dir,
+        charsetdetect_dir
+    ],
+    depends=(glob(join(charsetdetect_dir, '*.h')) +
+             glob(join(uchardet_dir, '*.h')) +
+             glob(join(nspr_emu_dir, '*.h'))),
+    language='c++',
 )
 
 setup(
-    name = 'cchardet',
-    author = 'PyYoshi',
-    author_email = 'myoshi321go_at_gmail_dot_com',
-    url = r"https://github.com/PyYoshi/cChardet",
-    description = 'Universal encoding detector. This library is faster than chardet.',
-    long_description= """cChardet is high speed universal character encoding detector. - binding to charsetdetect.
-This library is faster than chardet.
+    name='cchardet',
+    author='PyYoshi',
+    author_email='myoshi321go_at_gmail_dot_com',
+    url='https://github.com/PyYoshi/cChardet',
+    description='Universal encoding detector, faster than chardet.',
+    long_description="""\
+cChardet is high speed universal character encoding detector. It is a thin
+Cython wrapper to charsetdetect. This library is faster than chardet.
 """,
-    version = '1.0.0',
-    license = 'MIT License',
-    classifiers = [
+    use_scm_version={
+        'version_scheme': 'guess-next-dev',
+        'local_scheme': 'dirty-tag',
+        'write_to': 'src/cchardet/_version.py'
+    },
+
+    setup_requires=[
+        'setuptools>=18.0',
+        'cython',
+        'setuptools-scm>1.5.4'
+    ],
+    tests_require=[
+        'pytest',
+        'pytest-benchmark',
+        'chardet'
+    ],
+    license='MIT License',
+    classifiers=[
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Cython',
         'Programming Language :: Python',
@@ -83,15 +112,15 @@ This library is faster than chardet.
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
     ],
-    keywords = [
+    keywords=[
         'cython',
         'chardet',
         'charsetdetect'
     ],
-    cmdclass = {'build_ext': build_ext},
-    package_dir = {"":src_dir},
-    packages = ['cchardet',],
-    ext_modules = [
+    package_dir={"": 'src'},
+    packages=['cchardet'],
+    ext_modules=[
         cchardet_module
     ],
+    cmdclass={'build_ext': BuildExtSubclass},
 )

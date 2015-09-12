@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from cchardet import _cchardet
+from . import _cchardet
+from ._version import version as __version__
+
+__all__ = ['__version__', 'detect']
+
 
 def detect(msg):
     """

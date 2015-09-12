@@ -1,4 +1,4 @@
-include ez_setup.py *.txt
-recursive-include src *.pyx *.pxd *.pxi *.py *.cpp
-recursive-include src/ext *.*
-recursive-include test *.*
+graft src/ext
+include src/cchardet/_cchardet.cpp
+graft test/testdata
+exclude .gitignore *.bat
