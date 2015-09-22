@@ -80,7 +80,7 @@
 **
 **
 ***********************************************************************/
-#if defined(WIN32)
+#if defined(_WIN32)
 
 #define PR_EXPORT(__type) extern __declspec(dllexport) __type
 #define PR_EXPORT_DATA(__type) extern __declspec(dllexport) __type
@@ -347,7 +347,7 @@ typedef long PRInt32;
 #if PR_BYTES_PER_LONG == 8 && !defined(__APPLE__)
 typedef long PRInt64;
 typedef unsigned long PRUint64;
-#elif defined(WIN32) && !defined(__GNUC__)
+#elif defined(_WIN32) && !defined(__GNUC__)
 typedef __int64  PRInt64;
 typedef unsigned __int64 PRUint64;
 #else
@@ -452,7 +452,7 @@ typedef enum { PR_FAILURE = -1, PR_SUCCESS = 0 } PRStatus;
 
 #ifndef __PRUNICHAR__
 #define __PRUNICHAR__
-#ifdef WIN32
+#ifdef _WIN32
 typedef wchar_t PRUnichar;
 #else
 typedef PRUint16 PRUnichar;

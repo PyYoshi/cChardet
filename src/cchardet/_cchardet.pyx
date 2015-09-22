@@ -1,4 +1,3 @@
-from libc.stdlib cimport malloc, free
 import warnings
 
 cdef extern from "Python.h":

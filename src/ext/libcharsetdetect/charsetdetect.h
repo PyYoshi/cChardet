@@ -1,8 +1,10 @@
 #ifndef charsetdetect_
 #define charsetdetect_
 
+#if defined(__GNUC__)
 /* The classes below are exported */
 #pragma GCC visibility push(default)
+#endif // __GNUC__
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,5 +30,8 @@ const char *csd_close2(csd_t csd,float *confidence);
 }
 #endif
 
+#if defined(__GNUC__)
 #pragma GCC visibility pop
+#endif // __GNUC__
+
 #endif
