@@ -1,5 +1,15 @@
 cChardet
 ========
+
+Version: [![PyPI]](https://pypi.python.org/pypi/cChardet)
+Travis: [![Travis]](https://travis-ci.org/pypi/cChardet)
+AppVeyor: [![AppVeyor]](https://ci.appveyor.com/project/PyYoshi/cChardet/branch/master)
+
+
+[AppVeyor]: https://img.shields.io/appveyor/ci/PyYoshi/cChardet.png
+[Pypi]: https://img.shields.io/pypi/v/cChardet.png
+[Travis]: https://img.shields.io/travis/pypi/cChardet.png
+
 cChardet is high speed universal character encoding detector. - binding to [charsetdetect](https://bitbucket.org/medoc/uchardet-enhanced/overview).
 
 ## Support codecs
@@ -57,7 +67,7 @@ $ python setup.py install
 or
 
 ```bash
-$ pip install -U cchardet
+$ pip install --user -U cchardet
 ```
 
 ## Example
@@ -74,7 +84,8 @@ print(result)
 ## Test
 
 ```bash
-$ pip install -U chardet nose
+$ pip install -U chardet nose tox
+$ tox 
 $ cd test
 $ nosetests --nocapture tests.py
 ```
