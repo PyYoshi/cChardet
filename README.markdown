@@ -65,24 +65,16 @@ $ pip install -U cchardet
 ```python
 # -*- coding: utf-8 -*-
 import cchardet as chardet
-with open(r"test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
+with open(r"tests/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
     msg = f.read()
 result = chardet.detect(msg)
 print(result)
 ```
 
-## Test
-
-```bash
-$ pip install -U chardet nose
-$ cd test
-$ nosetests --nocapture tests.py
-```
-
 ## Benchmark
-code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/test/tests.py#L468)
+code: [tests.TestCchardetSpeed](https://github.com/PyYoshi/cChardet/blob/master/src/tests/bench.py)
 
-sample: [test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/test/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
+sample: [tests/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt](https://github.com/PyYoshi/cChardet/blob/master/src/tests/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt)
 
 ### Performance:
 CPU: Intel Core i7 860 2.8GHz
