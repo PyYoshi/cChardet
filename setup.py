@@ -59,15 +59,17 @@ cchardet_module = Extension(
     define_macros=macros,
 )
 
+
+def read(f):
+    return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
+
 setup(
     name='cchardet',
     author='PyYoshi',
     author_email='myoshi321go@gmail.com',
     url=r'https://github.com/PyYoshi/cChardet',
     description='Universal encoding detector. This library is faster than chardet.',
-    long_description='''cChardet is high speed universal character encoding detector. - binding to charsetdetect.
-This library is faster than chardet.
-''',
+    long_description='\n\n'.join((read('README.rst'), read('CHANGES.rst'))),
     version='1.1.0',
     license='MIT License',
     classifiers=[
@@ -76,7 +78,10 @@ This library is faster than chardet.
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
     keywords=[
         'cython',
