@@ -9,7 +9,7 @@ class TestCchardetSpeed():
     def test_speed(self):
         import time
         do_times = 5
-        path = r'testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt'
+        path = r'tests/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt'
         with open(path, 'rb') as f:
             msg = f.read()
 
