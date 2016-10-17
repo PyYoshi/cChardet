@@ -13,3 +13,6 @@ pip:
 twine:
 	twine upload dist/*.whl
 	twine upload dist/*.tar.gz
+
+install: clean
+	python setup.py install
