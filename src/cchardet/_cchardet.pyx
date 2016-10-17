@@ -1,5 +1,3 @@
-import warnings
-
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
 
@@ -7,23 +5,7 @@ cdef extern from "charsetdetect.h":
     ctypedef void* csd_t
     cdef csd_t csd_open()
     cdef int csd_consider(csd_t csd, char* data, int length)
-    cdef const_char_ptr csd_close(csd_t csd)
     cdef const_char_ptr csd_close2(csd_t csd, float *confidence)
-
-def detect(char *msg):
-    cdef csd_t csd = csd_open()
-    cdef int length = len(msg)
-    cdef int result = csd_consider(csd, msg, length)
-    # ref: charsetdetect.cpp
-    if result == -1: # Error, signal with a negative number
-        raise Exception("Error, signal with a negative number")
-    elif result == 1: # Need more data
-        warnings.warn("Need more data",UserWarning)
-        ret = csd_close(csd)
-    elif result == 0: # Detected early
-        ret = csd_close(csd)
-    if ret:
-        return ret
 
 def detect_with_confidence(char *msg):
     cdef csd_t csd = csd_open()
