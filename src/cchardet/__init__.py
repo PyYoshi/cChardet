@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 from cchardet import _cchardet
-
+from .version import __version__
 
 def detect(msg):
     """

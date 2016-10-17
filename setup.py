@@ -6,13 +6,14 @@
 import os
 import sys
 import platform
+import glob
+import codecs
+import re
 
 try:
     from setuptools import setup, Extension
 except ImportError:
     from distutils.core import setup, Extension
-
-import glob
 
 try:
     import Cython.Compiler.Main as cython_compiler
@@ -62,6 +63,15 @@ cchardet_module = Extension(
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
+
+
+with codecs.open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'src', 'cchardet', 'version.py'), 'r',
+                 'latin1') as fp:
+    try:
+        version = re.findall(r"^__version__ = '([^']+)'\r?$",
+                             fp.read(), re.M)[0]
+    except IndexError:
+        raise RuntimeError('Unable to determine version.')
 
 setup(
     name='cchardet',
