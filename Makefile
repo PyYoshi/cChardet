@@ -16,3 +16,7 @@ twine:
 
 install: clean
 	python setup.py install
+
+build-manylinux1-wheel:
+	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux1_i686   bash dockerfiles/buildwheel.sh
+	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux1_x86_64 bash dockerfiles/buildwheel.sh
