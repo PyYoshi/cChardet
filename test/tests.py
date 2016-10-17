@@ -83,32 +83,3 @@ class TestCChardet():
         detector.feed('0')
         eq_(detector.done, False)
         eq_(detector.result, {'encoding': None, 'confidence': None})
-
-
-class TestCchardetSpeed():
-    def test_speed(self):
-        try:
-            import chardet
-            has_chardet = True
-        except ImportError:
-            has_chardet = False
-        import time
-        do_times = 5
-        path = r'testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt'
-        with open(path, 'rb') as f:
-            msg = f.read()
-        # Test chardet
-        if has_chardet:
-            result_chardet = 0
-            for i in range(do_times):
-                start_chardet = time.time()
-                chardet.detect(msg)
-                result_chardet += (time.time() - start_chardet)
-            print('chardet:', 1 / (result_chardet / do_times), 'call(s)/s')
-        # Test cchardet
-        result_cchardet = 0
-        for i in range(do_times):
-            start_cchardet = time.time()
-            cchardet.detect(msg)
-            result_cchardet += (time.time() - start_cchardet)
-        print('cchardet:', 1 / (result_cchardet / do_times), 'call(s)/s')
