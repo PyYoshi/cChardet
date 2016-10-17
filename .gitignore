@@ -43,3 +43,4 @@ None
 *.tar.gz
 .directory
 .python-version
+.tox/
