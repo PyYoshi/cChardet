@@ -2,6 +2,9 @@ cChardet
 ========
 cChardet is high speed universal character encoding detector. - binding to [charsetdetect](https://bitbucket.org/medoc/uchardet-enhanced/overview).
 
+[![Build Status](https://travis-ci.org/PyYoshi/cChardet.svg?branch=master)](https://travis-ci.org/PyYoshi/cChardet)
+[![Build status](https://ci.appveyor.com/api/projects/status/lwkc4rgf3gncb1ne/branch/master?svg=true)](https://ci.appveyor.com/project/PyYoshi/cchardet/branch/master)
+
 ## Support codecs
 
 - Big5
