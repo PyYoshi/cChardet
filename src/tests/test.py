@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import sys
+
 from nose.tools import eq_
 
 import cchardet
@@ -80,6 +82,10 @@ class TestCChardet():
 
     def test_detector_noresult(self):
         detector = cchardet.Detector()
-        detector.feed('0')
+        if sys.version_info[0] < 3:
+            zero = '0'
+        else:
+            zero = b'0'
+        detector.feed(zero)
         eq_(detector.done, False)
         eq_(detector.result, {'encoding': None, 'confidence': None})

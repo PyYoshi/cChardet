@@ -66,7 +66,6 @@ cdef class Detector:
         self._detected_charset = ''
 
     def feed(self, char *msg):
-        # TODO: Support py3k
         cdef int length
         cdef int result
 
