@@ -22,14 +22,6 @@ except ImportError:
     have_cython = False
 from distutils.command.build_ext import build_ext
 
-try:
-    import pypissh
-except ImportError:
-    # non-developer
-    pass
-else:
-    pypissh.monkeypatch()
-
 DEBUG = False
 
 src_dir = 'src'
@@ -70,7 +62,7 @@ cchardet_module = Extension(
 setup(
     name='cchardet',
     author='PyYoshi',
-    author_email='myoshi321go_at_gmail_dot_com',
+    author_email='myoshi321go@gmail.com',
     url=r'https://github.com/PyYoshi/cChardet',
     description='Universal encoding detector. This library is faster than chardet.',
     long_description='''cChardet is high speed universal character encoding detector. - binding to charsetdetect.
