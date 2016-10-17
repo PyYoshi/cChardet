@@ -1,15 +1,7 @@
-from libc.stdlib cimport malloc, free
 import warnings
-
-cdef extern from "Python.h":
-    void * PyMem_Malloc(size_t)
-    void PyMem_Free(void *)
 
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
-
-cdef extern from "string.h":
-    cdef int strlen(char *s)
 
 cdef extern from "charsetdetect.h":
     ctypedef void* csd_t
@@ -20,7 +12,7 @@ cdef extern from "charsetdetect.h":
 
 def detect(char *msg):
     cdef csd_t csd = csd_open()
-    cdef int length = strlen(msg)
+    cdef int length = len(msg)
     cdef int result = csd_consider(csd, msg, length)
     # ref: charsetdetect.cpp
     if result == -1: # Error, signal with a negative number
@@ -35,7 +27,7 @@ def detect(char *msg):
 
 def detect_with_confidence(char *msg):
     cdef csd_t csd = csd_open()
-    cdef int length = strlen(msg)
+    cdef int length = len(msg)
     cdef int result = csd_consider(csd, msg, length)
     cdef float confidence = 0.0
     cdef const_char_ptr detected_charset
@@ -70,7 +62,7 @@ cdef class Detector:
         cdef int result
 
         if not self.done and not self._closed:
-            length = strlen(msg)
+            length = len(msg)
             result = csd_consider(self.csd, msg, length)
 
             if result == -1: # Error, signal with a negative number
