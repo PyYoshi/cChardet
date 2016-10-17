@@ -1,0 +1,18 @@
+sudo: false
+language: python
+python: 3.5
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+env:
+    - TOXENV=py27
+    - TOXENV=py33
+    - TOXENV=py34
+    - TOXENV=py35
+
+install:
+    - pip install -U tox nose cython
+
+script:
+    - tox -e $TOXENV
