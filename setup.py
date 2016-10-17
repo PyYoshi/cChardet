@@ -76,7 +76,7 @@ setup(
     long_description='''cChardet is high speed universal character encoding detector. - binding to charsetdetect.
 This library is faster than chardet.
 ''',
-    version='1.0.0',
+    version='1.1.0',
     license='MIT License',
     classifiers=[
         'License :: OSI Approved :: MIT License',
