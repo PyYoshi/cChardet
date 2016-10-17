@@ -50,3 +50,51 @@ def detect_with_confidence(char *msg):
         return detected_charset, confidence
     else:
         return None, None
+
+cdef class Detector:
+    cdef csd_t csd
+    cdef int _done
+    cdef int _closed
+    cdef float _confidence
+    cdef const_char_ptr _detected_charset
+
+    def __init__(self):
+        self.csd = csd_open()
+        self._done = 0
+        self._closed = 0
+        self._confidence = 0.0
+        self._detected_charset = ''
+
+    def feed(self, char *msg):
+        cdef int length
+        cdef int result
+
+        if not self.done and not self._closed:
+            length = strlen(msg)
+            result = csd_consider(self.csd, msg, length)
+
+            if result == -1: # Error, signal with a negative number
+                raise Exception("Error, signal with a negative number")
+
+            elif result == 1: # Need more data
+                pass
+
+            elif result == 0: # Detected early
+                self._done = 1
+                self.close()
+
+    def close(self):
+        if not self._closed:
+            self._detected_charset = csd_close2(self.csd, &self._confidence)
+            self._closed = 1
+
+    @property
+    def done(self):
+        return bool(self._done)
+
+    @property
+    def result(self):
+        if len(self._detected_charset):
+            return self._detected_charset, self._confidence
+        else:
+            return None, None
