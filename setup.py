@@ -80,7 +80,7 @@ setup(
     url=r'https://github.com/PyYoshi/cChardet',
     description='Universal encoding detector. This library is faster than chardet.',
     long_description='\n\n'.join((read('README.rst'), read('CHANGES.rst'))),
-    version='1.1.0',
+    version=version,
     license='MIT License',
     classifiers=[
         'License :: OSI Approved :: MIT License',
