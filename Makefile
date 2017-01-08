@@ -4,7 +4,7 @@ test:
 clean:
 	$(RM) -r build dist src/cchardet/__pycache__ src/cchardet/*.cpp src/cchardet/*.pyc src/cchardet/*.so src/cchardet.egg-info src/tests/__pycache__ src/tests/*.pyc
 
-sdist: clean
+sdist:
 	python setup.py sdist
 
 pip:
@@ -20,3 +20,5 @@ install: clean
 build-manylinux1-wheel:
 	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux1_i686   bash dockerfiles/buildwheel.sh
 	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux1_x86_64 bash dockerfiles/buildwheel.sh
+
+build: clean pip test sdist build-manylinux1-wheel
