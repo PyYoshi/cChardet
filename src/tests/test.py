@@ -29,7 +29,7 @@ class TestCChardet():
     def test_detect(self):
         testfiles = glob.glob('tests/testdata/*/*.txt')
         for testfile in testfiles:
-            if testfile in SKIP_LIST:
+            if testfile.replace("\\", "/") in SKIP_LIST:
                 continue
 
             base = os.path.basename(testfile)
