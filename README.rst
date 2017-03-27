@@ -1,7 +1,7 @@
 cChardet
 ========
 
-:exclamation: :exclamation: **Work In Progress Branch** :exclamation: :exclamation:
+**Work In Progress Branch**
 
 cChardet is high speed universal character encoding detector. - binding to `uchardet`_.
 
