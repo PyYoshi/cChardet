@@ -3,6 +3,8 @@ language: python
 cache:
   directories:
     - $HOME/.cache/pip
+git:
+  submodules: false
 
 matrix:
   include:
@@ -18,6 +20,10 @@ matrix:
       python: nightly
   allow_failures:
     - python: nightly
+
+before_install:
+  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
 
 install:
     - pip install -U tox nose cython
