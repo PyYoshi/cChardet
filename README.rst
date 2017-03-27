@@ -1,57 +1,209 @@
 cChardet
 ========
 
-cChardet is high speed universal character encoding detector. - binding to `charsetdetect`_.
+:exclamation: :exclamation: **Work In Progress Branch** :exclamation: :exclamation:
+
+cChardet is high speed universal character encoding detector. - binding to `uchardet`_.
 
 .. image:: https://badge.fury.io/py/cchardet.svg
    :target: https://badge.fury.io/py/cchardet
    :alt: PyPI version
-.. image:: https://travis-ci.org/PyYoshi/cChardet.svg?branch=master
+.. image:: https://travis-ci.org/PyYoshi/cChardet.svg?branch=v2
    :target: https://travis-ci.org/PyYoshi/cChardet
    :alt: Travis Ci build status
-.. image:: https://ci.appveyor.com/api/projects/status/lwkc4rgf3gncb1ne/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/PyYoshi/cchardet/branch/master
+.. image:: https://ci.appveyor.com/api/projects/status/lwkc4rgf3gncb1ne/branch/v2?svg=true
+   :target: https://ci.appveyor.com/project/PyYoshi/cchardet/branch/v2
    :alt: AppVeyor build status
 
-Support codecs
---------------
+Supported Languages/Encodings
+-----------------------------
 
-- Big5
-- EUC-JP
-- EUC-KR
-- GB18030
-- HZ-GB-2312
-- IBM855
-- IBM866
-- ISO-2022-CN
-- ISO-2022-JP
-- ISO-2022-KR
-- ISO-8859-2
-- ISO-8859-5
-- ISO-8859-7
-- ISO-8859-8
-- KOI8-R
-- Shift_JIS
-- TIS-620
-- UTF-8
-- UTF-16BE
-- UTF-16LE
-- UTF-32BE
-- UTF-32LE
-- WINDOWS-1250
-- WINDOWS-1251
-- WINDOWS-1252
-- WINDOWS-1253
-- WINDOWS-1255
-- EUC-TW
-- X-ISO-10646-UCS-4-2143
-- X-ISO-10646-UCS-4-3412
-- x-mac-cyrillic
+-  International (Unicode)
 
-Requirements
-------------
+   -  UTF-8
+   -  UTF-16BE / UTF-16LE
+   -  UTF-32BE / UTF-32LE / X-ISO-10646-UCS-4-34121 /
+      X-ISO-10646-UCS-4-21431
 
-- `Cython`_
+-  Arabic
+
+   -  ISO-8859-6
+   -  WINDOWS-1256
+
+-  Bulgarian
+
+   -  ISO-8859-5
+   -  WINDOWS-1251
+
+-  Chinese
+
+   -  ISO-2022-CN
+   -  BIG5
+   -  EUC-TW
+   -  GB18030
+   -  HZ-GB-2312
+
+-  Croatian:
+
+   -  ISO-8859-2
+   -  ISO-8859-13
+   -  ISO-8859-16
+   -  Windows-1250
+   -  IBM852
+   -  MAC-CENTRALEUROPE
+
+-  Czech
+
+   -  Windows-1250
+   -  ISO-8859-2
+   -  IBM852
+   -  MAC-CENTRALEUROPE
+
+-  Danish
+
+   -  ISO-8859-1
+   -  ISO-8859-15
+   -  WINDOWS-1252
+
+-  English
+
+   -  ASCII
+
+-  Esperanto
+
+   -  ISO-8859-3
+
+-  Estonian
+
+   -  ISO-8859-4
+   -  ISO-8859-13
+   -  ISO-8859-13
+   -  Windows-1252
+   -  Windows-1257
+
+-  Finnish
+
+   -  ISO-8859-1
+   -  ISO-8859-4
+   -  ISO-8859-9
+   -  ISO-8859-13
+   -  ISO-8859-15
+   -  WINDOWS-1252
+
+-  French
+
+   -  ISO-8859-1
+   -  ISO-8859-15
+   -  WINDOWS-1252
+
+-  German
+
+   -  ISO-8859-1
+   -  WINDOWS-1252
+
+-  Greek
+
+   -  ISO-8859-7
+   -  WINDOWS-1253
+
+-  Hebrew
+
+   -  ISO-8859-8
+   -  WINDOWS-1255
+
+-  Hungarian:
+
+   -  ISO-8859-2
+   -  WINDOWS-1250
+
+-  Irish Gaelic
+
+   -  ISO-8859-1
+   -  ISO-8859-9
+   -  ISO-8859-15
+   -  WINDOWS-1252
+
+-  Italian
+
+   -  ISO-8859-1
+   -  ISO-8859-3
+   -  ISO-8859-9
+   -  ISO-8859-15
+   -  WINDOWS-1252
+
+-  Japanese
+
+   -  ISO-2022-JP
+   -  SHIFT\_JIS
+   -  EUC-JP
+
+-  Korean
+
+   -  ISO-2022-KR
+   -  EUC-KR / UHC
+
+-  Lithuanian
+
+   -  ISO-8859-4
+   -  ISO-8859-10
+   -  ISO-8859-13
+
+-  Latvian
+
+   -  ISO-8859-4
+   -  ISO-8859-10
+   -  ISO-8859-13
+
+-  Maltese
+
+   -  ISO-8859-3
+
+-  Polish:
+
+   -  ISO-8859-2
+   -  ISO-8859-13
+   -  ISO-8859-16
+   -  Windows-1250
+   -  IBM852
+   -  MAC-CENTRALEUROPE
+
+-  Portuguese
+
+   -  ISO-8859-1
+   -  ISO-8859-9
+   -  ISO-8859-15
+   -  WINDOWS-1252
+
+-  Romanian:
+
+   -  ISO-8859-2
+   -  ISO-8859-16
+   -  Windows-1250
+   -  IBM852
+
+-  Russian
+
+   -  ISO-8859-5
+   -  KOI8-R
+   -  WINDOWS-1251
+   -  MAC-CYRILLIC
+   -  IBM866
+   -  IBM855
+
+-  Slovak
+
+   -  Windows-1250
+   -  ISO-8859-2
+   -  IBM852
+   -  MAC-CENTRALEUROPE
+
+-  Slovene
+
+   -  ISO-8859-2
+   -  ISO-8859-16
+   -  Windows-1250
+   -  IBM852
+   -  M
 
 Example
 -------
@@ -65,69 +217,16 @@ Example
         result = chardet.detect(msg)
         print(result)
 
-
-Benchmark
----------
-
-.. code-block:: bash
-
-    $ cd src/
-    $ pip install chardet
-    $ python tests/bench.py
-
-
-Results
-~~~~~~~
-
-CPU: Intel(R) Core(TM) i3-4170 CPU @ 3.70GHz
-
-RAM: DDR3 1600Mhz 16GB
-
-Platform: Ubuntu 16.04 amd64
-
-Python 2.7.12
-^^^^^^^^^^^^^
-
-+----------+------------------+
-|          | Request (call/s) |
-+==========+==================+
-| chardet  | 0.26             |
-+----------+------------------+
-| cchardet | 1408.73          |
-+----------+------------------+
-
-Python 3.5.2
-^^^^^^^^^^^^
-
-+----------+------------------+
-|          | Request (call/s) |
-+==========+==================+
-| chardet  | 0.28             |
-+----------+------------------+
-| cchardet | 1380.40          |
-+----------+------------------+
-
-License
+LICENSE
 -------
 
--  The MIT License: `src/cchardet`_
--  Other Libraries License: Please, look at the `src/ext`_ directory.
-
-Thanks
-------
-
--  `uchardet-enhanced`_
--  `Cython`_
+See **COPYING** file.
 
 Contact
 -------
 
-`Issues`_
+- `Issues`_
 
 
-.. _charsetdetect: https://bitbucket.org/medoc/uchardet-enhanced/overview
-.. _Cython: http://www.cython.org/
-.. _src/cchardet: https://github.com/PyYoshi/cChardet/tree/master/src/cchardet
-.. _src/ext: https://github.com/PyYoshi/cChardet/tree/master/src/ext
-.. _uchardet-enhanced: https://bitbucket.org/medoc/uchardet-enhanced/overview
+.. _uchardet: https://github.com/PyYoshi/uchardet
 .. _Issues: https://github.com/PyYoshi/cChardet/issues?page=1&state=open
