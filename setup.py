@@ -117,9 +117,11 @@ setup(
     description='Universal encoding detector. This library is faster than chardet.',
     long_description='\n\n'.join((read('README.rst'), read('CHANGES.rst'))),
     version=version,
-    license='MIT License',
+    license='Mozilla Public License',
     classifiers=[
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Mozilla Public License 1.1 (MPL 1.1)',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
         'Programming Language :: Cython',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries',
