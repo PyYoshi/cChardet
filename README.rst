@@ -212,10 +212,52 @@ Example
 
     # -*- coding: utf-8 -*-
     import cchardet as chardet
-    with open(r"src/tests/testdata/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
+    with open(r"src/tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
         msg = f.read()
         result = chardet.detect(msg)
         print(result)
+
+Benchmark
+---------
+
+.. code-block:: bash
+
+    $ cd src/
+    $ pip install chardet
+    $ python tests/bench.py
+
+
+Results
+~~~~~~~
+
+CPU: Intel(R) Core(TM) i5-4690 CPU @ 3.50GHz
+
+RAM: DDR3 1600Mhz 16GB
+
+Platform: Ubuntu 16.04 amd64
+
+Python 2.7.12
+^^^^^^^^^^^^^
+
++----------+------------------+
+|          | Request (call/s) |
++==========+==================+
+| chardet  | 0.26             |
++----------+------------------+
+| cchardet | 1341.81          |
++----------+------------------+
+
+Python 3.6.0
+^^^^^^^^^^^^
+
++----------+------------------+
+|          | Request (call/s) |
++==========+==================+
+| chardet  | 0.26             |
++----------+------------------+
+| cchardet | 1472.43          |
++----------+------------------+
+
 
 LICENSE
 -------
