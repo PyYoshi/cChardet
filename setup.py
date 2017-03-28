@@ -8,7 +8,11 @@ import glob
 import codecs
 import re
 from distutils.command.build_ext import build_ext
-from distutils.core import setup, Extension
+
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
 
 have_cython = True
 try:
