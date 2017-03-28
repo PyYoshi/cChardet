@@ -3,11 +3,11 @@
 
 import os
 import sys
-import platform
 import glob
 import codecs
 import re
 from distutils.command.build_ext import build_ext
+from distutils import sysconfig
 
 try:
     from setuptools import setup, Extension
@@ -83,6 +83,12 @@ uchardet_sources = [
     os.path.join(uchardet_dir, 'uchardet.cpp')
 ]
 sources += uchardet_sources
+
+# Remove the "-Wstrict-prototypes" compiler option, which isn't valid for C++.
+cfg_vars = sysconfig.get_config_vars()
+for key, value in cfg_vars.items():
+    if type(value) == str:
+        cfg_vars[key] = value.replace("-Wstrict-prototypes", "")
 
 cchardet_module = Extension(
     'cchardet._cchardet',
