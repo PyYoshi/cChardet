@@ -31,3 +31,66 @@ def detect_with_confidence(const_char_ptr msg):
         return detected_charset, detected_confidence
 
     return None, None
+
+cdef class UniversalDetector:
+    cdef uchardet_t _ud
+    cdef int _done
+    cdef int _closed
+    cdef bytes _detected_charset
+    cdef float _detected_confidence
+
+    def __init__(self):
+        self._ud = uchardet_new()
+        self._done = 0
+        self._closed = 0
+        self._detected_charset = b""
+        self._detected_confidence = 0.0
+
+    def reset(self):
+        if not self._closed:
+            self._done = 0
+            self._closed = 0
+            self._detected_charset = b""
+            self._detected_confidence = 0.0
+            uchardet_reset(self._ud)
+
+    def feed(self, const_char_ptr msg):
+        cdef int length
+        cdef int result
+
+        if self._closed:
+            return
+
+        length = len(msg)
+        if length > 0:
+            result = uchardet_handle_data(self._ud, msg, length)
+
+            if result != 0:
+                self._closed = 1
+                uchardet_delete(self._ud)
+                raise Exception("Handle data error")
+            else:
+                self._done = 1
+                uchardet_data_end(self._ud)
+                self._detected_charset = uchardet_get_charset(self._ud)
+                self._detected_confidence = uchardet_get_confidence(self._ud)
+
+    def close(self):
+        if not self._closed:
+            uchardet_data_end(self._ud)
+            self._detected_charset = uchardet_get_charset(self._ud)
+            self._detected_confidence = uchardet_get_confidence(self._ud)
+
+            uchardet_delete(self._ud)
+            self._closed = 1
+
+    @property
+    def done(self):
+        return bool(self._done)
+
+    @property
+    def result(self):
+        if len(self._detected_charset):
+            return self._detected_charset, self._detected_confidence
+        else:
+            return None, None
