@@ -1,1 +1,1 @@
-- Re-impletemt Detector class (#16)
+- Re-impletemt Detector class [#16](https://github.com/PyYoshi/cChardet/pull/16)
