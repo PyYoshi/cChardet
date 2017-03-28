@@ -8,11 +8,7 @@ import glob
 import codecs
 import re
 from distutils.command.build_ext import build_ext
-
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+from distutils.core import setup, Extension
 
 have_cython = True
 try:
@@ -84,20 +80,11 @@ uchardet_sources = [
 ]
 sources += uchardet_sources
 
-macros = []
-extra_compile_args = []
-extra_link_args = []
-
-# Debug
-# extra_compile_args.append('-g')
-# extra_link_args.append('-g')
-
 cchardet_module = Extension(
     'cchardet._cchardet',
     sources=sources,
     include_dirs=[uchardet_dir],
     language='c++',
-    define_macros=macros,
 )
 
 def read(f):
@@ -114,7 +101,7 @@ setup(
     author='PyYoshi',
     author_email='myoshi321go@gmail.com',
     url=r'https://github.com/PyYoshi/cChardet',
-    description='Universal encoding detector. This library is faster than chardet.',
+    description='cChardet is high speed universal character encoding detector.',
     long_description='\n\n'.join((read('README.rst'), read('CHANGES.rst'))),
     version=version,
     license='Mozilla Public License',
