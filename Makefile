@@ -11,8 +11,7 @@ pip:
 	pip install -U pip cython tox nose chardet
 
 twine:
-	twine upload dist/*.whl
-	twine upload dist/*.tar.gz
+	twine upload dist/*.whl dist/*.tar.gz
 
 install: clean
 	python setup.py install
