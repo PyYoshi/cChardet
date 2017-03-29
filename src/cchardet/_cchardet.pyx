@@ -17,7 +17,7 @@ def detect_with_confidence(const_char_ptr msg):
     cdef uchardet_t ud = uchardet_new()
 
     cdef int result = uchardet_handle_data(ud, msg, length)
-    if result != 0:
+    if result == -1:
         uchardet_delete(ud)
         raise Exception("Handle data error")
 
@@ -65,15 +65,15 @@ cdef class UniversalDetector:
         if length > 0:
             result = uchardet_handle_data(self._ud, msg, length)
 
-            if result != 0:
+            if result == -1:
                 self._closed = 1
                 uchardet_delete(self._ud)
                 raise Exception("Handle data error")
-            else:
+            elif result == 0:
                 self._done = 1
-                uchardet_data_end(self._ud)
-                self._detected_charset = uchardet_get_charset(self._ud)
-                self._detected_confidence = uchardet_get_confidence(self._ud)
+
+            self._detected_charset = uchardet_get_charset(self._ud)
+            self._detected_confidence = uchardet_get_confidence(self._ud)
 
     def close(self):
         if not self._closed:

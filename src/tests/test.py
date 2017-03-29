@@ -47,33 +47,23 @@ class TestCChardet():
                     )
                 )
 
-    # def test_detector(self):
-    #     testfiles = glob.glob('tests/testdata/*/*.txt')
-    #     for testfile in testfiles:
-    #         if testfile.replace("\\", "/") in SKIP_LIST:
-    #             continue
-
-    #         base = os.path.basename(testfile)
-    #         expected_charset = os.path.splitext(base)[0]
-
-    #         detector = cchardet.UniversalDetector()
-    #         with open(testfile, 'rb') as f:
-    #             msg = f.read()
-    #             detector.feed(msg)
-    #             # line = f.readline()
-    #             # while line:
-    #             #     detector.feed(line)
-    #             #     if detector.done:
-    #             #         break
-    #             #     line = f.readline()
-    #         detector.close()
-    #         detected_encoding = detector.result
-    #         eq_(
-    #             expected_charset.lower(),
-    #             detected_encoding['encoding'].lower(),
-    #             'Expected %s, but got %s for "%s"' % (
-    #                 expected_charset.lower(),
-    #                 detected_encoding['encoding'].lower(),
-    #                 testfile
-    #             )
-    #         )
+    def test_detector(self):
+        detector = cchardet.UniversalDetector()
+        with open("tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", 'rb') as f:
+            print("===============================")
+            line = f.readline()
+            while line:
+                detector.feed(line)
+                if detector.done:
+                    break
+                line = f.readline()
+        detector.close()
+        detected_encoding = detector.result
+        eq_(
+            "shift_jis",
+            detected_encoding['encoding'].lower(),
+            'Expected %s, but got %s' % (
+                "shift_jis",
+                detected_encoding['encoding'].lower()
+            )
+        )
