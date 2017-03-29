@@ -1,3 +1,2 @@
-- Re-impletemt Detector class [#16](https://github.com/PyYoshi/cChardet/pull/16)
 - Implement cli tool (like chardet cli)
 - Improve docs

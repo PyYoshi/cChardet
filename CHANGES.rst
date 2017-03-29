@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+2.0a3 (2017-03-29)
+------------------
+
+- Implement UniversalDetector (like chardet)
+
 2.0a2 (2017-03-28)
 ------------------
 
