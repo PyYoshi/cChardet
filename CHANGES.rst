@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+2.0a4 (2017-04-05)
+------------------
+
+- Update uchardet repo (Fix buffer overflow)
+
 2.0a3 (2017-03-29)
 ------------------
 
