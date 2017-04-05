@@ -14,6 +14,13 @@ SKIP_LIST = [
     'tests/testdata/he/iso-8859-8.txt'
 ]
 
+# Python can't decode encoding
+SKIP_LIST_02 = [
+    'tests/testdata/vi/viscii.txt',
+    'tests/testdata/zh/euc-tw.txt'
+]
+SKIP_LIST_02.extend(SKIP_LIST)
+
 class TestCChardet():
     def test_ascii(self):
         detected_encoding = cchardet.detect(b'abcdefghijklmnopqrstuvwxyz')
@@ -66,3 +73,29 @@ class TestCChardet():
                 detected_encoding['encoding'].lower()
             )
         )
+    
+    def test_github_issue_20(self):
+        msg = b'\x8f'
+
+        cchardet.detect(msg)
+
+        detector = cchardet.UniversalDetector()
+        detector.feed(msg)
+        detector.close()
+
+    def test_decode(self):
+        testfiles = glob.glob('tests/testdata/*/*.txt')
+        for testfile in testfiles:
+            if testfile.replace("\\", "/") in SKIP_LIST_02:
+                continue
+
+            base = os.path.basename(testfile)
+            expected_charset = os.path.splitext(base)[0]
+            with open(testfile, 'rb') as f:
+                msg = f.read()
+                detected_encoding = cchardet.detect(msg)
+                try:
+                    msg.decode(detected_encoding["encoding"])
+                except LookupError as e:
+                    print("LookupError: { file=%s, encoding=%s }" % (testfile, detected_encoding["encoding"]))
+                    raise e
