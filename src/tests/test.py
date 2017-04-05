@@ -75,6 +75,9 @@ class TestCChardet():
         )
     
     def test_github_issue_20(self):
+        """
+        https://github.com/PyYoshi/cChardet/issues/20
+        """
         msg = b'\x8f'
 
         cchardet.detect(msg)
