@@ -50,7 +50,6 @@ class TestCChardet():
     def test_detector(self):
         detector = cchardet.UniversalDetector()
         with open("tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", 'rb') as f:
-            print("===============================")
             line = f.readline()
             while line:
                 detector.feed(line)
