@@ -1,73 +1,87 @@
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
 
-cdef extern from "charsetdetect.h":
-    ctypedef void* csd_t
-    cdef csd_t csd_open()
-    cdef int csd_consider(csd_t csd, char* data, int length)
-    cdef const_char_ptr csd_close2(csd_t csd, float *confidence)
+cdef extern from "uchardet.h":
+    ctypedef void* uchardet_t
+    cdef uchardet_t uchardet_new()
+    cdef void uchardet_delete(uchardet_t ud)
+    cdef int uchardet_handle_data(uchardet_t ud, const_char_ptr data, int length)
+    cdef void uchardet_data_end(uchardet_t ud)
+    cdef void uchardet_reset(uchardet_t ud)
+    cdef const_char_ptr uchardet_get_charset(uchardet_t ud)
+    cdef float uchardet_get_confidence(uchardet_t ud)
 
-def detect_with_confidence(char *msg):
-    cdef csd_t csd = csd_open()
-
-    # すでにカウント済みの長さへアクセス
-    # strlenでは再度カウントすることになる
-    # https://github.com/python/cpython/blob/c30098c8c6014f3340a369a31df9c74bdbacc269/Include/bytesobject.h#L82
-    # https://github.com/python/cpython/blob/c30098c8c6014f3340a369a31df9c74bdbacc269/Objects/bytesobject.c#L2490
-    # https://github.com/python/cpython/blob/c30098c8c6014f3340a369a31df9c74bdbacc269/Include/object.h#L346
-    # https://github.com/python/cpython/blob/c30098c8c6014f3340a369a31df9c74bdbacc269/Objects/bytesobject.c#L2410
+def detect_with_confidence(const_char_ptr msg):
     cdef int length = len(msg)
+    
+    cdef uchardet_t ud = uchardet_new()
 
-    cdef int result = csd_consider(csd, msg, length)
-    cdef float confidence = 0.0
-    cdef const_char_ptr detected_charset
+    cdef int result = uchardet_handle_data(ud, msg, length)
+    if result == -1:
+        uchardet_delete(ud)
+        raise Exception("Handle data error")
 
-    if result == 1: # Need more data
-        detected_charset = csd_close2(csd, &confidence)
-    elif result == 0: # Detected early
-        detected_charset = csd_close2(csd, &confidence)
-    else: # Error, signal with a negative number
-        raise Exception("Error, signal with a negative number")
+    uchardet_data_end(ud)
+
+    cdef bytes detected_charset = uchardet_get_charset(ud)
+    cdef float detected_confidence = uchardet_get_confidence(ud)
+    uchardet_delete(ud)
 
     if detected_charset:
-        return detected_charset, confidence
+        return detected_charset, detected_confidence
+
     return None, None
 
-cdef class Detector:
-    cdef csd_t csd
+cdef class UniversalDetector:
+    cdef uchardet_t _ud
     cdef int _done
     cdef int _closed
-    cdef float _confidence
-    cdef const_char_ptr _detected_charset
+    cdef bytes _detected_charset
+    cdef float _detected_confidence
 
     def __init__(self):
-        self.csd = csd_open()
+        self._ud = uchardet_new()
         self._done = 0
         self._closed = 0
-        self._confidence = 0.0
-        self._detected_charset = ''
+        self._detected_charset = b""
+        self._detected_confidence = 0.0
 
-    def feed(self, char *msg):
+    def reset(self):
+        if not self._closed:
+            self._done = 0
+            self._closed = 0
+            self._detected_charset = b""
+            self._detected_confidence = 0.0
+            uchardet_reset(self._ud)
+
+    def feed(self, const_char_ptr msg):
         cdef int length
         cdef int result
 
-        if not self.done and not self._closed:
-            length = len(msg)
-            result = csd_consider(self.csd, msg, length)
+        if self._closed:
+            return
 
-            if result == -1: # Error, signal with a negative number
-                raise Exception("Error, signal with a negative number")
+        length = len(msg)
+        if length > 0:
+            result = uchardet_handle_data(self._ud, msg, length)
 
-            elif result == 1: # Need more data
-                pass
-
-            elif result == 0: # Detected early
+            if result == -1:
+                self._closed = 1
+                uchardet_delete(self._ud)
+                raise Exception("Handle data error")
+            elif result == 0:
                 self._done = 1
-                self.close()
+
+            self._detected_charset = uchardet_get_charset(self._ud)
+            self._detected_confidence = uchardet_get_confidence(self._ud)
 
     def close(self):
         if not self._closed:
-            self._detected_charset = csd_close2(self.csd, &self._confidence)
+            uchardet_data_end(self._ud)
+            self._detected_charset = uchardet_get_charset(self._ud)
+            self._detected_confidence = uchardet_get_confidence(self._ud)
+
+            uchardet_delete(self._ud)
             self._closed = 1
 
     @property
@@ -77,5 +91,6 @@ cdef class Detector:
     @property
     def result(self):
         if len(self._detected_charset):
-            return self._detected_charset, self._confidence
-        return None, None
+            return self._detected_charset, self._detected_confidence
+        else:
+            return None, None

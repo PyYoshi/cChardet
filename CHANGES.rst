@@ -1,6 +1,35 @@
 CHANGES
 =======
 
+2.0.0 (2017-04-06)
+------------------
+
+- Improve tests
+
+2.0a4 (2017-04-05)
+------------------
+
+- Update uchardet repo (Fix buffer overflow)
+
+2.0a3 (2017-03-29)
+------------------
+
+- Implement UniversalDetector (like chardet)
+
+2.0a2 (2017-03-28)
+------------------
+
+- Update uchardet repo (Fix memory leak)
+
+2.0a1 (2017-03-28)
+------------------
+
+- Replace `uchardet-enhanced`_ to `uchardet`_
+- Remove Detector class
+
+.. _uchardet-enhanced: https://bitbucket.org/medoc/uchardet-enhanced/overview
+.. _uchardet: https://github.com/PyYoshi/uchardet
+
 1.1.3 (2017-02-26)
 ------------------
 

@@ -1,0 +1,3 @@
+[submodule "src/ext/uchardet"]
+	path = src/ext/uchardet
+	url = https://github.com/PyYoshi/uchardet.git

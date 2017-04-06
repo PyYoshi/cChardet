@@ -17,12 +17,19 @@ def detect(msg):
         encoding = encoding.decode()
     return {"encoding": encoding, "confidence": confidence}
 
-
-class Detector(object):
-    """Wrap csd_consider with 'feed' feature."""
-
+class UniversalDetector(object):
     def __init__(self):
-        self._detector = _cchardet.Detector()
+        self._detector = _cchardet.UniversalDetector()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.close()
+        return False
+
+    def reset(self):
+        self._detector.reset()
 
     def feed(self, data):
         self._detector.feed(data)
