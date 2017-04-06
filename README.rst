@@ -1,18 +1,16 @@
 cChardet
 ========
 
-**Work In Progress Branch**
-
 cChardet is high speed universal character encoding detector. - binding to `uchardet`_.
 
 .. image:: https://badge.fury.io/py/cchardet.svg
    :target: https://badge.fury.io/py/cchardet
    :alt: PyPI version
-.. image:: https://travis-ci.org/PyYoshi/cChardet.svg?branch=v2
+.. image:: https://travis-ci.org/PyYoshi/cChardet.svg?branch=master
    :target: https://travis-ci.org/PyYoshi/cChardet
    :alt: Travis Ci build status
-.. image:: https://ci.appveyor.com/api/projects/status/lwkc4rgf3gncb1ne/branch/v2?svg=true
-   :target: https://ci.appveyor.com/project/PyYoshi/cchardet/branch/v2
+.. image:: https://ci.appveyor.com/api/projects/status/lwkc4rgf3gncb1ne/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/PyYoshi/cchardet/branch/master
    :alt: AppVeyor build status
 
 Supported Languages/Encodings
