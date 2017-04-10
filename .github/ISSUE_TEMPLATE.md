@@ -1,19 +1,20 @@
+### OS/Arch
+
+```bash
+$ python -c 'import platform;print(platform.uname())'
+```
+
 ### Python version
 
 ```bash
 $ python --version
 ```
 
-``<INPUT PYTHON VERSION>``
-
 ### cChardet version
 
-```python
-import cchardet
-print(cchardet.__version__)
+```bash
+$ python -c 'import cchardet;print(cchardet.__version__)'
 ```
-
-``<INPUT CCHARDET VERSION>``
 
 ### What is the problem?
 
