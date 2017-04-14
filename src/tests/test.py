@@ -102,3 +102,15 @@ class TestCChardet():
                 except LookupError as e:
                     print("LookupError: { file=%s, encoding=%s }" % (testfile, detected_encoding["encoding"]))
                     raise e
+
+    def test_utf8_with_bom(self):
+        sample = b'\xEF\xBB\xBF'
+        detected_encoding = cchardet.detect(sample)
+        eq_(
+            "utf-8-sig",
+            detected_encoding['encoding'].lower(),
+            'Expected %s, but got %s' % (
+                "utf-8-sig",
+                detected_encoding['encoding'].lower()
+            )
+        )
