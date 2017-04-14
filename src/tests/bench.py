@@ -16,7 +16,7 @@ def main():
             start_chardet = time.time()
             chardet.detect(msg)
             result_chardet += (time.time() - start_chardet)
-        print('chardet:', 1 / (result_chardet / do_times), 'call(s)/s')
+        print('chardet v%s:' % (chardet.__version__), 1 / (result_chardet / do_times), 'call(s)/s')
 
         # Test cchardet
         result_cchardet = 0
@@ -24,7 +24,7 @@ def main():
             start_cchardet = time.time()
             cchardet.detect(msg)
             result_cchardet += (time.time() - start_cchardet)
-        print('cchardet:', 1 / (result_cchardet / do_times), 'call(s)/s')
+        print('cchardet v%s:' % (cchardet.__version__), 1 / (result_cchardet / do_times), 'call(s)/s')
 
 if __name__ == '__main__':
     main()
