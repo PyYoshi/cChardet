@@ -114,3 +114,15 @@ class TestCChardet():
                 detected_encoding['encoding'].lower()
             )
         )
+
+    def test_null_bytes(self):
+        sample = b'ABC\x00\x80\x81'
+        detected_encoding = cchardet.detect(sample)
+
+        eq_(
+            None,
+            detected_encoding['encoding'],
+            'Expected None, but got %s' % (
+                detected_encoding['encoding']
+            )
+        )
