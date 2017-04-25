@@ -1,6 +1,15 @@
 CHANGES
 =======
 
+2.0.1 (2017-04-25)
+------------------
+
+- fix an issue where UTF-8 with a BOM would not be detected as UTF-8-SIG (fix `#28`_)
+- pass NULL Byte to feed() / detect() (fix `#27`_)
+
+.. _#28: https://github.com/PyYoshi/cChardet/issues/28
+.. _#27: https://github.com/PyYoshi/cChardet/issues/27
+
 2.0.0 (2017-04-06)
 ------------------
 
