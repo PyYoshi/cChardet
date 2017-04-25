@@ -11,7 +11,7 @@ cdef extern from "uchardet.h":
     cdef const_char_ptr uchardet_get_charset(uchardet_t ud)
     cdef float uchardet_get_confidence(uchardet_t ud)
 
-def detect_with_confidence(const_char_ptr msg):
+def detect_with_confidence(bytes msg):
     cdef int length = len(msg)
     
     cdef uchardet_t ud = uchardet_new()
@@ -54,7 +54,7 @@ cdef class UniversalDetector:
             self._detected_confidence = 0.0
             uchardet_reset(self._ud)
 
-    def feed(self, const_char_ptr msg):
+    def feed(self, bytes msg):
         cdef int length
         cdef int result
 
