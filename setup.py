@@ -137,6 +137,7 @@ setup(
     cmdclass={'build_ext': build_ext},
     package_dir={'': 'src'},
     packages=['cchardet', ],
+    scripts=['bin/cchardetect'],
     ext_modules=[
         cchardet_module
     ],
