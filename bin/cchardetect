@@ -13,7 +13,7 @@ def read_chunks(f, chunk_size):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('files', nargs='+', help="Files to detect encoding of", type=argparse.FileType('r'))
+    parser.add_argument('files', nargs='+', help="Files to detect encoding of", type=argparse.FileType('rb'))
     parser.add_argument('--chunk-size', type=int, default=(256 * 1024))
     args = parser.parse_args()
 
