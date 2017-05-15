@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 from __future__ import print_function, unicode_literals
 import argparse
+import sys
 import cchardet
 
+
+PY2 = sys.version_info.major == 2
 
 def read_chunks(f, chunk_size):
     chunk = f.read(chunk_size)
@@ -13,7 +16,7 @@ def read_chunks(f, chunk_size):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('files', nargs='+', help="Files to detect encoding of", type=argparse.FileType('rb'))
+    parser.add_argument('files', nargs='*', help="Files to detect encoding of", type=argparse.FileType('rb'), default=[sys.stdin if PY2 else sys.stdin.buffer])
     parser.add_argument('--chunk-size', type=int, default=(256 * 1024))
     args = parser.parse_args()
 
