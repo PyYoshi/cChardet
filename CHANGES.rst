@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+2.1.0 (2017-05-15)
+------------------
+
+- add cchardetect CLI script (`#30`_) `@craigds`_
+
+.. _#30: https://github.com/PyYoshi/cChardet/pull/30
+.. _@craigds: https://github.com/craigds
+
 2.0.1 (2017-04-25)
 ------------------
 
