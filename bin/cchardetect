@@ -16,9 +16,17 @@ def read_chunks(f, chunk_size):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('files', nargs='*', help="Files to detect encoding of", type=argparse.FileType('rb'), default=[sys.stdin if PY2 else sys.stdin.buffer])
-    parser.add_argument('--chunk-size', type=int, default=(256 * 1024))
-    parser.add_argument('--version', action='version', version='%(prog)s {0}'.format(cchardet.__version__))
+    parser.add_argument('files',
+                        nargs='*',
+                        help="Files to detect encoding of",
+                        type=argparse.FileType('rb'),
+                        default=[sys.stdin if PY2 else sys.stdin.buffer])
+    parser.add_argument('--chunk-size',
+                        type=int,
+                        default=(256 * 1024))
+    parser.add_argument('--version',
+                        action='version',
+                        version='%(prog)s {0}'.format(cchardet.__version__))
     args = parser.parse_args()
 
     for f in args.files:
