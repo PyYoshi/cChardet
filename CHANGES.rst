@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+2.1.x (20xx-0x-xx)
+------------------
+
+- fix that different results with different chuck sizes
+- fix that assignments to nsSMState in nsCodingStateMachine result in unspecified behavior
+
 2.1.0 (2017-05-15)
 ------------------
 
