@@ -1,11 +1,12 @@
 CHANGES
 =======
 
-2.1.x (20xx-0x-xx)
+2.1.1 (2017-07-01)
 ------------------
 
 - fix that different results with different chuck sizes
 - fix that assignments to nsSMState in nsCodingStateMachine result in unspecified behavior
+- include COPYING in package
 
 2.1.0 (2017-05-15)
 ------------------
