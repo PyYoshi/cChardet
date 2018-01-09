@@ -19,7 +19,17 @@ install: clean
 build-manylinux1-wheel:
 	docker pull quay.io/pypa/manylinux1_i686
 	docker pull quay.io/pypa/manylinux1_x86_64
-	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux1_i686   bash dockerfiles/buildwheel.sh
-	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux1_x86_64 bash dockerfiles/buildwheel.sh
+	docker run --rm -ti -v `pwd`:/project \
+		-e CFLAGS="-mtune=generic -pipe -fPIC -flto" \
+		-e LDFLAGS="$(LDFLAGS) -flto" \
+		-w /project \
+		quay.io/pypa/manylinux1_i686 \
+		bash dockerfiles/buildwheel.sh
+	docker run --rm -ti -v `pwd`:/project \
+		-e CFLAGS="-mtune=generic -pipe -fPIC -flto" \
+		-e LDFLAGS="$(LDFLAGS) -flto" \
+		-w /project \
+		quay.io/pypa/manylinux1_x86_64 \
+		bash dockerfiles/buildwheel.sh
 
 build: clean pip test sdist build-manylinux1-wheel
