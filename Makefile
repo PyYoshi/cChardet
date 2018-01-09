@@ -8,7 +8,7 @@ sdist:
 	python setup.py sdist --formats=gztar
 
 pip:
-	pip install -U pip cython tox nose chardet
+	pip install -r requirements-dev.txt
 
 twine:
 	twine upload dist/cchardet-*.whl dist/cchardet-*.tar.gz
