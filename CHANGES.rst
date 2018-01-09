@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+2.1.x
+-----
+
+- enable `LTO`_ for wheel builds
+
+.. _LTO: https://gcc.gnu.org/wiki/LinkTimeOptimization
+
 2.1.1 (2017-07-01)
 ------------------
 
