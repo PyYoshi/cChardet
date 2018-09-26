@@ -1,10 +1,11 @@
 CHANGES
 =======
 
-2.1.x
+2.1.2
 -----
 
 - enable `LTO`_ for wheel builds
+- update Cython
 
 .. _LTO: https://gcc.gnu.org/wiki/LinkTimeOptimization
 
