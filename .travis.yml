@@ -32,7 +32,7 @@ before_install:
   - git submodule update --init --recursive
 
 install:
-    - pip install -U tox nose cython
+    - pip install -r requirements-dev.txt
 
 script:
     - tox -e $TOXENV
