@@ -4,7 +4,7 @@ CHANGES
 2.1.x
 -----
 
-- xxxx
+- disable LTO because become poor performance
 
 2.1.3 (2018-09-26)
 ------------------

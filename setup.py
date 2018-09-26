@@ -26,7 +26,8 @@ uchardet_dir = 'src/ext/uchardet/src'
 if have_cython:
     pyx_sources = glob.glob(cchardet_dir + '*.pyx')
     sys.stderr.write('cythonize: %r\n' % (pyx_sources,))
-    cython_compiler.compile(pyx_sources, options=cython_compiler.CompilationOptions(cplus=True))
+    cython_compiler.compile(
+        pyx_sources, options=cython_compiler.CompilationOptions(cplus=True))
 
 cchardet_sources = glob.glob(cchardet_dir + '*.cpp')
 sources = cchardet_sources
@@ -89,6 +90,8 @@ cfg_vars = sysconfig.get_config_vars()
 for key, value in cfg_vars.items():
     if type(value) == str:
         cfg_vars[key] = value.replace("-Wstrict-prototypes", "")
+        # O3を指定したところで速度が向上するかは疑問である
+        # cfg_vars[key] = value.replace("-O2", "-O3")
 
 cchardet_module = Extension(
     'cchardet._cchardet',
@@ -97,12 +100,15 @@ cchardet_module = Extension(
     language='c++',
 )
 
+
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
 
+
 with codecs.open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'src', 'cchardet', 'version.py'), 'r', 'latin1') as fp:
     try:
-        version = re.findall(r"^__version__ = '([^']+)'\r?$", fp.read(), re.M)[0]
+        version = re.findall(
+            r"^__version__ = '([^']+)'\r?$", fp.read(), re.M)[0]
     except IndexError:
         raise RuntimeError('Unable to determine version.')
 
