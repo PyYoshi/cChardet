@@ -1,13 +1,18 @@
 CHANGES
 =======
 
-2.1.3
+2.1.x
 -----
+
+- xxxx
+
+2.1.3 (2018-09-26)
+------------------
 
 - support Python 3.7
 
-2.1.2
------
+2.1.2 (2018-09-26)
+------------------
 
 - enable `LTO`_ for wheel builds
 - update Cython
