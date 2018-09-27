@@ -17,6 +17,7 @@ def detect(msg):
         encoding = encoding.decode()
     return {"encoding": encoding, "confidence": confidence}
 
+
 class UniversalDetector(object):
     def __init__(self):
         self._detector = _cchardet.UniversalDetector()

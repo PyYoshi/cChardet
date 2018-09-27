@@ -14,12 +14,14 @@ SKIP_LIST = [
     'tests/testdata/he/iso-8859-8.txt'
 ]
 
+
 # Python can't decode encoding
 SKIP_LIST_02 = [
     'tests/testdata/vi/viscii.txt',
     'tests/testdata/zh/euc-tw.txt'
 ]
 SKIP_LIST_02.extend(SKIP_LIST)
+
 
 class TestCChardet():
     def test_ascii(self):
@@ -73,7 +75,7 @@ class TestCChardet():
                 detected_encoding['encoding'].lower()
             )
         )
-    
+
     def test_github_issue_20(self):
         """
         https://github.com/PyYoshi/cChardet/issues/20
@@ -100,7 +102,8 @@ class TestCChardet():
                 try:
                     msg.decode(detected_encoding["encoding"])
                 except LookupError as e:
-                    print("LookupError: { file=%s, encoding=%s }" % (testfile, detected_encoding["encoding"]))
+                    print("LookupError: { file=%s, encoding=%s }" % (
+                        testfile, detected_encoding["encoding"]))
                     raise e
 
     def test_utf8_with_bom(self):
@@ -126,3 +129,17 @@ class TestCChardet():
                 detected_encoding['encoding']
             )
         )
+
+    # def test_iso8859_2_csv(self):
+    #     testfile = 'tests/samples/iso8859-2.csv'
+    #     with open(testfile, 'rb') as f:
+    #         msg = f.read()
+    #         detected_encoding = cchardet.detect(msg)
+    #         eq_(
+    #             "iso8859-2",
+    #             detected_encoding['encoding'].lower(),
+    #             'Expected %s, but got %s' % (
+    #                 "iso8859-2",
+    #                 detected_encoding['encoding'].lower()
+    #             )
+    #         )
