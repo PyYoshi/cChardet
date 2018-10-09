@@ -1,10 +1,10 @@
 CHANGES
 =======
 
-2.1.x
------
+2.1.4 (2018-09-27)
+------------------
 
-- xxxx
+- disable LTO because become poor performance
 
 2.1.3 (2018-09-26)
 ------------------
