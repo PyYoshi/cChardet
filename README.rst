@@ -270,3 +270,22 @@ Contact
 
 .. _uchardet: https://github.com/PyYoshi/uchardet
 .. _Issues: https://github.com/PyYoshi/cChardet/issues?page=1&state=open
+
+Platform
+--------
+
+Support
+~~~~~~~
+
+- Windows i686, x86_64
+- Linux i686, x86_64
+- macOS x86_64
+
+Do not Support
+~~~~~~~~~~~~~~
+
+- `Anaconda`_
+- `pyenv`_
+
+.. _Anaconda: https://www.anaconda.com/
+.. _pyenv: https://github.com/pyenv/pyenv
