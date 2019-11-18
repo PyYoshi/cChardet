@@ -4,6 +4,9 @@ CHANGES
 2.1.x
 -----
 
+2.1.5
+-----
+
 - update language models (uchardet)
 - add iso8859-2 test but disabled it
 - support Python 3.8
