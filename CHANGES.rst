@@ -7,6 +7,7 @@ CHANGES
 - update language models (uchardet)
 - add iso8859-2 test but disabled it
 - support Python 3.8
+- drop support for Python 3.4
 
 2.1.4 (2018-09-27)
 ------------------
