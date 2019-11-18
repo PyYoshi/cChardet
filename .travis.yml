@@ -24,12 +24,12 @@ matrix:
       env: TOXENV=py38
       dist: xenial
       sudo: true
-    - python: '3.9-dev'
-      dist: xenial
+    - python: 'nightly'
+      dist: bionic
       sudo: true
       env: TOXENV=py39
   allow_failures:
-    - python: 3.9-dev
+    - python: nightly
 
 before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
