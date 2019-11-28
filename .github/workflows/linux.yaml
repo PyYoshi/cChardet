@@ -1,0 +1,30 @@
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#on
+
+# on: [push, pull_request]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-18.04
+
+#   steps:
+#     - name: Checkout with submodules
+#       uses: actions/checkout@v1
+#       with:
+#         submodules: true
+#         fetch-depth: 1
+
+#     - name: Test - cp27
+#     - name: Test - cp35
+#     - name: Test - cp36
+#     - name: Test - cp37
+#     - name: Test - cp38
+
+#     - name: Build wheels on manylinux
+
+#     - name: Build sdist on manylinux
+
+#     - name: Upload wheels
+#       uses: actions/upload-artifact@v1
+#         with:
+#           name: manylinux-wheels
+#           path: ./dist
