@@ -26,8 +26,14 @@ matrix:
       dist: bionic
       sudo: true
       env: TOXENV=py39
+    - name: "Python 3 on macOS"
+      os: osx
+      osx_image: xcode11
+      language: shell
+      # 'python:' is ignored on Travis CI macOS
   allow_failures:
     - python: nightly
+    - os: osx
 
 before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
