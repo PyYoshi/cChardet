@@ -68,9 +68,25 @@ jobs:
       run: |
         pip install -r requirements-dev.txt
 
-    - name: Tests
+    - name: Test for Python 3.8
       run: |
-        tox
+        tox -e py38
+
+    - name: Tests for Python 3.7
+      run: |
+        tox -e py37
+
+    - name: Tests for Python 3.6
+      run: |
+        tox -e py36
+
+    - name: Tests for Python 3.5
+      run: |
+        tox -e py35
+
+    - name: Tests for Python 2.7
+      run: |
+        tox -e py27
 
     - name: Build wheel
       if: contains(github.ref, 'tags/')
