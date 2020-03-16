@@ -27,7 +27,7 @@ if have_cython:
     pyx_sources = glob.glob(cchardet_dir + '*.pyx')
     sys.stderr.write('cythonize: %r\n' % (pyx_sources,))
     cython_compiler.compile(
-        pyx_sources, options=cython_compiler.CompilationOptions(cplus=True))
+        pyx_sources, options=cython_compiler.CompilationOptions(cplus=True, compiler_directives={"language_level": 3}))
 
 cchardet_sources = glob.glob(cchardet_dir + '*.cpp')
 sources = cchardet_sources
