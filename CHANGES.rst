@@ -1,11 +1,15 @@
 CHANGES
 =======
 
-2.1.x
------
+2.1.6 (2020-03-17)
+------------------
 
-2.1.5
------
+- drop support for Python 2.7
+- support Github Actions
+- update dev-dependencies
+
+2.1.5 (2019-09-27)
+------------------
 
 - update language models (uchardet)
 - add iso8859-2 test but disabled it
