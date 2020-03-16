@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-18.04, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
 
     - uses: actions/setup-python@v1
       name: Install Python
@@ -41,6 +41,12 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install vcpython27 -f -y
+
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        git submodule sync --recursive
+        git submodule update --init --force --recursive --depth=1
 
     - name: Install dependencies
       run: |
