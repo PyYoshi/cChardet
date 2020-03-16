@@ -42,6 +42,22 @@ jobs:
       run: |
         choco install vcpython27 -f -y
 
+    - name: Set up VS Envs for Windows
+      if: startsWith(matrix.os, 'windows')
+      # https://github.com/actions/virtual-environments/issues/294#issuecomment-588090582
+      run: |
+        function Invoke-VSDevEnvironment {
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $installationPath = & $vswhere -prerelease -legacy -latest -property installationPath
+          $Command = Join-Path $installationPath "Common7\Tools\vsdevcmd.bat"
+          & "${env:COMSPEC}" /s /c "`"$Command`" -no_logo && set" | Foreach-Object {
+              if ($_ -match '^([^=]+)=(.*)') {
+                  [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
+              }
+          }
+        }
+        Invoke-VSDevEnvironment
+
     - name: Checkout submodules
       shell: bash
       run: |
@@ -54,7 +70,7 @@ jobs:
 
     - name: Tests
       run: |
-        tox -e py
+        tox
 
     - name: Build wheel
       if: contains(github.ref, 'tags/')
