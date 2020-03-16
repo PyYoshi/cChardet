@@ -46,3 +46,5 @@ None
 
 .DS_Store
 /.vscode/
+
+/wheelhouse

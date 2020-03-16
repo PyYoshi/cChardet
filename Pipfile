@@ -12,3 +12,5 @@ pylint = "==2.4.4"
 wheel = "==0.34.2"
 twine = "==3.1.1"
 autopep8 = "==1.5"
+cibuildwheel = "*"
+
