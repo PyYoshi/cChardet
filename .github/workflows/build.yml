@@ -56,6 +56,7 @@ jobs:
               }
           }
         }
+        Get-Command rc.exe | Format-Table -AutoSize
         Invoke-VSDevEnvironment
 
     - name: Checkout submodules
@@ -72,19 +73,19 @@ jobs:
       run: |
         tox -e py38
 
-    - name: Tests for Python 3.7
+    - name: Test for Python 3.7
       run: |
         tox -e py37
 
-    - name: Tests for Python 3.6
+    - name: Test for Python 3.6
       run: |
         tox -e py36
 
-    - name: Tests for Python 3.5
+    - name: Test for Python 3.5
       run: |
         tox -e py35
 
-    - name: Tests for Python 2.7
+    - name: Test for Python 2.7
       run: |
         tox -e py27
 
