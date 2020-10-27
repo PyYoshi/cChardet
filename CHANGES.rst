@@ -1,8 +1,8 @@
 CHANGES
 =======
 
-2.x.x
------
+2.1.7 (2020-10-27)
+------------------
 
 - support Python 3.9
 - drop support for Python 3.5
