@@ -234,21 +234,21 @@ Benchmark
 Results
 ~~~~~~~
 
-CPU: Intel(R) Core(TM) i5-4690 CPU @ 3.50GHz
+CPU: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
 
-RAM: DDR3 1600Mhz 16GB
+RAM: DDR4-3200 64GB
 
-Platform: Ubuntu 16.04 amd64
+Platform: Ubuntu 20.04 amd64
 
-Python 3.6.1
+Python 3.9.0
 ^^^^^^^^^^^^
 
 +-----------------+------------------+
 |                 | Request (call/s) |
 +=================+==================+
-| chardet v3.0.2  |       0.35       |
+| chardet v3.0.4  |       0.46       |
 +-----------------+------------------+
-| cchardet v2.0.1 |     1467.77      |
+| cchardet v2.1.7 |     1404.05      |
 +-----------------+------------------+
 
 
