@@ -18,12 +18,16 @@ matrix:
       sudo: true
     - python: 3.8
       env: TOXENV=py38
-      dist: xenial
-      sudo: true
-    - python: 'nightly'
       dist: bionic
       sudo: true
+    - python: 3.9
       env: TOXENV=py39
+      dist: focal
+      sudo: true
+    - python: 'nightly'
+      env: TOXENV=py310
+      dist: focal
+      sudo: true
   allow_failures:
     - python: nightly
 

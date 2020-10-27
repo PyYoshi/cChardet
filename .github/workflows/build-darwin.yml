@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/setup-python@v2
+        name: Install Python 3.9
+        with:
+          python-version: "3.9"
+
       - uses: actions/setup-python@v1
         name: Install Python 3.8
         with:
@@ -45,6 +50,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements-dev.txt
+
+      - name: Test for Python 3.9
+        run: |
+          tox -e py39
 
       - name: Test for Python 3.8
         run: |
