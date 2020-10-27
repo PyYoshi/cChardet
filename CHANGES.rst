@@ -5,6 +5,7 @@ CHANGES
 -----
 
 - support Python 3.9
+- drop support for Python 3.5
 
 2.1.6 (2020-03-17)
 ------------------
