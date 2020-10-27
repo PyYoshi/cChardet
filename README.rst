@@ -7,6 +7,18 @@ cChardet is high speed universal character encoding detector. - binding to `ucha
    :target: https://badge.fury.io/py/cchardet
    :alt: PyPI version
 
+.. image:: https://github.com/PyYoshi/cChardet/workflows/Build%20for%20Linux/badge.svg?branch=master
+   :target: https://github.com/PyYoshi/cChardet/actions?query=workflow%3A%22Build+for+Linux%22
+   :alt: Build for Linux
+
+.. image:: https://github.com/PyYoshi/cChardet/workflows/Build%20for%20macOS/badge.svg?branch=master
+   :target: https://github.com/PyYoshi/cChardet/actions?query=workflow%3A%22Build+for+macOS%22
+   :alt: Build for macOS
+
+.. image:: https://github.com/PyYoshi/cChardet/workflows/Build%20for%20windows/badge.svg?branch=master
+   :target: https://github.com/PyYoshi/cChardet/actions?query=workflow%3A%22Build+for+windows%22
+   :alt: Build for Windows
+
 Supported Languages/Encodings
 -----------------------------
 
