@@ -85,7 +85,7 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_SKIP: cp27-* pp*
+          CIBW_BUILD: cp36-* cp37-* cp38-* cp39-*
 
       - uses: actions/upload-artifact@v1
         if: contains(github.ref, 'tags/')
