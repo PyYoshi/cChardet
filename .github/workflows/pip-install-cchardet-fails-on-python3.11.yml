@@ -1,0 +1,10 @@
+name: pip_install_cchardet
+on: [pull_request, push]
+jobs:
+  pip_install_cchardet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11-dev
+      - run: pip install cchardet
