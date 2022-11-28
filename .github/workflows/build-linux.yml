@@ -144,7 +144,7 @@ jobs:
 
   upload_pypi:
     name: 'Upload packages'
-    needs: ['build_wheels']
+    needs: ['build_wheels', 'build_wheels_aarch64']
     runs-on: 'ubuntu-latest'
     if: github.event_name == 'release' && github.event.action == 'created'
     steps:
