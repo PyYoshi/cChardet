@@ -97,16 +97,17 @@ jobs:
     name: 'Upload packages'
     needs: ['build_wheels']
     runs-on: 'ubuntu-latest'
-    if: github.event_name == 'release' && github.event.action == 'created'
+    if: contains(github.ref, 'tags/')
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         name: 'Download artifacts'
         with:
-          name: 'artifact'
-          path: 'dist'
+          name: wheels
+          path: ./wheelhouse
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         name: "Publish package to PyPI"
         with:
           user: '__token__'
           password: '${{ secrets.PYPI_API_TOKEN }}'
+          packages_dir: ./wheelhouse
