@@ -1,22 +1,32 @@
 cChardet
 ========
 
+NOTICE: This is a fork of the original project at https://github.com/PyYoshi/cChardet since
+the original project is no longer maintained.
+
+To install:
+
+.. code-block:: bash
+
+    pip install faust-cchardet
+
+
 cChardet is high speed universal character encoding detector. - binding to `uchardet`_.
 
-.. image:: https://badge.fury.io/py/cchardet.svg
-   :target: https://badge.fury.io/py/cchardet
+.. image:: https://badge.fury.io/py/faust-cchardet.svg
+   :target: https://badge.fury.io/py/faust-cchardet
    :alt: PyPI version
 
-.. image:: https://github.com/PyYoshi/cChardet/workflows/Build%20for%20Linux/badge.svg?branch=master
-   :target: https://github.com/PyYoshi/cChardet/actions?query=workflow%3A%22Build+for+Linux%22
+.. image:: https://github.com/faust-streaming/cChardet/workflows/Build%20for%20Linux/badge.svg?branch=master
+   :target: https://github.com/faust-streaming/cChardet/actions?query=workflow%3A%22Build+for+Linux%22
    :alt: Build for Linux
 
-.. image:: https://github.com/PyYoshi/cChardet/workflows/Build%20for%20macOS/badge.svg?branch=master
-   :target: https://github.com/PyYoshi/cChardet/actions?query=workflow%3A%22Build+for+macOS%22
+.. image:: https://github.com/faust-streaming/cChardet/workflows/Build%20for%20macOS/badge.svg?branch=master
+   :target: https://github.com/faust-streaming/cChardet/actions?query=workflow%3A%22Build+for+macOS%22
    :alt: Build for macOS
 
-.. image:: https://github.com/PyYoshi/cChardet/workflows/Build%20for%20windows/badge.svg?branch=master
-   :target: https://github.com/PyYoshi/cChardet/actions?query=workflow%3A%22Build+for+windows%22
+.. image:: https://github.com/faust-streaming/cChardet/workflows/Build%20for%20windows/badge.svg?branch=master
+   :target: https://github.com/faust-streaming/cChardet/actions?query=workflow%3A%22Build+for+windows%22
    :alt: Build for Windows
 
 Supported Languages/Encodings
