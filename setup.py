@@ -116,7 +116,7 @@ setup(
     name='faust-cchardet',
     author='PyYoshi',
     author_email='myoshi321go@gmail.com',
-    url=r'https://github.com/PyYoshi/cChardet',
+    url=r'https://github.com/faust-streaming/cChardet',
     description='cChardet is high speed universal character encoding detector.',
     long_description='\n\n'.join((read('README.rst'), read('CHANGES.rst'))),
     version=version,

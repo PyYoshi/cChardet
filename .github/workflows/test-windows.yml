@@ -1,4 +1,4 @@
-name: Build for windows
+name: Test for Windows
 
 on:
   - push
@@ -48,15 +48,9 @@ jobs:
           python-version: "3.7"
           architecture: ${{ matrix.config.py-architecture }}
 
-      - uses: actions/setup-python@v4
-        name: Install Python 3.6
-        with:
-          python-version: "3.6"
-          architecture: ${{ matrix.config.py-architecture }}
-
       - name: Install cibuildwheel
         run: |
-          python -m pip install cibuildwheel==1.6.3
+          python -m pip install cibuildwheel==2.11.2
 
       - name: Checkout submodules
         shell: bash
@@ -98,40 +92,9 @@ jobs:
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=${{ matrix.config.vs-arch }}
           tox -e py37
 
-      - name: Test for Python 3.6
-        shell: cmd
-        run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=${{ matrix.config.vs-arch }}
-          tox -e py36
-
       - name: Build wheel
-        if: contains(github.ref, 'tags/')
         run: |
           python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-* cp311-*
-
-      - uses: actions/upload-artifact@v1
-        if: contains(github.ref, 'tags/')
-        with:
-          name: wheels
-          path: ./wheelhouse
-  
-  upload_pypi:
-    name: 'Upload packages'
-    needs: ['build_wheels']
-    runs-on: 'ubuntu-latest'
-    if: contains(github.ref, 'tags/')
-    steps:
-      - uses: actions/download-artifact@v3
-        name: 'Download artifacts'
-        with:
-          name: wheels
-          path: ./wheelhouse
-
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        name: "Publish package to PyPI"
-        with:
-          user: '__token__'
-          password: '${{ secrets.PYPI_API_TOKEN }}'
-          packages_dir: ./wheelhouse
+          CIBW_BUILD: cp37-* cp38-* cp39-* cp310-* cp311-*
+          CIBW_ARCHS: auto64
