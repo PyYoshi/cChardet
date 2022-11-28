@@ -113,7 +113,7 @@ with codecs.open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'src',
         raise RuntimeError('Unable to determine version.')
 
 setup(
-    name='cchardet',
+    name='faust-cchardet',
     author='PyYoshi',
     author_email='myoshi321go@gmail.com',
     url=r'https://github.com/PyYoshi/cChardet',
