@@ -17,9 +17,7 @@ install: clean
 	python setup.py install
 
 build-wheels-on-manylinux2014:
-	docker pull quay.io/pypa/manylinux2014_i686
 	docker pull quay.io/pypa/manylinux2014_x86_64
-	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux2014_i686   bash dockerfiles/buildwheel.sh
 	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux2014_x86_64 bash dockerfiles/buildwheel.sh
 
 build: clean pip test sdist build-wheels-on-manylinux2014

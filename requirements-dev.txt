@@ -1,4 +1,4 @@
-chardet==3.0.4
+chardet>=3.0.4
 pytest==6.2.5
 tox==3.20.1
 Cython==0.29.32

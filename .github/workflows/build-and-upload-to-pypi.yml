@@ -11,9 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Windows builds currently broken
-        #os: [ubuntu-20.04, windows-2019, macos-11]
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-20.04, windows-2019, macos-11]
 
     steps:
       - uses: actions/checkout@v3
@@ -31,6 +29,7 @@ jobs:
           CIBW_ARCHS: auto64
           CIBW_BUILD: 'cp3*'
           CIBW_SKIP: '*-musllinux_*'
+          CIBW_BEFORE_BUILD_WINDOWS: make pip
 
       - uses: actions/upload-artifact@v3
         with:
