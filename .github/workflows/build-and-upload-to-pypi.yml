@@ -22,11 +22,18 @@ jobs:
           git submodule sync --recursive
           git submodule update --init --force --recursive --depth=1
 
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.2
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: 'manylinux2014'
           CIBW_ARCHS: auto64
+          CIBW_ARCHS_LINUX: auto64 aarch64
           CIBW_BUILD: 'cp3*'
           CIBW_SKIP: '*-musllinux_*'
           CIBW_BEFORE_BUILD_WINDOWS: make pip
