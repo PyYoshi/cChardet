@@ -3,7 +3,6 @@ import glob
 import os
 import string
 
-from nose.tools import eq_
 import cchardet
 
 SKIP_LIST = [
@@ -26,14 +25,11 @@ SKIP_LIST_02.extend(SKIP_LIST)
 class TestCChardet():
     def test_ascii(self):
         detected_encoding = cchardet.detect(b'abcdefghijklmnopqrstuvwxyz')
-        eq_(
-            'ascii',
-            detected_encoding['encoding'].lower(),
+        assert 'ascii' == detected_encoding['encoding'].lower(), \
             'Expected %s, but got %s' % (
                 'ascii',
                 detected_encoding['encoding'].lower()
             )
-        )
 
     def test_detect(self):
         testfiles = glob.glob('tests/testdata/*/*.txt')
@@ -46,15 +42,13 @@ class TestCChardet():
             with open(testfile, 'rb') as f:
                 msg = f.read()
                 detected_encoding = cchardet.detect(msg)
-                eq_(
-                    expected_charset.lower(),
-                    detected_encoding['encoding'].lower(),
+                assert expected_charset.lower() == \
+                    detected_encoding['encoding'].lower(), \
                     'Expected %s, but got %s for "%s"' % (
                         expected_charset.lower(),
                         detected_encoding['encoding'].lower(),
                         testfile
                     )
-                )
 
     def test_detector(self):
         detector = cchardet.UniversalDetector()
@@ -67,14 +61,11 @@ class TestCChardet():
                 line = f.readline()
         detector.close()
         detected_encoding = detector.result
-        eq_(
-            "shift_jis",
-            detected_encoding['encoding'].lower(),
+        assert "shift_jis" == detected_encoding['encoding'].lower(), \
             'Expected %s, but got %s' % (
                 "shift_jis",
                 detected_encoding['encoding'].lower()
             )
-        )
 
     def test_github_issue_20(self):
         """
@@ -109,37 +100,28 @@ class TestCChardet():
     def test_utf8_with_bom(self):
         sample = b'\xEF\xBB\xBF'
         detected_encoding = cchardet.detect(sample)
-        eq_(
-            "utf-8-sig",
-            detected_encoding['encoding'].lower(),
+        assert "utf-8-sig" == detected_encoding['encoding'].lower(), \
             'Expected %s, but got %s' % (
                 "utf-8-sig",
                 detected_encoding['encoding'].lower()
             )
-        )
 
     def test_null_bytes(self):
         sample = b'ABC\x00\x80\x81'
         detected_encoding = cchardet.detect(sample)
 
-        eq_(
-            None,
-            detected_encoding['encoding'],
+        assert detected_encoding['encoding'] is None, \
             'Expected None, but got %s' % (
                 detected_encoding['encoding']
             )
-        )
 
     # def test_iso8859_2_csv(self):
     #     testfile = 'tests/samples/iso8859-2.csv'
     #     with open(testfile, 'rb') as f:
     #         msg = f.read()
     #         detected_encoding = cchardet.detect(msg)
-    #         eq_(
-    #             "iso8859-2",
-    #             detected_encoding['encoding'].lower(),
+    #         assert "iso8859-2" == detected_encoding['encoding'].lower(), \
     #             'Expected %s, but got %s' % (
     #                 "iso8859-2",
     #                 detected_encoding['encoding'].lower()
     #             )
-    #         )
