@@ -1,0 +1,25 @@
+[project]
+name = "cchardet"
+version = "2.1.8a0"
+authors = [{ name = "PyYoshi", email = "myoshi321go@gmail.com" }]
+urls.Homepage = 'https://github.com/PyYoshi/cChardet'
+description = 'cChardet is high speed universal character encoding detector.'
+license = 'Mozilla Public License'
+classifiers = [
+    'License :: OSI Approved :: Mozilla Public License 1.1 (MPL 1.1)',
+    'License :: OSI Approved :: GNU General Public License (GPL)',
+    'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+    'Programming Language :: Cython',
+    'Programming Language :: Python',
+    'Topic :: Software Development :: Libraries',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+]
+
+[build-system]
+requires = ["setuptools", "cython"]
+build-backend = "setuptools.build_meta"

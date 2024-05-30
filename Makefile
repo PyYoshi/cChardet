@@ -1,11 +1,11 @@
 test:
-	python setup.py nosetests
+	python setup.py 
 
 clean:
 	$(RM) -r build dist src/cchardet/__pycache__ src/cchardet/*.cpp src/cchardet/*.pyc src/cchardet/*.so src/cchardet.egg-info src/tests/__pycache__ src/tests/*.pyc
 
 sdist:
-	python setup.py sdist --formats=gztar
+	python -m build --formats=gztar
 
 pip:
 	pip install -r requirements-dev.txt
@@ -17,9 +17,8 @@ install: clean
 	python setup.py install
 
 build-wheels-on-manylinux2014:
-	docker pull quay.io/pypa/manylinux2014_i686
-	docker pull quay.io/pypa/manylinux2014_x86_64
+	docker pull quay.io/pypa/manylinux_2_28_x86_64
 	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux2014_i686   bash dockerfiles/buildwheel.sh
-	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux2014_x86_64 bash dockerfiles/buildwheel.sh
+	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux_2_28_x86_64 bash dockerfiles/buildwheel.sh
 
 build: clean pip test sdist build-wheels-on-manylinux2014
