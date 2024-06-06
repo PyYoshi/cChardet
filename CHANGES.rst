@@ -1,10 +1,18 @@
 CHANGES
 =======
 
-2.x.x
+2.x.x 
 -----
 
 
+2.2.0-alpha.1 (2024-06-xx)
+--------------------------
+
+- support Python 3.10, 3.11, 3.12
+- drop support for Python 3.6, 3.7, 3.8
+- experimental support for arm64
+- improve some CI/CD workflows
+- migration from nose to pytest (#87)
 
 2.1.7 (2020-10-27)
 ------------------
