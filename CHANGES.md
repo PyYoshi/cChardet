@@ -2,7 +2,11 @@
 
 ## 2.x.x
 
-## 2.2.0-alpha.1 (2024-06-xx)
+## 2.2.0-alpha.2 (2024-06-xx)
+
+- Improve test codes and CI/CD workflows
+
+## 2.2.0-alpha.1 (2024-06-07)
 
 - support Python 3.10, 3.11, 3.12
 - drop support for Python 3.6, 3.7, 3.8

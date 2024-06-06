@@ -27,9 +27,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = { attr = "cchardet.__version__" }
 
-[tool.pytest.ini_options]
-# pythonpath = "src"
-
 [tool.rye]
 dev-dependencies = [
     "chardet>=5.2.0",
