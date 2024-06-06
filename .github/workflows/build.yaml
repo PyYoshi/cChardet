@@ -1,0 +1,57 @@
+name: Build Wheels
+on:
+  push:
+    branches: [master]
+  create:
+  workflow_dispatch:
+
+jobs:
+  build_wheels:
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+    runs-on: ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }}
+
+    steps:
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+          cache: "pip"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -VV
+          pip install -r requirements-dev.txt
+
+      - name: Cythonize
+        shell: bash
+        run: |
+          python -VV
+          make cython
+
+      - name: Build
+        uses: pypa/cibuildwheel@v2.18.1
+        env:
+          CIBW_TEST_REQUIRES: "pytest"
+          CIBW_TEST_COMMAND: "pytest"
+          CIBW_ARCHS_LINUX: auto aarch64
+          CIBW_ARCHS_MACOS: x86_64 universal2 arm64
+          CIBW_SKIP: pp*
+
+      - name: Upload Wheels to artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse

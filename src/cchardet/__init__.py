@@ -1,5 +1,7 @@
-from cchardet import _cchardet
-from .version import __version__
+from . import _cchardet
+
+version = (2, 2, 0, "alpha", 1)
+__version__ = "2.2.0a1"
 
 
 def detect(msg):

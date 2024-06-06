@@ -1,25 +1,36 @@
-test:
-	python setup.py nosetests
-
+.PHONY: clean
 clean:
-	$(RM) -r build dist src/cchardet/__pycache__ src/cchardet/*.cpp src/cchardet/*.pyc src/cchardet/*.so src/cchardet.egg-info src/tests/__pycache__ src/tests/*.pyc
+	$(RM) -r \
+		.pytest_cache \
+		.ruff_cache \
+		build \
+		dist \
+		src/cchardet/__pycache__ \
+		src/cchardet/*.cpp \
+		src/cchardet/*.pyc \
+		src/cchardet/*.so \
+		src/cchardet.egg-info \
+		src/tests/__pycache__ \
+		src/tests/*.pyc
 
-sdist:
-	python setup.py sdist --formats=gztar
+.PHONY: cython
+cython:
+	cython --cplus src/cchardet/_cchardet.pyx
 
-pip:
-	pip install -r requirements-dev.txt
+.PHONY: test
+test: clean cython
+	python setup.py build_ext -i -f
+	pytest
 
-twine:
-	twine upload dist/cchardet-*.whl dist/cchardet-*.tar.gz
+.PHONY: lint
+lint:
+	ruff check
 
-install: clean
-	python setup.py install
+.PHONY: format
+lint:
+	ruff format
 
-build-wheels-on-manylinux2014:
-	docker pull quay.io/pypa/manylinux2014_i686
-	docker pull quay.io/pypa/manylinux2014_x86_64
-	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux2014_i686   bash dockerfiles/buildwheel.sh
-	docker run --rm -ti -v `pwd`:/project -w /project quay.io/pypa/manylinux2014_x86_64 bash dockerfiles/buildwheel.sh
-
-build: clean pip test sdist build-wheels-on-manylinux2014
+.PHONY: bench
+bench: clean cython
+	python setup.py build_ext -i -f
+	python src/tests/bench.py

@@ -1,0 +1,46 @@
+name: Run tests
+on:
+  push:
+  pull_request:
+  create:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        py: ["3.13-dev", "3.12", "3.11", "3.10", "3.9"]
+
+    runs-on: ${{ matrix.os }}
+    name: Run test with Python ${{ matrix.py }} on ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py }}
+          allow-prereleases: true
+          cache: "pip"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -VV
+          pip install -r requirements-dev.txt
+
+      - name: Lint
+        shell: bash
+        run: |
+          python -VV
+          make lint
+
+      - name: Test
+        shell: bash
+        run: |
+          python -VV
+          make test

@@ -1,3 +1,6 @@
+# coding: utf-8
+#cython: embedsignature=True, c_string_encoding=ascii, language_level=3
+
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
 
