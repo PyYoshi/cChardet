@@ -56,5 +56,5 @@ before-build = [
 ]
 
 # NOTICE: ローカルでは想定通りにテストは通るが､ cibuildwheel では 特定のファイルの文字コード検知がうまくいかないので一時的に無効化する
-test-requires = "pytest"
-test-command = "pytest -vs {project}/tests"
+# test-requires = "pytest"
+# test-command = "pytest -vs {project}/tests"
