@@ -140,7 +140,7 @@ cChardet is high speed universal character encoding detector. - binding to [ucha
 
 ```python
 import cchardet as chardet
-with open(r"src/tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
+with open(r"tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
   msg = f.read()
   result = chardet.detect(msg)
   print(result)
@@ -150,7 +150,7 @@ with open(r"src/tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt",
 
 ```bash
 $ python setup.py build_ext -i -f
-$ python src/tests/bench.py
+$ python tests/bench.py
 ```
 
 ### Results

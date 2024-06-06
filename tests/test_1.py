@@ -3,17 +3,21 @@ import os
 
 import cchardet
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 SKIP_LIST = [
-    "src/tests/testdata/ja/utf-16le.txt",
-    "src/tests/testdata/ja/utf-16be.txt",
-    "src/tests/testdata/es/iso-8859-15.txt",
-    "src/tests/testdata/da/iso-8859-1.txt",
-    "src/tests/testdata/he/iso-8859-8.txt",
+    "testdata/ja/utf-16le.txt",
+    "testdata/ja/utf-16be.txt",
+    "testdata/es/iso-8859-15.txt",
+    "testdata/da/iso-8859-1.txt",
+    "testdata/he/iso-8859-8.txt",
 ]
 
-
 # Python can"t decode encoding
-SKIP_LIST_02 = ["src/tests/testdata/vi/viscii.txt", "src/tests/testdata/zh/euc-tw.txt"]
+SKIP_LIST_02 = [
+    "testdata/vi/viscii.txt",
+    "testdata/zh/euc-tw.txt",
+]
 SKIP_LIST_02.extend(SKIP_LIST)
 
 
@@ -26,9 +30,10 @@ class TestCChardet:
         )
 
     def test_detect(self):
-        testfiles = glob.glob("src/tests/testdata/*/*.txt")
+        testfiles = glob.glob(SCRIPT_DIR + "/testdata/*/*.txt")
         for testfile in testfiles:
-            if testfile.replace("\\", "/") in SKIP_LIST:
+            if any(testfile.endswith(skip) for skip in SKIP_LIST):
+                print("Skip: %s" % testfile)
                 continue
 
             base = os.path.basename(testfile)
@@ -36,6 +41,10 @@ class TestCChardet:
             with open(testfile, "rb") as f:
                 msg = f.read()
                 detected_encoding = cchardet.detect(msg)
+                print("Test %s: %s" % (testfile, detected_encoding))
+                assert detected_encoding["encoding"] is not None, (
+                    'Expected %s, but got None for "%s"' % (expected_charset.lower(), testfile)
+                )
                 assert expected_charset.lower() == detected_encoding["encoding"].lower(), (
                     'Expected %s, but got %s for "%s"'
                     % (expected_charset.lower(), detected_encoding["encoding"].lower(), testfile)
@@ -43,7 +52,10 @@ class TestCChardet:
 
     def test_detector(self):
         detector = cchardet.UniversalDetector()
-        with open("src/tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
+        with open(
+            os.path.join(SCRIPT_DIR, "samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt"),
+            "rb",
+        ) as f:
             line = f.readline()
             while line:
                 detector.feed(line)
@@ -70,9 +82,10 @@ class TestCChardet:
         detector.close()
 
     def test_decode(self):
-        testfiles = glob.glob("src/tests/testdata/*/*.txt")
+        testfiles = glob.glob(SCRIPT_DIR + "/testdata/*/*.txt")
         for testfile in testfiles:
-            if testfile.replace("\\", "/") in SKIP_LIST_02:
+            if any(testfile.endswith(skip) for skip in SKIP_LIST_02):
+                print("Skip: %s" % testfile)
                 continue
 
             with open(testfile, "rb") as f:
@@ -102,14 +115,3 @@ class TestCChardet:
         assert detected_encoding["encoding"] is None, (
             "Expected None, but got %s" % (detected_encoding["encoding"])
         )
-
-    # def test_iso8859_2_csv(self):
-    #     testfile = "src/tests/samples/iso8859-2.csv"
-    #     with open(testfile, "rb") as f:
-    #         msg = f.read()
-    #         detected_encoding = cchardet.detect(msg)
-    #         assert "iso8859-2" == detected_encoding["encoding"].lower(), \
-    #             "Expected %s, but got %s" % (
-    #                 "iso8859-2",
-    #                 detected_encoding["encoding"].lower()
-    #             )
