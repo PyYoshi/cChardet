@@ -33,14 +33,21 @@ jobs:
           python -VV
           pip install -r requirements-dev.txt
 
+      - name: Build
+        shell: bash
+        run: |
+          python -VV
+          make cython
+          pip install .
+
       - name: Lint
         shell: bash
         run: |
           python -VV
-          make lint
+          ruff check
 
       - name: Test
         shell: bash
         run: |
           python -VV
-          make test
+          pytest -vs tests

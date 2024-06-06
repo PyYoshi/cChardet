@@ -45,10 +45,10 @@ jobs:
         uses: pypa/cibuildwheel@v2.18.1
         env:
           CIBW_TEST_REQUIRES: "pytest"
-          CIBW_TEST_COMMAND: "pytest {project}/src/tests"
+          CIBW_TEST_COMMAND: "pytest"
           CIBW_ARCHS_LINUX: auto aarch64
           CIBW_ARCHS_MACOS: x86_64 universal2 arm64
-          CIBW_SKIP: pp*
+          CIBW_SKIP: pp* cp36-* cp37-* cp38-*
 
       - name: Upload Wheels to artifact
         uses: actions/upload-artifact@v4

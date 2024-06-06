@@ -50,3 +50,4 @@ None
 .ruff_cache
 __pycache__
 .venv
+wheelhouse

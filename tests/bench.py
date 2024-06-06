@@ -6,7 +6,7 @@ import chardet
 
 def main():
     do_times = 100
-    path = r"src/tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt"
+    path = r"tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt"
     with open(path, "rb") as f:
         msg = f.read()
 

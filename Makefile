@@ -10,8 +10,9 @@ clean:
 		src/cchardet/*.pyc \
 		src/cchardet/*.so \
 		src/cchardet.egg-info \
-		src/tests/__pycache__ \
-		src/tests/*.pyc
+		tests/__pycache__ \
+		tests/*.pyc \
+		wheelhouse
 
 .PHONY: cython
 cython:
@@ -20,7 +21,7 @@ cython:
 .PHONY: test
 test: clean cython
 	python setup.py build_ext -i -f
-	pytest
+	pytest tests
 
 .PHONY: lint
 lint:
@@ -33,4 +34,4 @@ lint:
 .PHONY: bench
 bench: clean cython
 	python setup.py build_ext -i -f
-	python src/tests/bench.py
+	python tests/bench.py

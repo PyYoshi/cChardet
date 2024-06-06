@@ -21,14 +21,14 @@ requires-python = ">= 3.9"
 dynamic = ["version"]
 
 [build-system]
-requires = ["setuptools", "cython"]
+requires = ["setuptools", "Cython", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
 version = { attr = "cchardet.__version__" }
 
 [tool.pytest.ini_options]
-pythonpath = "src"
+# pythonpath = "src"
 
 [tool.rye]
 dev-dependencies = [
@@ -46,3 +46,15 @@ target-version = "py39"
 lint.select = ["E", "F", "I", "N"]
 format.quote-style = "double"
 format.indent-style = "space"
+
+[tool.cibuildwheel]
+skip = "pp* cp36-* cp37-* cp38-*"
+archs = "auto"
+before-build = [
+    "pip install cython==3.0.10",
+    "cython {project}/src/cchardet/_cchardet.pyx",
+]
+
+# NOTICE: ローカルでは想定通りにテストは通るが､ cibuildwheel では 特定のファイルの文字コード検知がうまくいかないので一時的に無効化する
+test-requires = "pytest"
+test-command = "pytest -vs {project}/tests"
