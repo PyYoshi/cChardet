@@ -32,7 +32,7 @@ class TestCChardet:
     def test_detect(self):
         testfiles = glob.glob(SCRIPT_DIR + "/testdata/*/*.txt")
         for testfile in testfiles:
-            if any(testfile.endswith(skip) for skip in SKIP_LIST):
+            if any(testfile.replace("\\", "/").endswith(skip) for skip in SKIP_LIST):
                 print("Skip: %s" % testfile)
                 continue
 
@@ -84,7 +84,7 @@ class TestCChardet:
     def test_decode(self):
         testfiles = glob.glob(SCRIPT_DIR + "/testdata/*/*.txt")
         for testfile in testfiles:
-            if any(testfile.endswith(skip) for skip in SKIP_LIST_02):
+            if any(testfile.replace("\\", "/").endswith(skip) for skip in SKIP_LIST_02):
                 print("Skip: %s" % testfile)
                 continue
 
