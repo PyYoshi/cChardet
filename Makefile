@@ -20,7 +20,7 @@ cython:
 
 .PHONY: test
 test: clean cython
-	python setup.py install
+	python setup.py build_ext -i -f
 	pytest tests
 
 .PHONY: lint
@@ -33,5 +33,5 @@ lint:
 
 .PHONY: bench
 bench: clean cython
-	python setup.py install
+	python setup.py build_ext -i -f
 	python tests/bench.py
