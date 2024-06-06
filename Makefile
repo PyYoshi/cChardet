@@ -21,7 +21,7 @@ cython:
 .PHONY: test
 test: clean cython
 	python setup.py build_ext -i -f
-	pytest
+	pytest tests
 
 .PHONY: lint
 lint:
