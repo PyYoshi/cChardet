@@ -1,7 +1,7 @@
 name: Build Wheels
 on:
   push:
-    branches: [main]
+    branches: [master]
   create:
   workflow_dispatch:
 
@@ -21,32 +21,34 @@ jobs:
           platforms: all
 
       - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
           cache: "pip"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -VV
+          pip install -r requirements-dev.txt
+
       - name: Cythonize
         shell: bash
         run: |
-          pip install -r requirements.txt
+          python -VV
           make cython
 
       - name: Build
-        uses: pypa/cibuildwheel@v2.17.0
+        uses: pypa/cibuildwheel@v2.18.1
         env:
           CIBW_TEST_REQUIRES: "pytest"
-          CIBW_TEST_COMMAND: "pytest {package}/test"
+          CIBW_TEST_COMMAND: "pytest"
           CIBW_ARCHS_LINUX: auto aarch64
           CIBW_ARCHS_MACOS: x86_64 universal2 arm64
           CIBW_SKIP: pp*
-
-      - name: Build pure Python wheel
-        if: runner.os == 'Linux'
-        env:
-          MSGPACK_PUREPYTHON: "1"
-        run: |
-          pip install build
-          python -m build -w -o wheelhouse
 
       - name: Upload Wheels to artifact
         uses: actions/upload-artifact@v4
