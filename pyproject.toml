@@ -3,7 +3,8 @@ name = "cchardet"
 authors = [{ name = "PyYoshi", email = "myoshi321go@gmail.com" }]
 urls.Homepage = 'https://github.com/PyYoshi/cChardet'
 description = 'cChardet is high speed universal character encoding detector.'
-license = { text = 'Mozilla Public License' }
+readme = { file = 'README.md', content-type = 'text/markdown' }
+license = { file = "COPYING" }
 classifiers = [
     'License :: OSI Approved :: Mozilla Public License 1.1 (MPL 1.1)',
     'License :: OSI Approved :: GNU General Public License (GPL)',
