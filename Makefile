@@ -28,10 +28,14 @@ lint:
 	ruff check
 
 .PHONY: format
-lint:
+format:
 	ruff format
 
 .PHONY: bench
 bench: clean cython
 	python setup.py build_ext -i -f
 	python tests/bench.py
+
+.PHONY: sdist
+sdist: clean cython
+	python setup.py sdist
