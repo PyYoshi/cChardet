@@ -24,6 +24,9 @@ dynamic = ["version"]
 requires = ["setuptools", "Cython", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project.scripts]
+cchardetect = "cchardet.cli.cchardetect:main"
+
 [tool.setuptools.dynamic]
 version = { attr = "cchardet.__version__" }
 

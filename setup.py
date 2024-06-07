@@ -69,7 +69,6 @@ setup(
     packages=[
         "cchardet",
     ],
-    scripts=["bin/cchardetect"],
     ext_modules=[
         Extension(
             "cchardet._cchardet",
