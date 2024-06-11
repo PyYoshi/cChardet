@@ -5,6 +5,7 @@ clean:
 		.ruff_cache \
 		build \
 		dist \
+		src/cchardet/cli/__pycache__ \
 		src/cchardet/__pycache__ \
 		src/cchardet/*.cpp \
 		src/cchardet/*.pyc \
