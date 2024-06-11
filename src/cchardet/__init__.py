@@ -1,7 +1,7 @@
 from . import _cchardet
 
-version = (2, 2, 0, "alpha", 2)
-__version__ = "2.2.0a2"
+version = (2, 2, 0, "alpha", 3)
+__version__ = "2.2.0a3"
 
 
 def detect(msg):
@@ -17,6 +17,10 @@ def detect(msg):
     encoding, confidence = _cchardet.detect_with_confidence(msg)
     if isinstance(encoding, bytes):
         encoding = encoding.decode()
+
+    if encoding == "MAC-CENTRALEUROPE":
+        encoding = "maccentraleurope"
+
     return {"encoding": encoding, "confidence": confidence}
 
 
