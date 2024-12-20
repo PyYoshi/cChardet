@@ -87,7 +87,7 @@ setup(
             sources=sources,
             include_dirs=[uchardet_dir],
             language="c++",
-            extra_compile_args=['-std=c++11'],
+            extra_compile_args=['-std=c++14'],
         )
     ],
 )
