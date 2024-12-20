@@ -49,7 +49,7 @@ format.quote-style = "double"
 format.indent-style = "space"
 
 [tool.cibuildwheel]
-skip = "pp* cp36-* cp37-* cp38-*"
+skip = "pp* cp36-* cp37-* cp38-* cp39-*"
 archs = "auto"
 before-build = [
     "pip install cython==3.0.10",
