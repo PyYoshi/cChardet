@@ -42,7 +42,7 @@ jobs:
           make cython
 
       - name: Build
-        uses: pypa/cibuildwheel@v2.18.1
+        uses: pypa/cibuildwheel@v2.22.0
         env:
           # NOTICE: ローカルでは想定通りにテストは通るが､ cibuildwheel では 特定のファイルの文字コード検知がうまくいかないので一時的に無効化する
           # CIBW_TEST_REQUIRES: "pytest"

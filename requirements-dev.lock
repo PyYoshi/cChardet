@@ -7,16 +7,17 @@
 #   all-features: false
 #   with-sources: false
 #   generate-hashes: false
+#   universal: false
 
 -e file:.
 chardet==5.2.0
-cython==3.0.10
+cython==3.0.11
 iniconfig==2.0.0
     # via pytest
 packaging==24.0
     # via pytest
 pluggy==1.5.0
     # via pytest
-pytest==8.2.1
-ruff==0.4.6
-setuptools==70.0.0
+pytest==8.3.4
+ruff==0.8.4
+setuptools==75.6.0
