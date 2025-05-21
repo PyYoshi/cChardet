@@ -17,6 +17,7 @@ classifiers = [
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
 ]
 requires-python = ">= 3.9"
 dynamic = ["version"]
@@ -33,17 +34,17 @@ version = { attr = "cchardet.__version__" }
 
 [tool.rye]
 dev-dependencies = [
-    "chardet>=5.2.0",
-    "cython>=3.0.10",
-    "setuptools>=70.0.0",
-    "pytest>=8.2.1",
-    "ruff>=0.4.6",
+    "chardet==5.2.0",
+    "cython==3.1.1",
+    "setuptools==80.8.0",
+    "pytest==8.3.5",
+    "ruff==0.11.10",
 ]
 
 [tool.ruff]
 exclude = ["src/ext"]
 line-length = 100
-target-version = "py39"
+target-version = "py313"
 lint.select = ["E", "F", "I", "N"]
 format.quote-style = "double"
 format.indent-style = "space"
@@ -52,7 +53,7 @@ format.indent-style = "space"
 skip = "pp* cp36-* cp37-* cp38-*"
 archs = "auto"
 before-build = [
-    "pip install cython==3.0.10",
+    "pip install cython==3.1.1",
     "cython {project}/src/cchardet/_cchardet.pyx",
 ]
 
