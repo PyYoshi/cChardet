@@ -1,10 +1,10 @@
-from . import _cchardet
-
+from ._cchardet import UniversalDetector as UniversalDetector, detect_with_confidence as detect_with_confidence
+from .typedefs import DecodeResultDict
 version = (2, 2, 0, "alpha", 3)
 __version__ = "2.2.0a3"
 
 
-def detect(msg):
+def detect(msg: bytes) -> DecodeResultDict:
     """
     Args:
         msg: str
@@ -14,8 +14,8 @@ def detect(msg):
             "confidence": float
         }
     """
-    encoding, confidence = _cchardet.detect_with_confidence(msg)
-    if isinstance(encoding, bytes):
+    encoding, confidence = detect_with_confidence(msg)
+    if encoding is not None:
         encoding = encoding.decode()
 
     if encoding == "MAC-CENTRALEUROPE":
@@ -24,33 +24,10 @@ def detect(msg):
     return {"encoding": encoding, "confidence": confidence}
 
 
-class UniversalDetector(object):
-    def __init__(self):
-        self._detector = _cchardet.UniversalDetector()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        self.close()
-        return False
-
-    def reset(self):
-        self._detector.reset()
-
-    def feed(self, data):
-        self._detector.feed(data)
-
-    def close(self):
-        self._detector.close()
-
-    @property
-    def done(self):
-        return self._detector.done
-
-    @property
-    def result(self):
-        encoding, confidence = self._detector.result
-        if isinstance(encoding, bytes):
-            encoding = encoding.decode()
-        return {"encoding": encoding, "confidence": confidence}
+__all__ = (
+    "detect",
+    "detect_with_confidence",
+    "DecodeResultDict",
+    "UniversalDetector",
+    "__version__"
+)

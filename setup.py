@@ -5,6 +5,8 @@ import glob
 import os
 
 from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
+import sys
 
 cchardet_dir = "src/cchardet/"
 uchardet_dir = "src/ext/uchardet/src"
@@ -12,6 +14,7 @@ cchardet_sources = glob.glob(cchardet_dir + "*.cpp")
 sources = cchardet_sources
 
 uchardet_sources = [
+    os.path.join(cchardet_dir, "_cchardet.pyx"),
     os.path.join(uchardet_dir, "LangModels/LangArabicModel.cpp"),
     os.path.join(uchardet_dir, "LangModels/LangBelarusianModel.cpp"),
     os.path.join(uchardet_dir, "LangModels/LangBulgarianModel.cpp"),
@@ -75,6 +78,84 @@ uchardet_sources = [
     os.path.join(uchardet_dir, "uchardet.cpp"),
 ]
 sources += uchardet_sources
+print(sources)
+
+class ccardet_build_ext(build_ext):
+    user_options = build_ext.user_options + [
+        ("cython-always", None, "run cythonize() even if .c files are present"),
+        (
+            "cython-annotate",
+            None,
+            "Produce a colorized HTML version of the Cython source.",
+        ),
+        ("cython-directives=", None, "Cythion compiler directives"),
+    ]
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.cython_always = False
+        self.cython_annotate = False
+        self.cython_directives = None
+
+    def finalize_options(self):
+        return super().finalize_options()
+    
+    def finalize_options(self):
+        need_cythonize = self.cython_always
+        cfiles = {}
+
+        for extension in self.distribution.ext_modules:
+            for i, sfile in enumerate(extension.sources):
+                if sfile.endswith(".pyx"):
+                    prefix, ext = os.path.splitext(sfile)
+                    cfile = prefix + ".c"
+
+                    if os.path.exists(cfile) and not self.cython_always:
+                        extension.sources[i] = cfile
+                    else:
+                        if os.path.exists(cfile):
+                            cfiles[cfile] = os.path.getmtime(cfile)
+                        else:
+                            cfiles[cfile] = 0
+                        need_cythonize = True
+
+        if need_cythonize:
+
+            # Double check Cython presence in case setup_requires
+            # didn't go into effect (most likely because someone
+            # imported Cython before setup_requires injected the
+            # correct egg into sys.path.
+            try:
+                import Cython
+            except ImportError:
+                raise RuntimeError(
+                    "please install cython to compile cchardet from source"
+                )
+
+            from Cython.Build import cythonize
+
+            directives = {}
+            if self.cython_directives:
+                for directive in self.cython_directives.split(","):
+                    k, _, v = directive.partition("=")
+                    if v.lower() == "false":
+                        v = False
+                    if v.lower() == "true":
+                        v = True
+                    directives[k] = v
+                self.cython_directives = directives
+
+            self.distribution.ext_modules[:] = cythonize(
+                self.distribution.ext_modules,
+                compiler_directives=directives,
+                annotate=self.cython_annotate,
+                emit_linenums=self.debug,
+            )
+
+        return super().finalize_options()
+        
+
+
 
 setup(
     package_dir={"": "src"},
@@ -87,7 +168,10 @@ setup(
             sources=sources,
             include_dirs=[uchardet_dir],
             language="c++",
-            extra_compile_args=['-std=c++11'],
+            extra_compile_args=['-std=c++11'] if sys.platform != "win32" else [], # Satisfy MSVC Compiler it should default to C++17
         )
     ],
+    cmdclass={
+        "build_ext":ccardet_build_ext
+    }
 )
