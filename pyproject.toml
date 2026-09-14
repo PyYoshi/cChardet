@@ -51,6 +51,9 @@ python_version = "3.11"
 strict = true
 files = ["src/cchardet", "tests/test_typing.py"]
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [tool.setuptools.package-data]
 cchardet = ["*.pyi", "py.typed"]
 
@@ -66,7 +69,8 @@ format.indent-style = "space"
 build = "cp311-* cp312-* cp313-* cp314-*"
 skip = "*-musllinux_*"
 archs = "auto"
-test-command = "python -c \"import cchardet; assert cchardet.detect(b'hello')['encoding'] == 'ASCII'\""
+test-command = "python tools/wheel_smoke.py"
+test-sources = ["tools/wheel_smoke.py"]
 
 [tool.cibuildwheel.linux]
 archs = ["auto", "aarch64"]

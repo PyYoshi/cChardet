@@ -28,6 +28,7 @@ SKIP_LIST_DEC = [
 ]
 SKIP_LIST_DEC.extend(SKIP_LIST_DETECT)
 
+
 class TestCChardet:
     def test_ascii(self):
         detected_encoding = cchardet.detect(b"abcdefghijklmnopqrstuvwxyz")
@@ -58,12 +59,14 @@ class TestCChardet:
                 got_enc = None
                 if detected_encoding["encoding"] is not None:
                     got_enc = detected_encoding["encoding"].lower()
-                assert got_enc is not None, (
-                    'Expected %s, but got None for "%s"' % (expected_charset.lower(), testfile)
+                assert got_enc is not None, 'Expected %s, but got None for "%s"' % (
+                    expected_charset.lower(),
+                    testfile,
                 )
-                assert expected_charset.lower() == got_enc, (
-                    'Expected %s, but got %s for "%s"'
-                    % (expected_charset.lower(), got_enc, testfile)
+                assert expected_charset.lower() == got_enc, 'Expected %s, but got %s for "%s"' % (
+                    expected_charset.lower(),
+                    got_enc,
+                    testfile,
                 )
 
     def test_detector(self):
@@ -102,6 +105,17 @@ class TestCChardet:
         detector.close()
         assert detector.result["encoding"] == "UTF-8"
 
+    def test_detector_exposes_uchardet_early_completion(self):
+        path = os.path.join(TESTDATA_DIR, "be/utf-8.txt")
+        with open(path, "rb") as file:
+            data = file.read()
+
+        detector = cchardet.UniversalDetector()
+        detector.feed(data)
+
+        assert detector.done
+        assert detector.result == cchardet.detect(data)
+
     def test_detect_is_thread_safe(self):
         samples = [b"plain ASCII", "日本語".encode(), "français".encode()]
         with ThreadPoolExecutor(max_workers=4) as executor:
@@ -131,6 +145,31 @@ class TestCChardet:
             left["confidence"] >= right["confidence"]
             for left, right in zip(candidates, candidates[1:])
         )
+
+    def test_language_weights_are_opt_in_and_persist_across_reset(self):
+        path = os.path.join(TESTDATA_DIR, "ar/utf-8.txt")
+        with open(path, "rb") as file:
+            data = file.read()
+
+        assert cchardet.detect(data)["language"] == "ar"
+        weighted = cchardet.detect(data, language_weights={"AR": 0.1})
+        assert weighted["language"] == "zh"
+
+        detector = cchardet.UniversalDetector(language_weights={"ar": 0.1})
+        for _ in range(2):
+            detector.feed(data)
+            detector.close()
+            assert detector.result == weighted
+            detector.reset()
+
+    def test_language_weights_are_validated(self):
+        for weights in ({"english": 1.0}, {"en": -0.1}, {"en": 1.1}, {"en": float("nan")}):
+            try:
+                cchardet.detect(b"plain ASCII", language_weights=weights)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError(f"invalid language weights accepted: {weights}")
 
     def test_bytes_like_inputs(self):
         expected = cchardet.detect(b"plain ASCII")

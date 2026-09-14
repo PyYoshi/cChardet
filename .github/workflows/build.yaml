@@ -15,6 +15,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build-sdist:
+    name: Source distribution
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: latest-known
+          python-version: "3.14"
+
+      - run: uv sync --locked
+      - run: uv build --sdist
+      - run: uv run twine check dist/*
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: test -f "dist/cchardet-${GITHUB_REF_NAME#v}.tar.gz"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
   build-wheels:
     name: Wheels / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -41,3 +68,23 @@ jobs:
           name: wheels-${{ runner.os }}
           path: wheelhouse/*.whl
           if-no-files-found: error
+
+  publish:
+    name: Publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-sdist, build-wheels]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/cchardet/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: "*"
+          path: dist
+          merge-multiple: true
+
+      - name: Publish distributions with attestations
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

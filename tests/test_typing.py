@@ -10,6 +10,9 @@ def test_public_api_types() -> None:
     assert_type(result["confidence"], float | None)
     assert_type(result["language"], str | None)
 
+    weighted = cchardet.detect(b"plain ASCII", language_weights={"en": 1.0})
+    assert_type(weighted, cchardet.ResultDict)
+
     candidates = cchardet.detect_all(bytearray(b"plain ASCII"))
     assert_type(candidates, list[cchardet.ResultDict])
 

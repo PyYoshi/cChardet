@@ -179,7 +179,14 @@ result = chardet.detect(msg, max_bytes=200_000)
 # Inspect alternative encoding/language candidates ordered by confidence.
 for candidate in chardet.detect_all(msg, max_bytes=200_000):
     print(candidate)
+
+# Optionally downweight unlikely languages with ISO 639-1 codes. Values must
+# be between 0 and 1; omitting this argument preserves the default ranking.
+result = chardet.detect(msg, language_weights={"ru": 0.2, "uk": 0.2})
 ```
+
+The CLI accepts the same opt-in weighting as repeatable arguments, for example
+`cchardetect --language-weight ru=0.2 --language-weight uk=0.2 file.txt`.
 
 cChardet ships [PEP 561](https://peps.python.org/pep-0561/) type information. The
 `detect()` and `detect_all()` results are typed as `cchardet.ResultDict`, and
@@ -201,6 +208,12 @@ uv run --no-sync python benchmarks/pyperf_compare.py \
 uv run --no-sync python benchmarks/pyperf_compare.py \
   --pythonpath ../chardet/src --pythonpath ../charset_normalizer/src \
   --corpus src/ext/uchardet/test --rigorous -o benchmark-pure.json
+
+# Compare encoding and language accuracy on separately reported corpora.
+uv run --no-sync python benchmarks/accuracy.py \
+  --uchardet-corpus src/ext/uchardet/test \
+  --chardet-corpus /path/to/chardet-test-data \
+  --charset-normalizer-corpus /path/to/char-dataset
 ```
 
 ### Results
@@ -213,6 +226,9 @@ Platform: Ubuntu 24.04 amd64
 
 See [the detector and performance analysis](docs/performance-analysis.md) for
 the methodology, current results, limitations, and optimization roadmap.
+External fixtures and detector-tuning changes follow the
+[test data policy](docs/test-data-policy.md).
+Maintainer release steps are documented in [the release process](docs/releasing.md).
 
 ## LICENSE
 

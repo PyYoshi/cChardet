@@ -1,9 +1,12 @@
+import math
+from collections.abc import Mapping
 from types import TracebackType
 from typing import Literal, Self, TypeAlias, TypedDict
 
 from . import _cchardet
 
 BytesLike: TypeAlias = bytes | bytearray | memoryview
+LanguageWeights: TypeAlias = Mapping[str, float]
 
 
 class ResultDict(TypedDict):
@@ -35,11 +38,34 @@ def _normalize_encoding(value: bytes | None) -> str | None:
     return "maccentraleurope" if encoding == "MAC-CENTRALEUROPE" else encoding
 
 
-def detect(msg: BytesLike, *, max_bytes: int | None = None) -> ResultDict:
+def _validate_language_weights(weights: LanguageWeights | None) -> dict[str, float] | None:
+    if weights is None:
+        return None
+    validated: dict[str, float] = {}
+    for language, weight in weights.items():
+        if not isinstance(language, str):
+            raise TypeError("language weight keys must be ISO 639-1 strings")
+        normalized = language.lower()
+        if len(normalized) != 2 or not normalized.isascii() or not normalized.isalpha():
+            raise ValueError("language weight keys must be two-letter ISO 639-1 codes")
+        numeric_weight = float(weight)
+        if not math.isfinite(numeric_weight) or not 0 <= numeric_weight <= 1:
+            raise ValueError("language weights must be finite values between 0 and 1")
+        validated[normalized] = numeric_weight
+    return validated
+
+
+def detect(
+    msg: BytesLike,
+    *,
+    max_bytes: int | None = None,
+    language_weights: LanguageWeights | None = None,
+) -> ResultDict:
     """
     Args:
         msg: bytes-like object
         max_bytes: optional maximum number of bytes to examine
+        language_weights: optional ISO 639-1 language downweights from 0 to 1
     Returns:
         {
             "encoding": str,
@@ -47,7 +73,9 @@ def detect(msg: BytesLike, *, max_bytes: int | None = None) -> ResultDict:
             "language": str
         }
     """
-    encoding, language, confidence = _cchardet.detect_with_details(_as_bytes(msg), max_bytes)
+    encoding, language, confidence = _cchardet.detect_with_details(
+        _as_bytes(msg), max_bytes, _validate_language_weights(language_weights)
+    )
     return {
         "encoding": _normalize_encoding(encoding),
         "confidence": confidence,
@@ -55,10 +83,17 @@ def detect(msg: BytesLike, *, max_bytes: int | None = None) -> ResultDict:
     }
 
 
-def detect_all(msg: BytesLike, *, max_bytes: int | None = None) -> list[ResultDict]:
+def detect_all(
+    msg: BytesLike,
+    *,
+    max_bytes: int | None = None,
+    language_weights: LanguageWeights | None = None,
+) -> list[ResultDict]:
     """Return every uchardet candidate in descending confidence order."""
     results: list[ResultDict] = []
-    for encoding, language, confidence in _cchardet.detect_all(_as_bytes(msg), max_bytes):
+    for encoding, language, confidence in _cchardet.detect_all(
+        _as_bytes(msg), max_bytes, _validate_language_weights(language_weights)
+    ):
         results.append(
             {
                 "encoding": _normalize_encoding(encoding),
@@ -70,8 +105,8 @@ def detect_all(msg: BytesLike, *, max_bytes: int | None = None) -> list[ResultDi
 
 
 class UniversalDetector:
-    def __init__(self) -> None:
-        self._detector = _cchardet.UniversalDetector()
+    def __init__(self, *, language_weights: LanguageWeights | None = None) -> None:
+        self._detector = _cchardet.UniversalDetector(_validate_language_weights(language_weights))
 
     def __enter__(self) -> Self:
         return self

@@ -43,9 +43,8 @@ relatively expensive on the uchardet corpus.
 
 cChardet delegates the statistical work to native C++ and has a very small
 Python API. This remains a clear advantage for small and medium inputs. The
-weaknesses are that it examines the caller's entire buffer by default, exposes
-only uchardet's top encoding, and inherits uchardet's narrower encoding model
-set and known ambiguities.
+weaknesses are that it examines the caller's entire buffer by default and
+inherits uchardet's narrower encoding model set and known ambiguities.
 
 The vendored source was the PyYoshi fork's `master` at `edae8e8` from 2023.
 The header and implementation at that commit are byte-for-byte identical in
@@ -128,14 +127,17 @@ cannot replace the extension while pyperf child processes are starting.
 ## Accuracy benchmark
 
 Performance without accuracy is misleading. `accuracy.py` applies the same
-three chardet evaluation predicates to every detector and reports the two
-upstream corpora separately, avoiding a detector's own corpus being hidden in
-one aggregate score. All three optimized modules listed above were loaded.
-The measured revisions were chardet/test-data `b0c0d206` and
-Ousret/char-dataset `f9e293f2`.
+three chardet evaluation predicates to every detector and reports each corpus
+separately, avoiding a detector's own corpus being hidden in one aggregate
+score. All three optimized modules listed above were loaded. The measured
+revisions were chardet/test-data `b0c0d206`, Ousret/char-dataset `f9e293f2`,
+and the bundled uchardet corpus at submodule revision `02d7e7a`.
 
 | Corpus / detector | Exact alias-normalized | Compatible/superset | Decode-equivalent |
 |---|---:|---:|---:|
+| uchardet test-data (158): cChardet | 93.67% | 94.30% | 95.57% |
+| uchardet test-data (158): chardet | 78.48% | 85.44% | 88.61% |
+| uchardet test-data (158): charset-normalizer | 60.13% | 72.15% | 75.32% |
 | chardet test-data (3,138): cChardet | 47.13% | 49.46% | 54.21% |
 | chardet test-data (3,138): chardet | 91.91% | 94.46% | 99.46% |
 | chardet test-data (3,138): charset-normalizer | 78.17% | 81.84% | 85.95% |
@@ -147,10 +149,23 @@ Exact normalizes codec aliases only. Compatible additionally accepts known
 directional supersets. Decode-equivalent means the detected codec produces
 functionally equivalent text for that particular byte string. These are not
 interchangeable definitions, so the raw counts and no-result counts remain in
-the script's JSON output.
+the script's JSON output. The uchardet accuracy report intentionally includes
+all 158 fixtures; its C conformance suite excludes five known failures and
+passes the other 153.
+
+Where a corpus supplies an expected language, the report also normalizes ISO
+639-1 codes and full language names before recording language-only and joint
+encoding/language accuracy:
+
+| Detector on uchardet corpus | Language | Encoding and language |
+|---|---:|---:|
+| cChardet | 95.57% | 91.14% |
+| chardet | 87.34% | 76.58% |
+| charset-normalizer | 56.33% | 45.57% |
 
 ```bash
 uv run --no-sync python benchmarks/accuracy.py \
+  --uchardet-corpus src/ext/uchardet/test \
   --chardet-corpus /path/to/chardet-test-data \
   --charset-normalizer-corpus /path/to/char-dataset
 ```
@@ -189,31 +204,39 @@ unlimited for compatibility.
   and correctly ranks the upstream GB18030 fixture; cChardet no longer skips
   that conformance case.
 - `detect(..., max_bytes=N)` bounds native work without allocating `data[:N]`.
+- Buffers larger than uchardet's internal 32-bit input length are fed in safe
+  chunks rather than silently truncating the length.
+- Optional language weights let callers apply domain knowledge without
+  changing the default candidate ranking.
+- Incremental detection now exposes uchardet's actual early-completion state
+  and finalizes the result as soon as no more input is needed.
+- C++ allocation exceptions at the Cython boundary are translated to Python
+  exceptions rather than escaping through generated extension code.
+- Deterministic arbitrary-byte tests verify that one-shot and incrementally
+  chunked detection produce the same result.
 - Link-time optimization was tested and rejected: approximately 63.4 ms for
   the corpus versus a normal-build steady result around 62.3 ms, with extra
   build time and portability risk.
 
 ## Recommended roadmap
 
-1. Make the two public accuracy corpora reproducibly downloadable and pin
-   their revisions. Keep reporting them separately and add a neutral corpus;
-   do not optimize against uchardet's own test data alone.
-2. The new `detect_all()` and `language` result expose data uchardet already
-   computes. Next, expose language weights and add typed result definitions so
-   callers can use the richer output safely.
-3. Evaluate a documented default evidence limit for the next major release.
+1. Make the two external accuracy corpora reproducibly downloadable and pin
+   their revisions. Keep all three corpora reported separately; do not optimize
+   against uchardet's own test data alone.
+2. Evaluate a documented default evidence limit for the next major release.
    Measure accuracy at 64 KB, 200 KB, and 1 MB before changing the compatible
    unlimited default.
-4. Profile uchardet with the neutral corpus. The likely targets are repeated
+3. Profile uchardet with a neutral corpus. The likely targets are repeated
    full-buffer passes across active probers, virtual dispatch in per-byte
    loops, and candidate work that cannot affect the winner. Apply staged
    UTF/BOM/ASCII fast paths and upper-bound pruning only with exact regression
    tests.
-5. Add fuzzing and sanitizers around the Python-visible C API. Upstream has
+4. Extend fuzzing and sanitizer coverage around the Python-visible C API.
+   Upstream has
    fixed several bounds and allocation defects since the original fork; keep
    the maintained fork rebased on official GitLab history so those fixes remain
    part of every cChardet build.
-6. Consider SIMD only after the staged/capped algorithm is measured. Avoid
+5. Consider SIMD only after the staged/capped algorithm is measured. Avoid
    `-march=native` in distributed wheels and dispatch any architecture-
    specific implementation at runtime.
 

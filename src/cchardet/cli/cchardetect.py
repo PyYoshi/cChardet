@@ -4,12 +4,10 @@ import sys
 from pathlib import Path
 from typing import BinaryIO, Iterator
 
-from .. import UniversalDetector, __version__
+from .. import UniversalDetector, __version__, _validate_language_weights
 
 
-def read_chunks(
-    file: BinaryIO, chunk_size: int, max_bytes: int | None = None
-) -> Iterator[bytes]:
+def read_chunks(file: BinaryIO, chunk_size: int, max_bytes: int | None = None) -> Iterator[bytes]:
     remaining = max_bytes
     while remaining is None or remaining > 0:
         read_size = chunk_size if remaining is None else min(chunk_size, remaining)
@@ -19,6 +17,19 @@ def read_chunks(
         yield chunk
         if remaining is not None:
             remaining -= len(chunk)
+
+
+def language_weight(value: str) -> tuple[str, float]:
+    language, separator, weight = value.partition("=")
+    if not separator:
+        raise argparse.ArgumentTypeError("expected LANG=WEIGHT")
+    try:
+        numeric_weight = float(weight)
+        normalized = _validate_language_weights({language: numeric_weight})
+    except (TypeError, ValueError) as error:
+        raise argparse.ArgumentTypeError(str(error)) from error
+    assert normalized is not None
+    return next(iter(normalized.items()))
 
 
 def main() -> None:
@@ -32,6 +43,14 @@ def main() -> None:
     parser.add_argument("--chunk-size", type=int, default=(256 * 1024))
     parser.add_argument("--max-bytes", type=int)
     parser.add_argument("--json", action="store_true", help="emit one JSON object per input")
+    parser.add_argument(
+        "--language-weight",
+        action="append",
+        default=[],
+        metavar="LANG=WEIGHT",
+        type=language_weight,
+        help="downweight an ISO 639-1 language (repeatable, weight from 0 to 1)",
+    )
     parser.add_argument("--version", action="version", version="%(prog)s {0}".format(__version__))
     args = parser.parse_args()
     if args.chunk_size < 1:
@@ -40,11 +59,12 @@ def main() -> None:
         parser.error("--max-bytes must be non-negative")
 
     paths = args.files or [None]
+    language_weights = dict(args.language_weight)
     for path in paths:
         file = sys.stdin.buffer if path is None else path.open("rb")
         display_path = "<stdin>" if path is None else str(path)
         try:
-            detector = UniversalDetector()
+            detector = UniversalDetector(language_weights=language_weights)
             for chunk in read_chunks(file, args.chunk_size, args.max_bytes):
                 detector.feed(chunk)
             detector.close()
