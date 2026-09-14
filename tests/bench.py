@@ -1,7 +1,8 @@
 import time
 
-import cchardet
 import chardet
+
+import cchardet
 
 
 def main():

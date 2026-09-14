@@ -7,6 +7,29 @@ cChardet
 
 cChardet is high speed universal character encoding detector. - binding to [uchardet](https://github.com/PyYoshi/uchardet).
 
+## Python support
+
+cChardet supports CPython 3.11 through 3.14.
+Each version is tested on Linux, macOS, and Windows.
+
+## Development
+
+Install [uv](https://docs.astral.sh/uv/), clone this repository with its submodules,
+then create the locked development environment and run the checks:
+
+```bash
+git submodule update --init --recursive
+uv sync --locked
+make check
+```
+
+Build and validate the source distribution and wheel with:
+
+```bash
+uv build
+uv run twine check dist/*
+```
+
 ## Supported Languages/Encodings
 
 - International (Unicode)
@@ -180,6 +203,6 @@ See **COPYING** file.
 
 ## Support Platforms
 
-- Windows i686, x86_64
-- Linux i686, x86_64
-- macOS x86_64
+- Windows x86, x86_64
+- Linux x86_64, aarch64
+- macOS x86_64, arm64

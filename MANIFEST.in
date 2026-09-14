@@ -1,5 +1,3 @@
-include *.txt
-include CHANGES.rst COPYING README.rst
-recursive-include src *.pyx *.pxd *.pxi *.py *.cpp
-recursive-include src/ext *
-recursive-include tests *
+include CHANGES.md COPYING README.md
+recursive-include src/cchardet *.py *.pyx
+recursive-include src/ext/uchardet/src *.cpp *.h *.tab

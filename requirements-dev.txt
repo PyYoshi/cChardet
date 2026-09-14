@@ -1,5 +1,0 @@
-chardet==5.2.0
-cython==3.0.10
-pytest==8.2.1
-ruff==0.4.6
-setuptools==70.0.0

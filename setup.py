@@ -8,7 +8,7 @@ from setuptools import Extension, setup
 
 cchardet_dir = "src/cchardet/"
 uchardet_dir = "src/ext/uchardet/src"
-cchardet_sources = glob.glob(cchardet_dir + "*.cpp")
+cchardet_sources = glob.glob(cchardet_dir + "*.pyx")
 sources = cchardet_sources
 
 uchardet_sources = [
@@ -80,6 +80,7 @@ setup(
     package_dir={"": "src"},
     packages=[
         "cchardet",
+        "cchardet.cli",
     ],
     ext_modules=[
         Extension(
