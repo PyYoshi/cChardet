@@ -181,6 +181,10 @@ for candidate in chardet.detect_all(msg, max_bytes=200_000):
     print(candidate)
 ```
 
+cChardet ships [PEP 561](https://peps.python.org/pep-0561/) type information. The
+`detect()` and `detect_all()` results are typed as `cchardet.ResultDict`, and
+`bytes`, `bytearray`, and `memoryview` inputs are accepted by the type checker.
+
 ## Benchmark
 
 ```bash

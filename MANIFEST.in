@@ -1,5 +1,5 @@
 include CHANGES.md COPYING README.md
 recursive-include benchmarks *.py
 recursive-include docs *.md
-recursive-include src/cchardet *.py *.pyx
+recursive-include src/cchardet *.py *.pyi *.pyx py.typed
 recursive-include src/ext/uchardet/src *.cpp *.h *.tab

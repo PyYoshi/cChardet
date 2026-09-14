@@ -40,6 +40,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
         run: uv run ruff check
 
+      - name: Type check
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        run: uv run mypy
+
       - name: Test
         run: uv run pytest
 

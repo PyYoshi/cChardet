@@ -2,11 +2,14 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import BinaryIO, Iterator
 
 from .. import UniversalDetector, __version__
 
 
-def read_chunks(file, chunk_size, max_bytes=None):
+def read_chunks(
+    file: BinaryIO, chunk_size: int, max_bytes: int | None = None
+) -> Iterator[bytes]:
     remaining = max_bytes
     while remaining is None or remaining > 0:
         read_size = chunk_size if remaining is None else min(chunk_size, remaining)
@@ -18,7 +21,7 @@ def read_chunks(file, chunk_size, max_bytes=None):
             remaining -= len(chunk)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "files",

@@ -1,4 +1,4 @@
-.PHONY: clean sync cython build test lint format check sdist
+.PHONY: clean sync cython build test lint typecheck format check sdist
 clean:
 	$(RM) -r \
 		.pytest_cache \
@@ -28,10 +28,13 @@ test: clean cython
 lint:
 	uv run ruff check
 
+typecheck:
+	uv run mypy
+
 format:
 	uv run ruff format
 
-check: lint test
+check: lint typecheck test
 
 bench: clean cython
 	uv run python setup.py build_ext -i -f

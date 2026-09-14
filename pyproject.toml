@@ -35,6 +35,7 @@ dev = [
     "chardet>=7.6.0",
     "charset-normalizer>=3.5.1",
     "cython>=3.2.9,<3.4",
+    "mypy>=1.15",
     "pyperf>=2.10.0",
     "pytest>=9.1.1",
     "ruff>=0.16.7",
@@ -44,6 +45,14 @@ dev = [
 
 [tool.uv]
 required-version = ">=0.9.26"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/cchardet", "tests/test_typing.py"]
+
+[tool.setuptools.package-data]
+cchardet = ["*.pyi", "py.typed"]
 
 [tool.ruff]
 exclude = ["src/ext"]
