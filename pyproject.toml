@@ -52,7 +52,7 @@ format.indent-style = "space"
 
 [tool.cibuildwheel]
 build = "cp311-* cp312-* cp313-* cp314-*"
-skip = "pp* *-musllinux_*"
+skip = "*-musllinux_*"
 archs = "auto"
 test-command = "python -c \"import cchardet; assert cchardet.detect(b'hello')['encoding'] == 'ASCII'\""
 
