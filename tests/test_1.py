@@ -1,5 +1,6 @@
 import glob
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import cchardet
 
@@ -88,6 +89,55 @@ class TestCChardet:
             "shift_jis",
             got_enc,
         )
+
+    def test_detector_can_reset_after_close(self):
+        detector = cchardet.UniversalDetector()
+        detector.feed(b"plain ASCII")
+        assert not detector.done
+        detector.close()
+        assert detector.done
+        assert detector.result["encoding"] == "ASCII"
+
+        detector.reset()
+        assert not detector.done
+        detector.feed("日本語".encode())
+        detector.close()
+        assert detector.result["encoding"] == "UTF-8"
+
+    def test_detect_is_thread_safe(self):
+        samples = [b"plain ASCII", "日本語".encode(), "français".encode()]
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            results = list(executor.map(cchardet.detect, samples * 100))
+        assert all(result["encoding"] is not None for result in results)
+
+    def test_detect_max_bytes(self):
+        data = b"plain ASCII" + "日本語".encode()
+        assert cchardet.detect(data, max_bytes=11)["encoding"] == "ASCII"
+        assert cchardet.detect(data, max_bytes=0)["encoding"] is None
+        try:
+            cchardet.detect(data, max_bytes=-1)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("negative max_bytes must be rejected")
+
+    def test_detect_all_includes_language(self):
+        path = os.path.join(TESTDATA_DIR, "fr/windows-1252.txt")
+        with open(path, "rb") as file:
+            data = file.read()
+        best = cchardet.detect(data)
+        candidates = cchardet.detect_all(data)
+        assert candidates[0] == best
+        assert best["language"] == "fr"
+        assert all(
+            left["confidence"] >= right["confidence"]
+            for left, right in zip(candidates, candidates[1:])
+        )
+
+    def test_bytes_like_inputs(self):
+        expected = cchardet.detect(b"plain ASCII")
+        assert cchardet.detect(bytearray(b"plain ASCII")) == expected
+        assert cchardet.detect(memoryview(b"plain ASCII")) == expected
 
     def test_github_issue_20(self):
         """

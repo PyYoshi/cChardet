@@ -8,108 +8,171 @@ cdef extern from *:
 # uchardet v0.0.8
 cdef extern from "uchardet.h":
     ctypedef void* uchardet_t
-    cdef uchardet_t uchardet_new()
-    cdef void uchardet_delete(uchardet_t ud)
-    cdef int uchardet_handle_data(uchardet_t ud, const_char_ptr data, size_t length)
-    cdef void uchardet_data_end(uchardet_t ud)
-    cdef void uchardet_reset(uchardet_t ud)
+    cdef uchardet_t uchardet_new() noexcept nogil
+    cdef void uchardet_delete(uchardet_t ud) noexcept nogil
+    cdef int uchardet_handle_data(uchardet_t ud, const_char_ptr data, size_t length) noexcept nogil
+    cdef void uchardet_data_end(uchardet_t ud) noexcept nogil
+    cdef void uchardet_reset(uchardet_t ud) noexcept nogil
     cdef const_char_ptr uchardet_get_charset(uchardet_t ud)
+    cdef size_t uchardet_get_n_candidates(uchardet_t ud)
     cdef float uchardet_get_confidence(uchardet_t ud, size_t i)
-    # cdef const_char_ptr uchardet_get_encoding(uchardet_t ud, size_t i)
-    # cdef const_char_ptr uchardet_get_language(uchardet_t ud, size_t i)
+    cdef const_char_ptr uchardet_get_encoding(uchardet_t ud, size_t i)
+    cdef const_char_ptr uchardet_get_language(uchardet_t ud, size_t i)
 
-def detect_with_confidence(bytes msg):
+def detect_with_details(bytes msg, max_bytes=None):
     cdef size_t length = len(msg)
+    cdef Py_ssize_t limit
+    if max_bytes is not None:
+        limit = max_bytes
+        if limit < 0:
+            raise ValueError("max_bytes must be non-negative")
+        if limit < <Py_ssize_t>length:
+            length = <size_t>limit
+    cdef const_char_ptr data = msg
 
-    cdef uchardet_t ud = uchardet_new()
-
-    cdef int result = uchardet_handle_data(ud, msg, length)
-    if result == -1:
-        uchardet_delete(ud)
-        raise Exception("Handle data error")
-
-    uchardet_data_end(ud)
-
+    cdef uchardet_t ud
+    cdef int result
     cdef bytes detected_charset
-    # cdef bytes detected_encoding
-    # cdef const_char_ptr detected_language
+    cdef const_char_ptr detected_language_ptr
+    cdef bytes detected_language = b""
     cdef float detected_confidence
+    ud = NULL
+    try:
+        with nogil:
+            ud = uchardet_new()
+            result = uchardet_handle_data(ud, data, length)
+        if result != 0:
+            raise RuntimeError("uchardet failed to handle data")
 
-    detected_charset = uchardet_get_charset(ud)
-    # detected_encoding = uchardet_get_encoding(ud, 0)
-    # detected_language = uchardet_get_language(ud, 0)
-    detected_confidence = uchardet_get_confidence(ud, 0)
+        with nogil:
+            uchardet_data_end(ud)
 
-    uchardet_reset(ud)
-    uchardet_delete(ud)
+        detected_charset = uchardet_get_encoding(ud, 0)
+        detected_language_ptr = uchardet_get_language(ud, 0)
+        detected_confidence = uchardet_get_confidence(ud, 0)
+        if detected_language_ptr != NULL:
+            detected_language = detected_language_ptr
 
-    if detected_charset:
-        return detected_charset, detected_confidence
+        if detected_charset:
+            return detected_charset, detected_language or None, detected_confidence
+        return None, None, None
+    finally:
+        if ud != NULL:
+            with nogil:
+                uchardet_delete(ud)
 
-    return None, None
+def detect_with_confidence(bytes msg, max_bytes=None):
+    encoding, _, confidence = detect_with_details(msg, max_bytes)
+    return encoding, confidence
+
+def detect_all(bytes msg, max_bytes=None):
+    cdef size_t length = len(msg)
+    cdef Py_ssize_t limit
+    if max_bytes is not None:
+        limit = max_bytes
+        if limit < 0:
+            raise ValueError("max_bytes must be non-negative")
+        if limit < <Py_ssize_t>length:
+            length = <size_t>limit
+    cdef const_char_ptr data = msg
+    cdef uchardet_t ud
+    cdef int result
+    cdef size_t candidate
+    cdef size_t candidate_count
+    cdef const_char_ptr encoding_ptr
+    cdef const_char_ptr language_ptr
+    cdef bytes encoding
+    cdef bytes language
+    cdef list candidates = []
+
+    ud = NULL
+    try:
+        with nogil:
+            ud = uchardet_new()
+            result = uchardet_handle_data(ud, data, length)
+        if result != 0:
+            raise RuntimeError("uchardet failed to handle data")
+        with nogil:
+            uchardet_data_end(ud)
+
+        candidate_count = uchardet_get_n_candidates(ud)
+        for candidate in range(candidate_count):
+            encoding_ptr = uchardet_get_encoding(ud, candidate)
+            language_ptr = uchardet_get_language(ud, candidate)
+            encoding = encoding_ptr
+            language = language_ptr if language_ptr != NULL else b""
+            candidates.append(
+                (encoding, language or None, uchardet_get_confidence(ud, candidate))
+            )
+        return candidates
+    finally:
+        if ud != NULL:
+            with nogil:
+                uchardet_delete(ud)
 
 cdef class UniversalDetector:
     cdef uchardet_t _ud
     cdef int _done
     cdef int _closed
     cdef bytes _detected_charset
-    # cdef bytes _detected_encoding
-    # cdef const_char_ptr _detected_language
+    cdef bytes _detected_language
     cdef float _detected_confidence
 
-    def __init__(self):
+    def __cinit__(self):
         self._ud = uchardet_new()
+
+    def __init__(self):
         self._done = 0
         self._closed = 0
         self._detected_charset = b""
-        # self._detected_encoding = b""
-        # self._detected_language = b""
+        self._detected_language = b""
         self._detected_confidence = 0.0
 
     def reset(self):
-        if not self._closed:
-            self._done = 0
-            self._closed = 0
-            self._detected_charset = b""
-            # self._detected_encoding = b""
-            # self._detected_language = b""
-            self._detected_confidence = 0.0
+        self._done = 0
+        self._closed = 0
+        self._detected_charset = b""
+        self._detected_language = b""
+        self._detected_confidence = 0.0
+        with nogil:
             uchardet_reset(self._ud)
 
     def feed(self, bytes msg):
         cdef int length
         cdef int result
+        cdef const_char_ptr data
 
         if self._closed:
             return
 
         length = len(msg)
         if length > 0:
-            result = uchardet_handle_data(self._ud, msg, length)
+            data = msg
+            with nogil:
+                result = uchardet_handle_data(self._ud, data, length)
 
-            if result == -1:
+            if result != 0:
                 self._closed = 1
-                uchardet_delete(self._ud)
-                raise Exception("Handle data error")
-            elif result == 0:
-                self._done = 1
-
-            self._detected_charset = uchardet_get_charset(self._ud)
-            # self._detected_encoding = uchardet_get_encoding(self._ud, 0)
-            # self._detected_language = uchardet_get_language(self._ud, 0)
-            self._detected_confidence = uchardet_get_confidence(self._ud, 0)
+                raise RuntimeError("uchardet failed to handle data")
 
     def close(self):
+        cdef const_char_ptr language_ptr
         if not self._closed:
-            uchardet_data_end(self._ud)
+            with nogil:
+                uchardet_data_end(self._ud)
 
-            self._detected_charset = uchardet_get_charset(self._ud)
-            # self._detected_encoding = uchardet_get_encoding(self._ud, 0)
-            # self._detected_language = uchardet_get_language(self._ud, 0)
+            self._detected_charset = uchardet_get_encoding(self._ud, 0)
+            language_ptr = uchardet_get_language(self._ud, 0)
+            if language_ptr != NULL:
+                self._detected_language = language_ptr
             self._detected_confidence = uchardet_get_confidence(self._ud, 0)
 
-            uchardet_delete(self._ud)
+            self._done = 1
             self._closed = 1
+
+    def __dealloc__(self):
+        if self._ud != NULL:
+            uchardet_delete(self._ud)
 
     @property
     def done(self):
@@ -118,6 +181,10 @@ cdef class UniversalDetector:
     @property
     def result(self):
         if len(self._detected_charset):
-            return self._detected_charset, self._detected_confidence
+            return (
+                self._detected_charset,
+                self._detected_language or None,
+                self._detected_confidence,
+            )
         else:
-            return None, None
+            return None, None, None

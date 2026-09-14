@@ -4,24 +4,53 @@ version = (2, 2, 0, "alpha", 3)
 __version__ = "2.2.0a3"
 
 
-def detect(msg):
+def _as_bytes(data):
+    if isinstance(data, bytes):
+        return data
+    if isinstance(data, (bytearray, memoryview)):
+        return bytes(data)
+    raise TypeError("data must be bytes-like")
+
+
+def detect(msg, *, max_bytes=None):
     """
     Args:
-        msg: str
+        msg: bytes-like object
+        max_bytes: optional maximum number of bytes to examine
     Returns:
         {
             "encoding": str,
-            "confidence": float
+            "confidence": float,
+            "language": str
         }
     """
-    encoding, confidence = _cchardet.detect_with_confidence(msg)
+    encoding, language, confidence = _cchardet.detect_with_details(_as_bytes(msg), max_bytes)
     if isinstance(encoding, bytes):
         encoding = encoding.decode()
+    if isinstance(language, bytes):
+        language = language.decode()
 
     if encoding == "MAC-CENTRALEUROPE":
         encoding = "maccentraleurope"
 
-    return {"encoding": encoding, "confidence": confidence}
+    return {"encoding": encoding, "confidence": confidence, "language": language}
+
+
+def detect_all(msg, *, max_bytes=None):
+    """Return every uchardet candidate in descending confidence order."""
+    results = []
+    for encoding, language, confidence in _cchardet.detect_all(_as_bytes(msg), max_bytes):
+        encoding = encoding.decode()
+        if encoding == "MAC-CENTRALEUROPE":
+            encoding = "maccentraleurope"
+        results.append(
+            {
+                "encoding": encoding,
+                "confidence": confidence,
+                "language": language.decode() if language is not None else None,
+            }
+        )
+    return results
 
 
 class UniversalDetector(object):
@@ -39,7 +68,7 @@ class UniversalDetector(object):
         self._detector.reset()
 
     def feed(self, data):
-        self._detector.feed(data)
+        self._detector.feed(_as_bytes(data))
 
     def close(self):
         self._detector.close()
@@ -50,7 +79,9 @@ class UniversalDetector(object):
 
     @property
     def result(self):
-        encoding, confidence = self._detector.result
+        encoding, language, confidence = self._detector.result
         if isinstance(encoding, bytes):
             encoding = encoding.decode()
-        return {"encoding": encoding, "confidence": confidence}
+        if isinstance(language, bytes):
+            language = language.decode()
+        return {"encoding": encoding, "confidence": confidence, "language": language}

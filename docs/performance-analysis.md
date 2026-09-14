@@ -1,0 +1,216 @@
+# Detector and performance analysis
+
+This document records a local comparison made on 2026-09-15. It is intended
+to make optimization decisions reproducible, rather than to present portable
+headline numbers. The machine used an AMD Ryzen 7 8845HS (8 cores/16 threads)
+and CPython 3.14.
+
+## Implementations reviewed
+
+### chardet
+
+The current chardet implementation is a staged detector rather than the old
+collection of Python ports of Mozilla probers. Its important performance
+techniques are:
+
+- definitive BOM, UTF, escape, magic-number, and markup checks before
+  statistical work;
+- a 200 KB default input limit, a smaller shared evidence window, and a 16 KB
+  statistical-scoring window;
+- compact dense bigram models, upper-bound pruning, and reuse of structural
+  scores between stages;
+- C-speed Python primitives such as `bytes.translate()` for byte scans;
+- an optional compiled scoring kernel, while retaining a pure-Python path.
+
+Its main advantage over cChardet is breadth and accuracy. Current wheels use a
+mypyc-compiled kernel when one is available, so it must not be described or
+benchmarked only as Pure Python.
+
+### charset-normalizer
+
+charset-normalizer avoids exhaustive whole-input work by sampling five
+512-character regions by default. It prioritizes BOMs, declarations, ASCII,
+and UTF-8, lazily decodes large inputs, caches mess/coherence calculations,
+and stops testing unrelated single-byte families after a convincing
+multibyte result. Its source remains usable as pure Python; published wheels
+may use its optional Cython acceleration.
+
+This makes its runtime less dependent on input length than an exhaustive
+detector, although candidate decoding and language coherence are still
+relatively expensive on the uchardet corpus.
+
+### cChardet and uchardet
+
+cChardet delegates the statistical work to native C++ and has a very small
+Python API. This remains a clear advantage for small and medium inputs. The
+weaknesses are that it examines the caller's entire buffer by default, exposes
+only uchardet's top encoding, and inherits uchardet's narrower encoding model
+set and known ambiguities.
+
+The vendored source was the PyYoshi fork's `master` at `edae8e8` from 2023.
+The header and implementation at that commit are byte-for-byte identical in
+the fork and the official GitLab history: multiple candidates, confidence,
+language results, weights, newer models, and the earlier safety fixes had
+already gone upstream. The submodule is updated to official commit `06029ec`
+from 2025. Its four-commit delta changes no detector model or C API; it adds an
+upstream MSVC macro fix, a file-close fix, a CLI default-language option, and a
+CMake minimum-version update. This ancestry and API check matters: changing
+only `.gitmodules` without proving the fork-specific API exists upstream would
+make a fresh clone unbuildable.
+
+Both `edae8e8` and `06029ec` build independently and produce the same uchardet
+test result: 152 of 153 enabled cases pass, while the GB18030 Chinese fixture
+is ranked below Macedonian/Windows-1251. Thus the submodule update introduces
+no observed detector regression, but it also does not fix this existing model
+error. GCC additionally warns that `st` may be uninitialized in
+`nsMBCSGroupProber::HandleData`; control-flow inspection suggests the relevant
+positive-length loop always assigns it, but initializing it explicitly should
+be proposed upstream to make that invariant unambiguous.
+
+## Reproducible performance benchmark
+
+`pyperf_compare.py` preloads and content-deduplicates the same files in every
+worker, warms every detector, and records exact imported module paths. The
+paths prove whether chardet's mypyc kernel and charset-normalizer's Cython
+modules were loaded. A 166-file, 641,202-byte union of the three repositories'
+fixtures was measured on CPython 3.14.2 with CPU affinity fixed to cores 4–7.
+
+Optimized release wheels (`chardet 7.6.0`, `charset-normalizer 3.5.1`):
+
+| Detector | Serial corpus | 4-thread corpus | 4-thread scaling |
+|---|---:|---:|---:|
+| cChardet 2.2.0a3 (Cython/C++) | 92.0 ms | 42.1 ms | 2.19x |
+| chardet 7.6.0 (mypyc) | 129 ms | 209 ms | 0.62x |
+| charset-normalizer 3.5.1 (Cython) | 88.7 ms | 110 ms | 0.81x |
+
+The key result is that optimized charset-normalizer is slightly faster than
+cChardet in this serial workload. cChardet is no longer categorically the
+fastest detector. Releasing the GIL around each native detection does retain a
+clear advantage for concurrent independent buffers.
+
+Pure fallback paths from the sibling source checkouts, on the same corpus:
+
+| Detector | Serial corpus | 4-thread corpus | 4-thread scaling |
+|---|---:|---:|---:|
+| cChardet 2.2.0a3 (Cython/C++) | 92.4 ms | 42.2 ms | 2.19x |
+| chardet 7.6.1.dev32 (Python kernel) | 549 ms | 1.01 s | 0.54x |
+| charset-normalizer 3.5.1 (`md.py`/`cd.py`) | 493 ms | 811 ms | 0.61x |
+
+The thread measurements for both Python fallbacks are noisy because GIL
+contention is itself workload-dependent; their slowdown, rather than an exact
+ratio, is the useful conclusion. To reproduce the optimized-wheel run:
+
+```bash
+uv run --no-sync python benchmarks/pyperf_compare.py \
+  --corpus src/ext/uchardet/test --corpus tests/samples \
+  --corpus ../charset_normalizer/data --rigorous -o optimized.json
+```
+
+To exercise both sibling pure-Python checkouts without uninstalling the
+optimized wheels:
+
+```bash
+uv run --no-sync python benchmarks/pyperf_compare.py \
+  --pythonpath ../chardet/src --pythonpath ../charset_normalizer/src \
+  --corpus src/ext/uchardet/test --corpus tests/samples \
+  --corpus ../charset_normalizer/data --rigorous -o pure.json
+```
+
+`setup.py build_ext --inplace` was run in the locked uv environment before the
+measurements, followed by `uv run --no-sync`, so uv's editable-package sync
+cannot replace the extension while pyperf child processes are starting.
+
+## Accuracy benchmark
+
+Performance without accuracy is misleading. `accuracy.py` applies the same
+three chardet evaluation predicates to every detector and reports the two
+upstream corpora separately, avoiding a detector's own corpus being hidden in
+one aggregate score. All three optimized modules listed above were loaded.
+The measured revisions were chardet/test-data `b0c0d206` and
+Ousret/char-dataset `f9e293f2`.
+
+| Corpus / detector | Exact alias-normalized | Compatible/superset | Decode-equivalent |
+|---|---:|---:|---:|
+| chardet test-data (3,138): cChardet | 47.07% | 49.39% | 54.14% |
+| chardet test-data (3,138): chardet | 91.91% | 94.46% | 99.46% |
+| chardet test-data (3,138): charset-normalizer | 78.17% | 81.84% | 85.95% |
+| charset-normalizer char-dataset (477): cChardet | 79.25% | 85.74% | 93.08% |
+| charset-normalizer char-dataset (477): chardet | 86.37% | 91.19% | 98.74% |
+| charset-normalizer char-dataset (477): charset-normalizer | 83.44% | 89.52% | 95.81% |
+
+Exact normalizes codec aliases only. Compatible additionally accepts known
+directional supersets. Decode-equivalent means the detected codec produces
+functionally equivalent text for that particular byte string. These are not
+interchangeable definitions, so the raw counts and no-result counts remain in
+the script's JSON output.
+
+```bash
+uv run --no-sync python benchmarks/accuracy.py \
+  --chardet-corpus /path/to/chardet-test-data \
+  --charset-normalizer-corpus /path/to/char-dataset
+```
+
+## Input-size behavior
+
+One Shift_JIS sample was repeated without changing its content. chardet's
+default 200 KB processing cap explains its nearly constant time. cChardet and
+charset-normalizer continue to depend on total input size, although for
+different reasons.
+
+| Input | cChardet | chardet pure Python | charset-normalizer pure Python |
+|---|---:|---:|---:|
+| 336 KB | 1.88 ms | 79.0 ms | 8.69 ms |
+| 3.36 MB | 6.10 ms | 69.3 ms | 51.0 ms |
+| 33.6 MB | 58.9 ms | 69.5 ms | 515 ms |
+
+At 33.6 MB, cChardet's lead over chardet narrows to about 1.18x. The new
+optional `max_bytes` argument lets callers make the same explicit evidence
+tradeoff without first copying a Python slice. After warming the detector,
+the 33.6 MB sample took 59.1 ms with the full buffer, 2.01 ms with a 1 MB
+limit, and 0.601 ms with a 200 KB limit (about 98x faster). The default remains
+unlimited for compatibility.
+
+## Changes validated
+
+- Native detection calls release the GIL. This preserves single-worker speed
+  and enables the 3.47x four-worker result above.
+- `UniversalDetector` now keeps its native detector until object destruction,
+  can be reset after `close()`, and frees it even when callers omit `close()`.
+- `done` no longer becomes true after every successful `feed()` call. The C
+  API's zero return value means success, not detection completion.
+- Native failures are checked against the C API's actual nonzero error
+  contract.
+- `detect(..., max_bytes=N)` bounds native work without allocating `data[:N]`.
+- Link-time optimization was tested and rejected: approximately 63.4 ms for
+  the corpus versus a normal-build steady result around 62.3 ms, with extra
+  build time and portability risk.
+
+## Recommended roadmap
+
+1. Make the two public accuracy corpora reproducibly downloadable and pin
+   their revisions. Keep reporting them separately and add a neutral corpus;
+   do not optimize against uchardet's own test data alone.
+2. The new `detect_all()` and `language` result expose data uchardet already
+   computes. Next, expose language weights and add typed result definitions so
+   callers can use the richer output safely.
+3. Evaluate a documented default evidence limit for the next major release.
+   Measure accuracy at 64 KB, 200 KB, and 1 MB before changing the compatible
+   unlimited default.
+4. Profile uchardet with the neutral corpus. The likely targets are repeated
+   full-buffer passes across active probers, virtual dispatch in per-byte
+   loops, and candidate work that cannot affect the winner. Apply staged
+   UTF/BOM/ASCII fast paths and upper-bound pruning only with exact regression
+   tests.
+5. Add fuzzing and sanitizers around the Python-visible C API. Upstream has
+   fixed several bounds and allocation defects since the original fork;
+   staying on the official GitLab history is a correctness requirement, not
+   merely a feature update.
+6. Consider SIMD only after the staged/capped algorithm is measured. Avoid
+   `-march=native` in distributed wheels and dispatch any architecture-
+   specific implementation at runtime.
+
+The immediate conclusion is narrower than the historical marketing claim:
+cChardet still has a meaningful concurrent-throughput advantage, but optimized
+charset-normalizer matched or beat it serially here. Its competitive gaps are
+accuracy, staged fast paths, and bounded large-input latency—not primarily the
+cost of the thin Cython wrapper.

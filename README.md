@@ -5,7 +5,8 @@ cChardet
 [![Run tests](https://github.com/PyYoshi/cChardet/actions/workflows/test.yml/badge.svg)](https://github.com/PyYoshi/cChardet/actions/workflows/test.yml)
 [![Build Wheels](https://github.com/PyYoshi/cChardet/actions/workflows/build.yaml/badge.svg)](https://github.com/PyYoshi/cChardet/actions/workflows/build.yaml)
 
-cChardet is high speed universal character encoding detector. - binding to [uchardet](https://github.com/PyYoshi/uchardet).
+cChardet is a high-speed universal character encoding detector built on
+[uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
 
 ## Python support
 
@@ -165,17 +166,36 @@ uv run twine check dist/*
 
 ```python
 import cchardet as chardet
+
 with open(r"tests/samples/wikipediaJa_One_Thousand_and_One_Nights_SJIS.txt", "rb") as f:
-  msg = f.read()
-  result = chardet.detect(msg)
-  print(result)
+    msg = f.read()
+    result = chardet.detect(msg)
+    print(result)
+
+# Bound work for large inputs without copying msg[:200_000].
+result = chardet.detect(msg, max_bytes=200_000)
+
+# Inspect alternative encoding/language candidates ordered by confidence.
+for candidate in chardet.detect_all(msg, max_bytes=200_000):
+    print(candidate)
 ```
 
 ## Benchmark
 
 ```bash
-$ python setup.py build_ext -i -f
-$ python tests/bench.py
+uv sync --locked
+uv run python tests/bench.py
+
+# Process-isolated statistical benchmark (optimized installed builds).
+uv run python setup.py build_ext --inplace
+uv run --no-sync python benchmarks/pyperf_compare.py \
+  --corpus src/ext/uchardet/test --corpus tests/samples \
+  --corpus ../charset_normalizer/data --rigorous -o benchmark.json
+
+# Measure the sibling Pure Python fallbacks under the same harness.
+uv run --no-sync python benchmarks/pyperf_compare.py \
+  --pythonpath ../chardet/src --pythonpath ../charset_normalizer/src \
+  --corpus src/ext/uchardet/test --rigorous -o benchmark-pure.json
 ```
 
 ### Results
@@ -186,12 +206,8 @@ RAM: DDR5-5600MT/s 96GB
 
 Platform: Ubuntu 24.04 amd64
 
-#### Python 3.12.3
-
-|                   | Request (call/s) |
-|-------------------|------------------|
-| chardet v5.2.0    | 1.1              |
-| cchardet v2.2.0a1 | 2263.6           |
+See [the detector and performance analysis](docs/performance-analysis.md) for
+the methodology, current results, limitations, and optimization roadmap.
 
 ## LICENSE
 
