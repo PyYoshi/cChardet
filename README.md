@@ -218,12 +218,6 @@ uv run --no-sync python benchmarks/accuracy.py \
 
 ### Results
 
-CPU: AMD Ryzen 9 7950X3D
-
-RAM: DDR5-5600MT/s 96GB
-
-Platform: Ubuntu 24.04 amd64
-
 See [the detector and performance analysis](docs/performance-analysis.md) for
 the methodology, current results, limitations, and optimization roadmap.
 External fixtures and detector-tuning changes follow the
