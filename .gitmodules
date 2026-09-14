@@ -1,3 +1,4 @@
 [submodule "src/ext/uchardet"]
 	path = src/ext/uchardet
-	url = https://gitlab.freedesktop.org/uchardet/uchardet.git
+	url = https://github.com/PyYoshi/uchardet.git
+	branch = cchardet

@@ -51,18 +51,23 @@ The vendored source was the PyYoshi fork's `master` at `edae8e8` from 2023.
 The header and implementation at that commit are byte-for-byte identical in
 the fork and the official GitLab history: multiple candidates, confidence,
 language results, weights, newer models, and the earlier safety fixes had
-already gone upstream. The submodule is updated to official commit `06029ec`
-from 2025. Its four-commit delta changes no detector model or C API; it adds an
-upstream MSVC macro fix, a file-close fix, a CLI default-language option, and a
-CMake minimum-version update. This ancestry and API check matters: changing
-only `.gitmodules` without proving the fork-specific API exists upstream would
-make a fresh clone unbuildable.
+already gone upstream. The PyYoshi fork's `cchardet` branch was rebuilt from
+official commit `06029ec` from 2025. The upstream four-commit delta changes no
+detector model or C API; it adds an MSVC macro fix, a file-close fix, a CLI
+default-language option, and a CMake minimum-version update. The previous fork
+history remains available as `obsoleted-cchardet`, making both the upstream
+base and cChardet-specific commits explicit.
 
-Both `edae8e8` and `06029ec` build independently and produce the same uchardet
-test result: 152 of 153 enabled cases pass, while the GB18030 Chinese fixture
-is ranked below Macedonian/Windows-1251. Thus the submodule update introduces
-no observed detector regression, but it also does not fix this existing model
-error. GCC additionally warns that `st` may be uninitialized in
+The fork adds two focused fixes. The UTF-8 prober now rejects state-machine
+errors instead of treating invalid bytes as continuation data. When UTF-8 is
+therefore structurally rejected, a saturated GB18030 distribution is
+calibrated strongly enough to beat an accidental single-byte match, but not
+strongly enough to trigger early termination. This fixes the Chinese fixture
+previously ranked below Macedonian/Windows-1251. The fork passes all 153
+enabled uchardet tests; upstream `06029ec` passed 152. Across the two external
+accuracy corpora the only three changed top results are corrections (one
+GB18030 and two GB2312-compatible inputs), with no observed regression. GCC
+additionally warns that `st` may be uninitialized in
 `nsMBCSGroupProber::HandleData`; control-flow inspection suggests the relevant
 positive-length loop always assigns it, but initializing it explicitly should
 be proposed upstream to make that invariant unambiguous.
@@ -131,10 +136,10 @@ Ousret/char-dataset `f9e293f2`.
 
 | Corpus / detector | Exact alias-normalized | Compatible/superset | Decode-equivalent |
 |---|---:|---:|---:|
-| chardet test-data (3,138): cChardet | 47.07% | 49.39% | 54.14% |
+| chardet test-data (3,138): cChardet | 47.13% | 49.46% | 54.21% |
 | chardet test-data (3,138): chardet | 91.91% | 94.46% | 99.46% |
 | chardet test-data (3,138): charset-normalizer | 78.17% | 81.84% | 85.95% |
-| charset-normalizer char-dataset (477): cChardet | 79.25% | 85.74% | 93.08% |
+| charset-normalizer char-dataset (477): cChardet | 79.45% | 85.95% | 93.29% |
 | charset-normalizer char-dataset (477): chardet | 86.37% | 91.19% | 98.74% |
 | charset-normalizer char-dataset (477): charset-normalizer | 83.44% | 89.52% | 95.81% |
 
@@ -180,6 +185,9 @@ unlimited for compatibility.
   API's zero return value means success, not detection completion.
 - Native failures are checked against the C API's actual nonzero error
   contract.
+- The maintained uchardet fork rejects invalid UTF-8 state-machine sequences
+  and correctly ranks the upstream GB18030 fixture; cChardet no longer skips
+  that conformance case.
 - `detect(..., max_bytes=N)` bounds native work without allocating `data[:N]`.
 - Link-time optimization was tested and rejected: approximately 63.4 ms for
   the corpus versus a normal-build steady result around 62.3 ms, with extra
@@ -202,9 +210,9 @@ unlimited for compatibility.
    UTF/BOM/ASCII fast paths and upper-bound pruning only with exact regression
    tests.
 5. Add fuzzing and sanitizers around the Python-visible C API. Upstream has
-   fixed several bounds and allocation defects since the original fork;
-   staying on the official GitLab history is a correctness requirement, not
-   merely a feature update.
+   fixed several bounds and allocation defects since the original fork; keep
+   the maintained fork rebased on official GitLab history so those fixes remain
+   part of every cChardet build.
 6. Consider SIMD only after the staged/capped algorithm is measured. Avoid
    `-march=native` in distributed wheels and dispatch any architecture-
    specific implementation at runtime.

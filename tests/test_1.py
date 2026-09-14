@@ -8,8 +8,6 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 TESTDATA_DIR = os.path.join(SCRIPT_DIR, "..", "src", "ext", "uchardet", "test")
 
 SKIP_LIST_DETECT = [
-    "zh/gb18030.txt",
-
     # These are tests known to fail (not supported or not efficient
     # enough). We will have to take a closer look and fix these, but
     # there is no need to break the whole `make test` right now,

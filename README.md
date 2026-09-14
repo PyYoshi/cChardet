@@ -5,8 +5,9 @@ cChardet
 [![Run tests](https://github.com/PyYoshi/cChardet/actions/workflows/test.yml/badge.svg)](https://github.com/PyYoshi/cChardet/actions/workflows/test.yml)
 [![Build Wheels](https://github.com/PyYoshi/cChardet/actions/workflows/build.yaml/badge.svg)](https://github.com/PyYoshi/cChardet/actions/workflows/build.yaml)
 
-cChardet is a high-speed universal character encoding detector built on
-[uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
+cChardet is a high-speed universal character encoding detector built on the
+[PyYoshi/uchardet](https://github.com/PyYoshi/uchardet) fork, which tracks
+[upstream uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
 
 ## Python support
 
