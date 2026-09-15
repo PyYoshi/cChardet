@@ -11,8 +11,8 @@ cChardet is a high-speed universal character encoding detector built on the
 
 ## Python support
 
-cChardet supports CPython 3.11 through 3.14.
-Each version is tested on Linux, macOS, and Windows.
+cChardet supports CPython 3.11 through 3.14, including the free-threaded
+CPython 3.14 build. Each version is tested on Linux, macOS, and Windows.
 
 ## Development
 
@@ -208,6 +208,10 @@ uv run --no-sync python benchmarks/pyperf_compare.py \
 uv run --no-sync python benchmarks/pyperf_compare.py \
   --pythonpath ../chardet/src --pythonpath ../charset_normalizer/src \
   --corpus src/ext/uchardet/test --rigorous -o benchmark-pure.json
+
+# Compare regular and free-threaded CPython installations independently.
+uv run --no-sync python benchmarks/pyperf_free_threading.py \
+  --corpus src/ext/uchardet/test --rigorous -o free-threading.json
 
 # Compare encoding and language accuracy on separately reported corpora.
 uv run --no-sync python benchmarks/accuracy.py \

@@ -1,5 +1,6 @@
 # coding: utf-8
 #cython: embedsignature=True, c_string_encoding=ascii, language_level=3
+#cython: freethreading_compatible=True
 
 from libc.stddef cimport size_t
 
