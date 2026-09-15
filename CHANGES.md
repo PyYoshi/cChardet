@@ -1,5 +1,14 @@
 # CHANGES
 
+## Unreleased
+
+- Accelerate uchardet language-model lookups with per-detector code-point
+  caches while preserving candidate results
+- Cache multibyte candidate analysis and eliminate duplicate known-language
+  candidates during finalization
+- Reuse the single-byte filtering buffer for incremental input
+- Add a native C API benchmark and an exact candidate-output comparison tool
+
 ## 2.2.0 (2026-09-15)
 
 - Support Python 3.11, 3.12, 3.13, and 3.14, and drop support for Python 3.10
