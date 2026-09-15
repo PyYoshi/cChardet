@@ -1,6 +1,6 @@
 # CHANGES
 
-## Unreleased
+## 2.3.0 (2026-09-16)
 
 - Support free-threaded CPython 3.14 without re-enabling the GIL, including
   dedicated tests, wheels, and before/after performance measurements
