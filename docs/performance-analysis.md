@@ -83,7 +83,7 @@ Optimized release wheels (`chardet 7.6.0`, `charset-normalizer 3.5.1`):
 
 | Detector | Serial corpus | 4-thread corpus | 4-thread scaling |
 |---|---:|---:|---:|
-| cChardet 2.2.0a3 (Cython/C++) | 92.0 ms | 42.1 ms | 2.19x |
+| cChardet 2.2.0 (Cython/C++) | 92.0 ms | 42.1 ms | 2.19x |
 | chardet 7.6.0 (mypyc) | 129 ms | 209 ms | 0.62x |
 | charset-normalizer 3.5.1 (Cython) | 88.7 ms | 110 ms | 0.81x |
 
@@ -96,7 +96,7 @@ Pure fallback paths from the sibling source checkouts, on the same corpus:
 
 | Detector | Serial corpus | 4-thread corpus | 4-thread scaling |
 |---|---:|---:|---:|
-| cChardet 2.2.0a3 (Cython/C++) | 92.4 ms | 42.2 ms | 2.19x |
+| cChardet 2.2.0 (Cython/C++) | 92.4 ms | 42.2 ms | 2.19x |
 | chardet 7.6.1.dev32 (Python kernel) | 549 ms | 1.01 s | 0.54x |
 | charset-normalizer 3.5.1 (`md.py`/`cd.py`) | 493 ms | 811 ms | 0.61x |
 

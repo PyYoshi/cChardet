@@ -1,6 +1,6 @@
 # CHANGES
 
-## 2.2.0 (Unreleased)
+## 2.2.0 (2026-09-15)
 
 - Support Python 3.11, 3.12, 3.13, and 3.14, and drop support for Python 3.10
   and earlier versions
