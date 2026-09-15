@@ -41,7 +41,6 @@ MANIFEST
 None
 *.tar.gz
 .directory
-.python-version
 .tox/
 
 .DS_Store

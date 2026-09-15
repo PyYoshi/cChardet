@@ -1,0 +1,31 @@
+from collections.abc import Mapping
+from typing import TypeAlias
+
+_NativeResult: TypeAlias = tuple[bytes | None, bytes | None, float | None]
+_NativeCandidate: TypeAlias = tuple[bytes, bytes | None, float]
+
+def detect_with_details(
+    msg: bytes,
+    max_bytes: int | None = None,
+    language_weights: Mapping[str, float] | None = None,
+) -> _NativeResult: ...
+def detect_with_confidence(
+    msg: bytes,
+    max_bytes: int | None = None,
+    language_weights: Mapping[str, float] | None = None,
+) -> tuple[bytes | None, float | None]: ...
+def detect_all(
+    msg: bytes,
+    max_bytes: int | None = None,
+    language_weights: Mapping[str, float] | None = None,
+) -> list[_NativeCandidate]: ...
+
+class UniversalDetector:
+    def __init__(self, language_weights: Mapping[str, float] | None = None) -> None: ...
+    def reset(self) -> None: ...
+    def feed(self, msg: bytes) -> None: ...
+    def close(self) -> None: ...
+    @property
+    def done(self) -> bool: ...
+    @property
+    def result(self) -> _NativeResult: ...

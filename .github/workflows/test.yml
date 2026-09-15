@@ -1,53 +1,85 @@
-name: Run tests
+name: Test
+
 on:
   push:
+    branches: [master]
   pull_request:
-  create:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        py: ["3.13-dev", "3.12", "3.11", "3.10", "3.9"]
+  native-safety:
+    name: Native ASan / UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
+      - name: Configure sanitizers
+        run: >-
+          cmake -S src/ext/uchardet -B build/uchardet-sanitize
+          -DBUILD_BINARY=OFF -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -Werror=maybe-uninitialized"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - run: cmake --build build/uchardet-sanitize --parallel 2
+      - run: ctest --test-dir build/uchardet-sanitize --output-on-failure
+
+  test:
+    name: Python ${{ matrix.python-version }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    name: Run test with Python ${{ matrix.py }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
-          submodules: "recursive"
+          submodules: recursive
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
-          python-version: ${{ matrix.py }}
-          allow-prereleases: true
-          cache: "pip"
+          version: latest-known
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        shell: bash
-        run: |
-          python -VV
-          pip install -r requirements-dev.txt
-
-      - name: Build
-        shell: bash
-        run: |
-          python -VV
-          make cython
-          pip install .
+      - name: Install locked dependencies
+        run: uv sync --locked
 
       - name: Lint
-        shell: bash
-        run: |
-          python -VV
-          ruff check
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        run: uv run ruff check
+
+      - name: Type check
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        run: uv run mypy
 
       - name: Test
-        shell: bash
-        run: |
-          python -VV
-          pytest -vs tests
+        run: uv run pytest
+
+  package:
+    name: Verify distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: latest-known
+          python-version: "3.14"
+
+      - run: uv sync --locked
+      - run: uv build
+      - run: uv run twine check dist/*

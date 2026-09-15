@@ -1,59 +1,90 @@
-name: Build Wheels
+name: Build wheels
+
 on:
   push:
     branches: [master]
-  create:
+    tags: ["v*"]
+  pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build_wheels:
-    strategy:
-      matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+  build-sdist:
+    name: Source distribution
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: latest-known
+          python-version: "3.14"
+
+      - run: uv sync --locked
+      - run: uv build --sdist
+      - run: uv run twine check dist/*
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: test -f "dist/cchardet-${GITHUB_REF_NAME#v}.tar.gz"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  build-wheels:
+    name: Wheels / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    name: Build wheels on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Set up QEMU
         if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
-          platforms: all
+          platforms: arm64
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
-          submodules: "recursive"
+          submodules: recursive
 
-      - uses: actions/setup-python@v5
+      - uses: pypa/cibuildwheel@v4.2.0
+
+      - uses: actions/upload-artifact@v7
         with:
-          python-version: "3.x"
-          cache: "pip"
+          name: wheels-${{ runner.os }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
 
-      - name: Install dependencies
-        shell: bash
-        run: |
-          python -VV
-          pip install -r requirements-dev.txt
-
-      - name: Cythonize
-        shell: bash
-        run: |
-          python -VV
-          make cython
-
-      - name: Build
-        uses: pypa/cibuildwheel@v2.18.1
-        env:
-          # NOTICE: ローカルでは想定通りにテストは通るが､ cibuildwheel では 特定のファイルの文字コード検知がうまくいかないので一時的に無効化する
-          # CIBW_TEST_REQUIRES: "pytest"
-          # CIBW_TEST_COMMAND: "pytest {project}/tests"
-
-          CIBW_ARCHS_LINUX: auto aarch64
-          CIBW_ARCHS_MACOS: x86_64 universal2 arm64
-          CIBW_SKIP: pp* cp36-* cp37-* cp38-*
-
-      - name: Upload Wheels to artifact
-        uses: actions/upload-artifact@v4
+  publish:
+    name: Publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-sdist, build-wheels]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/cchardet/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
         with:
-          name: wheels-${{ matrix.os }}
-          path: wheelhouse
+          pattern: "*"
+          path: dist
+          merge-multiple: true
+
+      - name: Publish distributions with attestations
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

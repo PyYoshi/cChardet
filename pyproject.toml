@@ -4,25 +4,23 @@ authors = [{ name = "PyYoshi", email = "myoshi321go@gmail.com" }]
 urls.Homepage = 'https://github.com/PyYoshi/cChardet'
 description = 'cChardet is high speed universal character encoding detector.'
 readme = { file = 'README.md', content-type = 'text/markdown' }
-license = { file = "COPYING" }
+license = "MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.1-or-later"
+license-files = ["COPYING"]
 classifiers = [
-    'License :: OSI Approved :: Mozilla Public License 1.1 (MPL 1.1)',
-    'License :: OSI Approved :: GNU General Public License (GPL)',
-    'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
     'Programming Language :: Cython',
     'Programming Language :: Python',
     'Topic :: Software Development :: Libraries',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
 ]
-requires-python = ">= 3.9"
+requires-python = ">=3.11"
 dynamic = ["version"]
 
 [build-system]
-requires = ["setuptools", "Cython", "wheel"]
+requires = ["setuptools>=77", "Cython>=3.2.9,<3.4"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
@@ -31,31 +29,51 @@ cchardetect = "cchardet.cli.cchardetect:main"
 [tool.setuptools.dynamic]
 version = { attr = "cchardet.__version__" }
 
-[tool.rye]
-dev-dependencies = [
-    "chardet>=5.2.0",
-    "cython>=3.0.10",
-    "setuptools>=70.0.0",
-    "pytest>=8.2.1",
-    "ruff>=0.4.6",
+[dependency-groups]
+dev = [
+    "build>=1.6.1",
+    "chardet>=7.6.0",
+    "charset-normalizer>=3.5.1",
+    "cython>=3.2.9,<3.4",
+    "mypy>=1.15",
+    "pyperf>=2.10.0",
+    "pytest>=9.1.1",
+    "ruff>=0.16.7",
+    "setuptools>=77",
+    "twine>=7.0.0",
 ]
+
+[tool.uv]
+required-version = ">=0.9.26"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/cchardet", "tests/test_typing.py"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.setuptools.package-data]
+cchardet = ["*.pyi", "py.typed"]
 
 [tool.ruff]
 exclude = ["src/ext"]
 line-length = 100
-target-version = "py39"
+target-version = "py311"
 lint.select = ["E", "F", "I", "N"]
 format.quote-style = "double"
 format.indent-style = "space"
 
 [tool.cibuildwheel]
-skip = "pp* cp36-* cp37-* cp38-*"
+build = "cp311-* cp312-* cp313-* cp314-*"
+skip = "*-musllinux_*"
 archs = "auto"
-before-build = [
-    "pip install cython==3.0.10",
-    "cython {project}/src/cchardet/_cchardet.pyx",
-]
+test-command = "python tools/wheel_smoke.py"
+test-sources = ["tools/wheel_smoke.py"]
 
-# NOTICE: ローカルでは想定通りにテストは通るが､ cibuildwheel では 特定のファイルの文字コード検知がうまくいかないので一時的に無効化する
-# test-requires = "pytest"
-# test-command = "pytest -vs {project}/tests"
+[tool.cibuildwheel.linux]
+archs = ["auto", "aarch64"]
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]

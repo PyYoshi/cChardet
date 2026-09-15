@@ -3,12 +3,13 @@
 
 import glob
 import os
+import sys
 
 from setuptools import Extension, setup
 
 cchardet_dir = "src/cchardet/"
 uchardet_dir = "src/ext/uchardet/src"
-cchardet_sources = glob.glob(cchardet_dir + "*.cpp")
+cchardet_sources = glob.glob(cchardet_dir + "*.pyx")
 sources = cchardet_sources
 
 uchardet_sources = [
@@ -76,10 +77,16 @@ uchardet_sources = [
 ]
 sources += uchardet_sources
 
+if sys.platform == "win32":
+    extra_compile_args = ["/std:c++14", "/Zc:__cplusplus"]
+else:
+    extra_compile_args = ["-std=c++11"]
+
 setup(
     package_dir={"": "src"},
     packages=[
         "cchardet",
+        "cchardet.cli",
     ],
     ext_modules=[
         Extension(
@@ -87,7 +94,7 @@ setup(
             sources=sources,
             include_dirs=[uchardet_dir],
             language="c++",
-            extra_compile_args=['-std=c++11'],
+            extra_compile_args=extra_compile_args,
         )
     ],
 )

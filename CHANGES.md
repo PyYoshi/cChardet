@@ -1,6 +1,31 @@
 # CHANGES
 
-## 2.x.x
+## 2.2.0 (Unreleased)
+
+- Support Python 3.11, 3.12, 3.13, and 3.14, and drop support for Python 3.10
+  and earlier versions
+- Modernize development, testing, and packaging around `uv`, current Cython, and
+  current Python packaging standards
+- Update to the maintained PyYoshi/uchardet fork while preserving the existing
+  cChardet-compatible API
+- Improve UTF-8 validation and GB18030 candidate ranking in the bundled uchardet
+- Return language and confidence information from the detection APIs
+- Add `detect_all()` for inspecting ranked encoding and language candidates
+- Add optional language weights to the Python API and CLI without changing the
+  default candidate ranking
+- Accept `bytes`, `bytearray`, and `memoryview` inputs, and add `max_bytes` to
+  bound detection work without slicing the input
+- Stream input in `cchardetect`, with JSON output and configurable chunk and byte
+  limits
+- Expose uchardet's early-completion state for incremental detection and safely
+  chunk inputs larger than its internal 32-bit length
+- Ship PEP 561 type information for the public Python and Cython-extension APIs
+- Add reproducible performance and accuracy comparisons for cChardet, chardet,
+  and charset-normalizer, including their available native accelerators
+- Build and test distributions across supported Python versions on Linux, macOS,
+  and Windows, including ARM64 wheel coverage
+- Add native sanitizer, arbitrary-byte consistency, and installed-wheel smoke
+  tests
 
 ## 2.2.0-alpha.2 (2024-06-xx)
 

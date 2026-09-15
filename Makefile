@@ -1,4 +1,4 @@
-.PHONY: clean
+.PHONY: clean sync cython build test lint typecheck format check sdist
 clean:
 	$(RM) -r \
 		.pytest_cache \
@@ -15,28 +15,32 @@ clean:
 		tests/*.pyc \
 		wheelhouse
 
-.PHONY: cython
 cython:
-	cython --cplus src/cchardet/_cchardet.pyx
+	uv run cython --cplus src/cchardet/_cchardet.pyx
 
-.PHONY: test
+sync:
+	uv sync --locked
+
 test: clean cython
-	python setup.py build_ext -i -f
-	pytest tests
+	uv run python setup.py build_ext -i -f
+	uv run pytest tests
 
-.PHONY: lint
 lint:
-	ruff check
+	uv run ruff check
 
-.PHONY: format
+typecheck:
+	uv run mypy
+
 format:
-	ruff format
+	uv run ruff format
 
-.PHONY: bench
+check: lint typecheck test
+
 bench: clean cython
-	python setup.py build_ext -i -f
-	python tests/bench.py
+	uv run python setup.py build_ext -i -f
+	uv run python tests/bench.py
 
-.PHONY: sdist
-sdist: clean cython
-	python setup.py sdist
+build: clean
+	uv build
+
+sdist: build
