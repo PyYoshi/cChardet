@@ -1,5 +1,7 @@
 import glob
 import os
+import sys
+import sysconfig
 from concurrent.futures import ThreadPoolExecutor
 
 import cchardet
@@ -30,6 +32,10 @@ SKIP_LIST_DEC.extend(SKIP_LIST_DETECT)
 
 
 class TestCChardet:
+    def test_free_threaded_build_keeps_gil_disabled(self):
+        if sysconfig.get_config_var("Py_GIL_DISABLED"):
+            assert not getattr(sys, "_is_gil_enabled")()
+
     def test_ascii(self):
         detected_encoding = cchardet.detect(b"abcdefghijklmnopqrstuvwxyz")
         got_enc = None
@@ -118,9 +124,15 @@ class TestCChardet:
 
     def test_detect_is_thread_safe(self):
         samples = [b"plain ASCII", "日本語".encode(), "français".encode()]
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            results = list(executor.map(cchardet.detect, samples * 100))
-        assert all(result["encoding"] is not None for result in results)
+
+        def detect_results(sample):
+            return cchardet.detect(sample), cchardet.detect_all(sample)
+
+        expected = [detect_results(sample) for sample in samples]
+        repeated_samples = samples * 100
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            results = list(executor.map(detect_results, repeated_samples))
+        assert results == expected * 100
 
     def test_detect_max_bytes(self):
         data = b"plain ASCII" + "日本語".encode()

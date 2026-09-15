@@ -142,6 +142,27 @@ ordering, encodings, languages, and confidence values for whole-file and
 64-byte input. A further differential check covered 100 deterministic-size
 random byte strings at chunk sizes 1, 7, 64, and 1,024 bytes.
 
+### Free-threaded CPython
+
+`pyperf_free_threading.py` measures cChardet alone so that interpreter and
+extension-module behavior are not mixed with the availability of native
+accelerators in other packages. The same CPython 3.14.2 free-threaded build
+and preloaded 160-file, 99,819-byte uchardet corpus were used before and after
+declaring the Cython module free-threading compatible:
+
+| CPython 3.14t | Before | After | Change |
+|---|---:|---:|---:|
+| Serial corpus | 30.6 ms | 30.6 ms | No significant change |
+| 4-thread corpus | 9.55 ms | 9.25 ms | 1.03x faster |
+
+Before the change, importing cChardet emitted a runtime warning and enabled
+the GIL for the process. Afterwards it leaves the GIL disabled. On regular
+CPython 3.14.2, serial throughput changed from 30.2 to 30.3 ms and four-thread
+throughput from 9.39 to 9.38 ms; pyperf found no significant four-thread
+difference. The existing Cython `nogil` regions remain intentional: they keep
+native detection independent of Python thread state and preserve parallel
+native work on regular CPython as well as free-threaded builds.
+
 ## Accuracy benchmark
 
 Performance without accuracy is misleading. `accuracy.py` applies the same

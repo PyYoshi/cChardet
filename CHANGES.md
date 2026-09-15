@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Support free-threaded CPython 3.14 without re-enabling the GIL, including
+  dedicated tests, wheels, and before/after performance measurements
 - Accelerate uchardet language-model lookups with per-detector code-point
   caches while preserving candidate results
 - Cache multibyte candidate analysis and eliminate duplicate known-language

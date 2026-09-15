@@ -4,6 +4,7 @@
 import glob
 import os
 import sys
+import sysconfig
 
 from setuptools import Extension, setup
 
@@ -82,6 +83,12 @@ if sys.platform == "win32":
 else:
     extra_compile_args = ["-std=c++11"]
 
+# The Windows headers are shared by regular and free-threaded CPython, so the
+# build must provide the configuration macro explicitly.
+define_macros = []
+if sys.platform == "win32" and sysconfig.get_config_var("Py_GIL_DISABLED"):
+    define_macros.append(("Py_GIL_DISABLED", "1"))
+
 setup(
     package_dir={"": "src"},
     packages=[
@@ -94,6 +101,7 @@ setup(
             sources=sources,
             include_dirs=[uchardet_dir],
             language="c++",
+            define_macros=define_macros,
             extra_compile_args=extra_compile_args,
         )
     ],

@@ -3,6 +3,7 @@
 import json
 import subprocess
 import sys
+import sysconfig
 import tempfile
 from pathlib import Path
 
@@ -10,6 +11,9 @@ import cchardet
 
 
 def main() -> None:
+    if sysconfig.get_config_var("Py_GIL_DISABLED"):
+        assert not getattr(sys, "_is_gil_enabled")()
+
     package_dir = Path(cchardet.__file__).parent
     assert (package_dir / "py.typed").is_file()
     assert (package_dir / "_cchardet.pyi").is_file()
