@@ -2,7 +2,7 @@
 # 最低runtimeの限定的な実行確認
 
 2026-09-21。C++20指定で作成済みのwheelを、build時より古いglibcで実行した。
-対象は **CPython 3.11 / Linux x86_64 の1 wheelだけ**。
+対象は **CPython 3.11〜3.14 / 3.14t、Linux x86_64 の5 wheel**。
 対応platformや既定C++規格を変更する判断ではない。
 
 ## 固定した入力
@@ -70,9 +70,53 @@ wheel install検証だけであり、新しい開発環境の依存管理には�
 成功判定の前にwheel / smokeのhashを照合する。GitHub artifactの保持期限を超えた場合、
 別のwheelを同じ実測結果として扱わず、新しいartifactの検証として記録する。
 
+## 3.12〜3.14 / free-threadedの追加確認
+
+同日の追加試験では、同じrunの残り4 ABIも終了code 0でsmokeに成功した。
+3.14tでは既存smoke内のGIL無効assertも通過した。
+
+| ABI | 実行Python | wheel SHA-256 |
+| --- | --- | --- |
+| cp312-cp312 | 3.12.14 | `a180f354cc5fc1585536cb5135dfa7a8a82f0a06500a98fef2f8d9f9a43b2b6a` |
+| cp313-cp313 | 3.13.15 | `5cc18c07c74e9d8628ca087dfd9c0e8172cc088a39aca3b776402bdf0b34898c` |
+| cp314-cp314 | 3.14.7 | `d56ba8f08ae493ac18d3d44ac1eead21efa7f7fc6338568a1e083b7faabb5c54` |
+| cp314-cp314t | 3.14.7 free-threading | `a708d3053a2c123a99f6d78a2d71dc2c0e2abb62dddb3c0bd65af4179688d81a` |
+
+旧imageにはこれらのPythonがないため、別の公式imageからinterpreterだけを取り出した。
+供給元は次の固定digestであり、実行環境そのものには使っていない。
+
+```text
+quay.io/pypa/manylinux2014_x86_64@sha256:21c37461985655aaa25ed3a923b28e6c9d4dd9e10edc0281eb50385184bddd31
+```
+
+供給元の圧縮layer合計は398,277,015 bytes、取り出した4ディレクトリは約283 MiB。
+取得・保存予算内で、追加のCI buildは行っていない。
+`/opt/_internal/cpython-3.12.14`、`cpython-3.13.15`、`cpython-3.14.7`、
+`cpython-3.14.7-nogil` を停止中の一時containerから `docker cp` で保存し、
+親ディレクトリを旧imageの `/interpreters` にread-only mountした。
+取り出し用containerは削除済み。元imageや保存したinterpreterは保持している。
+
+先の再現コマンドにこのmountを追加し、Pythonを
+`/interpreters/cpython-<version>/bin/python3`、wheelのABIを表の値へ変更する。
+各ABIは独立したcontainerと空の `/runtime/site` で検証する。
+新しいglibcやlibstdc++、OpenSSLを旧imageへコピーしていない。
+各interpreterの `platform.libc_ver()` は `('glibc', '2.24')` を返し、
+wheel import後の `/proc/self/maps` では全4 ABIで以下の旧image内ライブラリを確認した。
+
+```text
+/lib/x86_64-linux-gnu/libc-2.24.so
+/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.22
+```
+
+pipはSSL依存が不足するため `Disabling truststore since ssl support is missing` と警告した。
+今回は `--network none` / `--no-index` / `--no-deps` によるローカルwheelだけの
+installであり、TLS検証を無効化してネットワーク取得したわけではない。
+このinterpreter移植環境を汎用Python環境やSSL対応の検証として扱わない。
+また、対象は上記の固定buildであり、現在のdev全体を再buildした結果ではない。
+
 ## まだ確認していない範囲
 
-- CPython 3.12〜3.14/3.14tとARM64のglibc 2.24実行
+- ARM64のglibc 2.24実行
 - 最低macOS / Windows / CRTでの実行
 - C++20の追加標準ライブラリ機能をwheelへ入れた場合のruntime依存
 - 古いkernel、異なるCPU、任意のLinux distributionの網羅
