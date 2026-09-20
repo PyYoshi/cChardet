@@ -65,6 +65,10 @@ raw byte-bigram試作、SequenceModel形式契約、training仕様の精緻化�
 他言語・別domain・大入力・incremental全体については、この結果から推測しない。
 generator基盤と非デフォルト観測targetは維持し、内部選抜の分析を次の課題にする。
 
+[専用tuningを用いたratio感度実験](v3-ratio-sensitivity.md)では、24録音で再学習した
+2 profileの因子0.90が事前基準を満たした。ただしこれは8録音のtuning内で選んだ候補であり、
+標準採用の保留は維持する。旧32録音版と再学習・ratio変更版の結果を混同しない。
+
 ## 互換性とmigration
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
