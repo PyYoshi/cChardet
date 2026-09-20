@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-20",
+  "native_detection": false,
+  "independent_predictions": false,
+  "overlap": {
+    "profile": "nfkc-casefold-whitespace-char5-v1",
+    "threshold": {"numerator": 4, "denominator": 5},
+    "input_manifest_hashes": [
+      "fb18c3fe1b320969ac6a4abb1e17faa429fd7aba8f9de6d0a1db172db0eca7e6",
+      "193b83127d09762921440c383698884184d732b6c1c0d74a4507475e3aa3172b"
+    ],
+    "report_content_hash": "4a399d3722bd9eaaa512dc93da0004831922bdb66ba63f74f97539da8fbdaeb2",
+    "source_count": 400,
+    "source_bytes": 30409,
+    "pair_comparisons": 79800,
+    "normalized_equal": 0,
+    "near_duplicate_candidates": 15,
+    "cross_split_candidates": 0,
+    "all_sources_split": "validation",
+    "status": "DIAGNOSTIC_NOT_LEAKAGE_CLEARANCE"
+  },
+  "sequence_coverage": {
+    "report_content_hash": "4b41a380d04bd70a35a64ab42119fc15a8bbd7ce68595d53d23cb67b6c406e0d",
+    "training_artifact_hash": "e754f7909043746553118be10404641ba979d09585575f09505b5e2de5c9cbaf",
+    "evaluation_manifest_hash": "94f1a63c80db0d1c72db0a8c6afdb732a372ceb377f8dd5a0c358a07e5083571",
+    "split": "validation",
+    "source_count": 1,
+    "bytes": 27265,
+    "letters": 21273,
+    "frequent_letters": 21260,
+    "known_rare_letters": 0,
+    "unknown_letters": 13,
+    "adjacent_letter_pairs": 16793,
+    "matrix_pairs": 16782,
+    "outside_matrix_pairs": 11,
+    "unseen_matrix_pairs": 232,
+    "category_mass": [232, 0, 771, 15779],
+    "deployment_status": "NOT_ENGINE_CALIBRATED"
+  }
+}
