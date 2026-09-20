@@ -36,6 +36,8 @@ raw byte-bigram試作、SequenceModel形式契約、training仕様の精緻化�
 生成の決定性、構造体適合、統計上のloss、encoding精度は別々の指標である。
 一つの成功を他の成功へ読み替えない。既存engineとのfilter適合とconfidence較正を確認するまで、
 形式が正しいtableでも既定modelへ登録しない。生成物の配布条件は未確定のまま保持する。
+接続前に照合すべき入力・統計・feed境界は[SBCS training契約の調査](v3-sbcs-training-contract.md)
+に整理した。sourceを読んだ根拠と実行検証を区別する。
 
 ## 互換性とmigration
 
