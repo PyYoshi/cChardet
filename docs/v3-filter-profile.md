@@ -58,3 +58,6 @@ archive全体のhashは異なるが、63個のar headerの12-byte timestamp fiel
 filter互換training、confidence較正、独立dataでの識別品質は未完了のまま。
 既定profileの`identity-unfiltered-v1` / `NOT_ENGINE_CALIBRATED`を維持する。
 P01対象の追加fuzz・大入力停止原因調査・BOM試作評価は再開していない。
+
+後続の[会話validation観測](v3-filter-validation.md)では、既存16文書に対する
+filter前後とchunk別の統計差を記録した。trainingや精度評価とは分けて扱う。
