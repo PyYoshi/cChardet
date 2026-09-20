@@ -143,3 +143,21 @@ archive自体のmetadata差、他compiler、一般的な性能測定とは区別
 観測した。model外の文字対は分母のみ増えるため、単純なcategory比率と同一視できない。
 これはUnicode language detectorの観測であり、新規SBCS trainerとの適合を確認したわけではない。
 reject/ranking原因はunknownを維持し、#120全体は未完了とする。
+
+[raw Reportと最終候補の対応照合](v3-report-attribution.md)も追加した。
+保存artifactの完全一致候補を列挙するだけでrankingを再実装せず、同値重複の曖昧さや
+異なるinput/buildを照合した可能性を隠さない。既存小fixtureの9通りでも確認した。
+
+## coding state・SBCS統計の観測（2026-09-21）
+
+native traceの追加field `prober_evidence` で、MBCS childのcoding stateと
+SBCS modelの初期化済みcounterを読み取る。Big5は独自処理なのでcoding stateをnullとし、
+Hebrewの補助proberは統計model一覧から除く。静的model labelを最終候補と同一視しない。
+
+baseline `a56fd958` と同じGCC16.2.1 Release buildで、全61 library object memberが
+byte一致した。既存3小fixtureの5 feed scheduleで追加field以外の観測が一致し、
+fresh/reuseと固定randomを含む6 scheduleでも最終候補が一致した。
+追加testは4件成功。詳細とskip条件はnative診断文書を参照する。
+
+これはfeed後のsnapshotであり、全byteの状態遷移履歴ではない。rejectの根本原因や
+ranking理由は未解決のまま。P01保留中の作業や追加の不正入力探索は再開していない。
