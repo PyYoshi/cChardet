@@ -10,7 +10,7 @@
 - [uchardet #12](https://github.com/PyYoshi/uchardet/pull/12): corpus、model生成試作、固定source取得recipe。9 CI成功。
 - [uchardet #13](https://github.com/PyYoshi/uchardet/pull/13): UTF-8 test I/OとC++11の移植性修正。corpusのWindows/macOS検証を追加し11 CI成功。
 
-native統合点: `1056e60`（#18のPython-only training profileを含む）。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
+native統合点: `4117df7`（#19の旧generator廃止を含む）。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
 C++20はnative compiler matrixでは通ったが、Cython/wheelの全配布条件を満たすという承認ではない。
 
 ## 既存corpusの失敗分類
@@ -89,6 +89,7 @@ hashと件数のみを公開し、原文・archive・生成本文はGitへ同梱
 - [uchardet #16](https://github.com/PyYoshi/uchardet/pull/16): group直下childのactive/stateと前回snapshotとの差分。小fixtureで従来出力一致を確認し11 CI成功。詳細原因はunknownのまま。
 - [uchardet #17](https://github.com/PyYoshi/uchardet/pull/17): Tatoeba CC0 snapshotとoffline取り込み。source 17 testsとframework 24 tests、11 CI成功。検出精度を測った結果ではない。
 - [uchardet #18](https://github.com/PyYoshi/uchardet/pull/18): 未較正のPython-only training profile。14限定testsと11 CI成功。自然文trainingでも生成・再計算の再現性を確認したが、native品質比較はしていない。
+- [uchardet #19](https://github.com/PyYoshi/uchardet/pull/19): 現build等からの参照がない旧generator 2本と専用依存定義を廃止。保持対象160filesはhash一致、11 CI成功。生成済みmodel・header・由来ログは変更せず、削除したtoolはGit履歴から復元可能。
 - [改善対象の暫定順位](v3-improvement-priorities.md): 保存済み観測と原因未確定を分離し、model形式・corpus多様性・品質評価の順序を整理。
 
 [判断ログP01](v3-decision-log.md#p01-安全性検証の一部を保留2026-09-20)に従い、
