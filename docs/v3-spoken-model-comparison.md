@@ -81,3 +81,6 @@ Rust validationは[前回のpaired評価](v3-paired-encoding-controls.md)と同�
 
 全detectorの識別精度、confidence校正、この新モデルの性能/memory、独立domain上の評価、
 生成modelの配布条件は未完了。既定modelは置換せず、P01も再開しない。
+
+後続の[限定処理コスト](v3-spoken-model-cost.md)では単一proberの計時とallocation call-siteを
+観測した。trial末尾側に変動があり、全体の性能/memory gate完了とは扱わない。
