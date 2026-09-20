@@ -104,3 +104,9 @@ encoding上のcontrol文字ペナルティだけでは、誤ったISO系候補�
 compileは`c++ -std=c++11 -O2 -Isrc/ext/uchardet/src`で、
 `archives/v3-corpus/engine-paris-filtered-v1/build/src/liblibuchardet_experimental.a`
 をlinkした。traceの引数は`0 INPUT_FILE`（one-shot）。model・入力を変更していない。
+
+同じtraceと実験conformance実行fileを`UCHARDET_TRACE` / `UCHARDET_CONFORMANCE`に
+指定し、`uv run --locked --offline --no-sync pytest -q tests/test_report_attribution.py`も
+実行した（28 passed）。空入力・ASCII・既存の短い日本語fixtureを0/1/7-byte scheduleで
+照合する9試験を含む。最終候補の値がraw reportに存在すること等の確認であり、内部rankingの
+因果証明・全corpusの観測非干渉・精度向上の証明ではない。
