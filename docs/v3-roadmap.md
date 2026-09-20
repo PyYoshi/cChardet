@@ -67,7 +67,7 @@ Rust、新しい検出器architecture、SIMDは条件付きの後続作業とす
 | 性能測定 | [native benchmark](../src/ext/uchardet/benchmark/README.md)、[Python比較](../benchmarks/pyperf_compare.py)、[threading比較](../benchmarks/pyperf_free_threading.py) | version付きworkload、測定値の分布、allocation・memory・並列scalingの報告 |
 | 精度測定 | [評価script](../benchmarks/accuracy.py)でcorpus別のexact/compatible/decode-equivalentとlanguage指標 | sample単位の記録、評価定義のversion管理、data分割、失敗分類 |
 | test data管理 | [Test data policy](test-data-policy.md) | corpus manifest、license一覧、決定的な生成、data混入の検査 |
-| model生成 | [生成手順](../src/ext/uchardet/script/README)、[BuildLangModel.py](../src/ext/uchardet/script/BuildLangModel.py)、language/charset定義と生成log | 由来の調査、network取得とoffline生成の分離、入力・parameterの固定 |
+| model生成 | [生成手順](../src/ext/uchardet/script/README)、[BuildLangModel.py](../src/ext/uchardet/script/BuildLangModel.py)、language/charset定義と生成log | 参考調査と由来の記録。既存generatorは非採用を基本とし、再現性・品質を検証できる新規実装を作る |
 | packaging | [wheel workflow](../.github/workflows/build.yaml)、[wheel smoke test](../tools/wheel_smoke.py) | native連携を変更しても配布物をinstallした状態で検証 |
 
 [既存の性能分析](performance-analysis.md)には、同梱fixture 158件について、2.2.0 baselineから
@@ -304,7 +304,17 @@ model familyごとにgenerator、入力source、revision、license表記、param
 手動変更を棚卸しする。`script/BuildLangModel.py`、language/charset定義、既存logから始める。
 既存手順で自動生成が説明されているのはsingle-byte modelであり、multibyte tableにも
 同じ手順が使えるとは仮定しない。追跡できない由来は「不明」と記録し、推測で埋めない。
-generatorを分離する前に、再現できる部分とできない部分のreportを作る。
+調査は既存modelの理解とprovenance把握のために行い、既存generatorの改修・再利用を前提にしない。
+
+保守者から、過去の利用で「同じ処理を繰り返しても結果が安定せず、生成modelの品質がかなり
+落ちる傾向があった」と報告されている。これは過去の経験に基づく判断材料であり、今回の
+再現実験で原因を特定したという意味ではない。v3では既存のmodel生成scriptの使用を推奨せず、
+新しい生成基盤の依存にしないことを基本方針とする。
+
+調査範囲は入力取得・正規化・統計処理・出力形式・既知の制約の把握に絞る。
+旧scriptの再現や修復を新規開発の必須条件にはしない。
+v3側での削除は、依存するbuild・文書・生成物の参照と必要な由来記録を確認したうえで別PRにする。
+v2の保守branchと既存modelは一括削除しない。既存modelの品質とgeneratorの品質も別々に評価する。
 
 Phase 1の完了条件は、新規checkoutから文書どおりにbuild・検証できること、既知の安全性問題と
 test失敗が見えること、native比較を再現できること、代表的な誤判定をtraceで説明できること、
@@ -380,7 +390,10 @@ API response、CSV、e-mail、subtitle、document exportも由来を確認した
 
 ### Model生成とprovenance
 
-取得 → 正規化 → language/encodingによる選別 → 統計生成 → 検証 → 出力を、それぞれ検証可能な工程に分ける。
+生成pipelineは完全新規実装を基本とする。既存scriptを抽出・整理して使い続ける計画にはしない。
+取得 → 正規化 → language/encodingによる選別 → 統計生成 → 検証 → 出力を、それぞれ検証可能な工程として設計する。
+必要な仕様・数式・data形式とその出典を記録し、旧codeやtableを取り込む場合は再利用として明示する。
+新しいfileに書いたことだけを理由に、独立した由来や希望するlicenseを適用できるとは判断しない。
 まず棚卸しを基にsingle-byteのlanguage/encoding familyを1つ選ぶ。
 再配布可能な小さなcorpusで決定性を検証し、別途、現実的なtraining dataでmodel品質を調べる。
 小さなdataから再現可能に生成できただけでは、実用modelが完成したとはしない。
@@ -390,6 +403,10 @@ network利用は取得工程に限定する。
 独立したclean環境で2回生成し、canonicalなmodel内容のhashが一致することを確認する。
 実行日時はcanonicalな内容から分離するか再現可能な時刻規則を使い、
 記録用timestampのために同じmodelが異なるhashにならないようにする。
+同じ作業directoryで繰り返しても既存出力を二重集計しないこと、途中失敗後の再実行でも
+結果が変わらないことを検証する。固定入力に対する決定性と再実行時のべき等性を別々に確認する。
+生成したmodelは同じengine上で既存modelと比較し、未使用dataで精度・候補・confidence・
+性能を評価する。hashが一致するだけでは品質の合格とせず、採用基準を満たすまで既存modelを置換しない。
 
 生成modelにはmodel/format version、generator version/commit、corpus revision/hash、
 source license参照、language/encoding family、生成parameter、由来分類、生成日時の規則、
@@ -402,9 +419,32 @@ tableの次元、順序、数値型、量子化、検証条件を明示し、ま
 出力前に次元・値域・参照を検証し、将来のRust emitterも同じcanonical artifactを使う。
 初期schemaで歴史的modelすべてを表す必要はなく、未対応familyを明記してversionを上げながら拡張する。
 
-engine、generator、corpus、modelのlicenseは独立して管理する。
-MPL-2.0は派生Rust実装の候補であり、既存codeやtableを一括でrelicenseする決定ではない。
-取り込み・再配布・license表記変更の前に由来と条件を確認し、未解決dataはlocal参照に留める選択肢を持つ。
+### 新規fileのlicenseを決める時期と対象
+
+新規fileに適用するlicenseは未決定である。
+利用・組み込み・開発参加のしやすさを重視し、LGPL、MIT、Apache-2.0などを候補として比較する。
+LGPLはversionと「or later」の有無も決める。以前のMPL-2.0を第一候補とする案は固定方針にせず、
+由来に応じた条件を確認する。ここでは候補の適用可否や既存資産のrelicense可否を確定しない。
+
+Phase 1のV3-01でlicenseの設計判断を行い、対象componentの新規実装・外部contributionを
+受け入れる前に、そのcomponentで使うlicenseとfile表記の規則を決める。
+model generatorの新規実装まで未決定を持ち越さない。
+全componentを一括で決める必要はないが、未決定の対象を明示する。
+
+| 対象 | 判断時に確認すること |
+| --- | --- |
+| 新規engine/tool/generator/test | 独自実装か既存codeの派生か、依存library、希望するlicenseの適用条件、利用・修正・配布時の扱い |
+| 既存codeと改修file | 現在のlicense・著作権表示・由来。新規file向けの選択を一律に適用しない |
+| Corpus | sourceごとの条件、取得・加工・再配布・model生成に関する確認事項 |
+| Generated model/table | corpus・generator・再利用tableの由来、生成物の配布条件。generatorと同じlicenseだと自動判断しない |
+| 開発文書・schema・sample | codeと同じ方針にするか、外部資料やsampleの条件、帰属表示 |
+
+判断結果は`docs/decisions/`に日本語で残し、対象範囲、採用licenseとversion、選定理由、
+未解決事項を記録する。確定後、対応するLICENSE/COPYING、file header/SPDX、package metadata、
+contribution案内を整合させ、配布物の表記も確認する。
+希望するlicenseへの移行を妨げる既存資産は由来を追跡し、必要なら段階的な独自実装・model置換を検討する。
+既存の表示を削除して方針に合わせることはしない。
+取り込み・再配布・表記変更前の確認が済まないdataは、local参照に留める選択肢を持つ。
 
 Phase 2は、corpus v1、検証済みのmanifest/分割validator、決定的なsize/encoding/HTML生成、
 provenance一覧、C++ emitterを含む再現可能な試作modelが揃った時点で完了とする。
@@ -606,7 +646,8 @@ publicな挙動を変更する前に、以下の設計判断を文書として�
 | Native境界 | 公開symbol、該当するABI version/SONAME、所有権、error code、Cythonとの結合 | native API変更と連携PRの前 |
 | C++規格・安全性 | C++20を有力候補とした機能選定、RAII/借用view/型の方針、標準library・runtime条件 | 規格依存機能の導入前。各配布環境での検証を根拠に決める |
 | Platform | Python/compiler/CMake最小版、architecture、free-threaded対応、packaging負担 | Beta前。偶然サポートを失わない |
-| Data/model | format version、reader互換性、由来、配布条件 | model公開前 |
+| 新規fileのlicense | LGPL/MIT/Apache-2.0等の比較、component別の適用範囲、version・表記・contribution方針 | Phase 1のV3-01で着手。対象componentの新規実装・外部contribution受入れ前 |
+| Data/model | format version、reader互換性、由来、配布条件 | model公開前。新規generatorのlicenseは実装前に決定 |
 | Engine選択 | Rust試作の完了条件、両実装の維持cost、default engine | Phase 7の根拠が揃ってから |
 
 破壊的変更ごとに、旧/新の例、影響する利用者、変換方法または代替API、変更されるversion、
@@ -627,7 +668,7 @@ nativeとwrapperで管理先が異なる場合は、依存関係を示した別P
 
 | ID | 管理先 | 作業・成果物 | 受け入れ条件・依存関係 |
 | --- | --- | --- | --- |
-| V3-01 | 両repository | baseline棚卸し: 既知の失敗、toolchain、model family、native/wrapper benchmark manifest、生の測定結果hash。両repositoryの`dev`のCI・Rules確認 | 再現手順を記録。測定なしに新しい性能効果を主張しない |
+| V3-01 | 両repository | baseline棚卸し、両repositoryの`dev`のCI・Rules確認、新規fileのcomponent別license判断。既知の失敗・toolchain・model family・benchmark manifestと測定hashを記録 | 再現手順を記録。測定なしに性能効果を主張しない。新規実装前に対象licenseを決定 |
 | V3-02 | 両repository、別PR | sanitizerとDebugの分離、build preset、C++20機能と配布互換性の検証、規格採用の設計判断 | GCC/Clang/MSVCとApple Clang、CMakeとCython経由で検証。最低対応runtimeでwheelを実行しsdist要件も記録。V3-01に依存 |
 | V3-03 | uchardet | 機械可読なnative出力、比較harness、終了/lifecycle case | 同じfeedでの同等性とchunk間差分を分けて報告。V3-01 |
 | V3-04 | uchardet | ASan/UBSan preset、上限付きfuzz target、回帰seed | 再現可能なsmoke実行と最小化入力の再検証。V3-02/03 |
@@ -635,7 +676,7 @@ nativeとwrapperで管理先が異なる場合は、依存関係を示した別P
 | V3-06 | uchardet | 任意で有効化するprober/ranking trace | 代表的失敗を説明でき、無効時costを測定済み。V3-03 |
 | V3-07 | uchardet | corpus manifest/分割schema、license一覧、validator | 権利情報欠落や分割を跨ぐ派生dataを拒否。V3-02と並行可能 |
 | V3-08 | uchardet | offline strict再encode、正常境界でのsize生成、HTML生成 | 決定的hash、生成できなかった件数、data混入test。V3-07 |
-| V3-09 | uchardet | legacy generator/由来調査、offline試作modelとC++出力 | 不明点を明示し、clean環境の2回の生成が一致。V3-01/07/08 |
+| V3-09 | uchardet | legacy generatorの参考調査、新規offline generator・試作model・C++出力。旧script廃止は参照確認後に別PR | 決定性・再実行のべき等性・未使用dataでの品質を別々に検証。新規generatorのlicense決定済み。V3-01/07/08 |
 | V3-10 | 両repository | 失敗report、top-k分析、coverage/ranking改善の優先順位 | 代表例を確認済みで、未参照holdoutがある。V3-03/06/08 |
 | V3-11 | cChardet | 3.0範囲・契約の設計判断、移行案内の初版 | V3-10から測定可能な利用者向け改善を選ぶ。日程を満たすために範囲を捏造しない |
 | V3-12 | 両repository、別PR | 選択した修正/model、submodule連携、report | 上記の基準、wheel/API test、意図した差分のレビュー。該当するV3-09/10/11 |
