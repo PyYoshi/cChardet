@@ -50,6 +50,10 @@ raw byte-bigram試作、SequenceModel形式契約、training仕様の精緻化�
 限定的な反応差と処理コストは測定済みだが、全detectorの識別精度、confidence校正、
 リクエスト単位のtail latency・memory/allocationは未確認で、標準採用の保留は維持する。
 
+[reuse中のallocation呼び出し](v3-model-allocation-calls.md)も個別に観測した。
+対象call-siteの0回と、全detectorのallocation/memory gateは区別する。
+初回確保・peak/live memory・共有library内部等は未測定のままである。
+
 ## 互換性とmigration
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
