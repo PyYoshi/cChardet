@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import codecs
 
-FAMILY_MAPPING_VERSION = "codec-family-v1"
+FAMILY_MAPPING_VERSION = "codec-family-v2"
 
 # Explicit reporting buckets. Do not infer families from spelling/prefixes.
 _FAMILIES = {
@@ -18,16 +18,29 @@ _FAMILIES = {
     "chinese-simplified": ("gb2312", "gbk", "gb18030", "hz"),
     "chinese-traditional": ("big5", "big5hkscs", "cp950"),
     "korean": ("euc_kr", "cp949", "johab", "iso2022_kr"),
-    "cyrillic": ("cp1251", "koi8_r", "koi8_u", "iso8859_5", "cp866", "mac_cyrillic"),
+    "cyrillic": ("cp1251", "koi8_r", "koi8_u", "iso8859_5", "cp866", "cp855", "mac_cyrillic"),
     "latin-western": ("iso8859_1", "iso8859_15", "cp1252", "mac_roman"),
-    "latin-central-european": ("iso8859_2", "cp1250", "mac_latin2"),
+    "latin-central-european": ("iso8859_2", "cp1250", "cp852", "mac_latin2"),
+    "latin-northern": ("iso8859_4", "iso8859_10", "cp865"),
+    "latin-southern": ("iso8859_3",),
+    "latin-southeastern": ("iso8859_16",),
     "latin-turkish": ("iso8859_9", "cp1254"),
     "baltic": ("iso8859_13", "cp1257"),
-    "greek": ("iso8859_7", "cp1253"),
-    "hebrew": ("iso8859_8", "cp1255"),
+    "greek": ("iso8859_7", "cp1253", "cp737"),
+    "hebrew": ("iso8859_8", "cp1255", "cp862"),
     "arabic": ("iso8859_6", "cp1256"),
     "vietnamese": ("cp1258",),
     "thai": ("tis-620", "cp874", "iso8859_11"),
+}
+
+# Reporting-only names absent from the standard Python codec registry.
+# Never register decoders or change canonical_encoding / evaluation semantics.
+_NATIVE_NAMES = {
+    "mac-centraleurope": "latin-central-european",
+    "georgian-academy": "georgian",
+    "georgian-ps": "georgian",
+    "viscii": "vietnamese",
+    "euc-tw": "chinese-traditional",
 }
 
 
@@ -46,10 +59,13 @@ CODEC_FAMILIES = {
 
 
 def encoding_family(encoding: str | None) -> str:
-    return CODEC_FAMILIES.get(canonical_encoding(encoding), "unknown")
+    if encoding is None:
+        return "unknown"
+    explicit = _NATIVE_NAMES.get(encoding.casefold().replace("_", "-"))
+    return explicit or CODEC_FAMILIES.get(canonical_encoding(encoding), "unknown")
 
 
-def family_observation(expected: str, predicted: str | None) -> dict:
+def family_observation(expected: str, predicted: str | None) -> dict[str, str]:
     expected_family, predicted_family = encoding_family(expected), encoding_family(predicted)
     if "unknown" in (expected_family, predicted_family):
         relation = "UNKNOWN"

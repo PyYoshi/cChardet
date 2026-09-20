@@ -53,6 +53,7 @@ files = ["src/cchardet", "tests/test_typing.py"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+testpaths = ["tests", "src/ext/uchardet"]
 
 [tool.setuptools.package-data]
 cchardet = ["*.pyi", "py.typed"]
