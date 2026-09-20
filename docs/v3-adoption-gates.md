@@ -39,6 +39,12 @@ raw byte-bigram試作、SequenceModel形式契約、training仕様の精緻化�
 接続前に照合すべき入力・統計・feed境界は[SBCS training契約の調査](v3-sbcs-training-contract.md)
 に整理した。sourceを読んだ根拠と実行検証を区別する。
 
+2026-09-21追記: native filter training、同一入力coverage、実prober counter接続、
+[既存Frenchモデルとの比較](v3-legacy-model-comparison.md)まで実装・観測した。
+今回のvalidationでは生成モデルのnegativeカテゴリが多く、採用を支持する識別品質の証拠はない。
+整数counterの一致だけでconfidence校正やencoding正解率を達成したとは扱わない。
+候補競合、negative control、未使用data、性能、生成modelの権利確認が残るため採用は保留する。
+
 ## 互換性とmigration
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
