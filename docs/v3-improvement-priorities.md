@@ -35,6 +35,10 @@ uv run --locked python -m benchmarks.failure_analysis \
 この数字だけではArabic・Vietnamese等の新規対応の順序は決められない。
 原文本文とhashの照合を伴わない、保存済みreportだけの単純な再計数は根拠にしない。
 
+[既存利用者報告の整理](v3-real-world-reports.md)ではtext/CSV/HTMLの3件を確認した。
+旧versionの報告や正解codec未確定のケースを現行accuracyへ加算せず、まずprovenance・
+期待Unicode・現行再現を確認する。French tuningだけで改善順位全体を決定しない。
+
 `cause_status:UNRESOLVED`は計11件。そのうち2件が上記の候補不在で、
 9件はcodec名こそexactだがPython側のcodecがなくdecodeを検証できない。
 後者をdetectorの誤判定9件と数えたり、確認済み入力と扱ったりしない。
