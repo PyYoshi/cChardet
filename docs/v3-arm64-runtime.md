@@ -2,7 +2,8 @@
 # ARM64旧runtimeのQEMUによる限定検証
 
 2026-09-21。既存C++20 wheelをARM64のglibc 2.24 / CPython 3.11.1で実行した。
-x86_64ホスト上のQEMU user-modeによる検証であり、ARM実機・性能・全ABIの確認ではない。
+x86_64ホスト上のQEMU user-modeによる検証であり、ARM実機・性能の確認ではない。
+後述の追加検証でCPython 3.11〜3.14 / 3.14tの5 ABIが成功した。
 現在のdevを再buildした結果でもない。C++規格や最低対応条件は変更しない。
 
 ## 固定した資材
@@ -130,11 +131,55 @@ timeoutはDocker clientの上限。タイムアウト時にはcontainerが残っ
 残っている場合だけ、その検証用containerを停止・削除する。
 今回の成功実行では残留containerはなかった。
 
+## 残り4 ABIの追加確認
+
+同日の追加検証で、次の4 wheelもそれぞれ独立した空の`/runtime/site`へinstallし、
+同じrunnerと元smokeを終了code 0で通過した。3.14tではGIL無効のassertも成功。
+すべて`glibc 2.24`と前述の旧ARM64 libc/libstdc++のロードを確認した。
+
+| ABI | Python | wheel SHA-256 |
+| --- | --- | --- |
+| cp312-cp312 | 3.12.14 | `4a3bce570c5bf890f9e6cb6926af0446319acea49108bec9c83bcc721c0d33db` |
+| cp313-cp313 | 3.13.15 | `77eb80c62decd7b0dc4a1f77aabd92c85ddae42aeac3dc5cb0015cbd70704120` |
+| cp314-cp314 | 3.14.7 | `fbf1ec6d1649be3bcf34c0084cdea33710b3cc2d186689350577e68a173d1e06` |
+| cp314-cp314t | 3.14.7 free-threading | `f67d80f030f90aef492e148cb75eaf2b240aa8a98c43de6a123bb1373f90e57f` |
+
+Python供給元は次の公式imageであり、実行root filesystemには使っていない。
+
+```text
+quay.io/pypa/manylinux2014_aarch64@sha256:d4c40df238d6ec0ee91213f4797ad26f05d7d82947bcb61c40d1fdc13d0e16d5
+```
+
+圧縮layer合計386,707,777 bytes、Docker表示の展開size 1,682,730,432 bytes。
+取り出したPythonは合計約293 MiB。取得・保存予算内で、既存wheelを使用したため
+追加wheel buildは行っていない。
+
+停止中の専用containerを`docker create`で作り、以下の4ディレクトリだけを
+`docker cp`で新しいhostディレクトリへ保存した。container内のプログラムは実行せず、
+コピー完了後に専用containerを削除した。新しいglibc/libstdc++/OpenSSLはコピーしていない。
+
+```text
+/opt/_internal/cpython-3.12.14
+/opt/_internal/cpython-3.13.15
+/opt/_internal/cpython-3.14.7
+/opt/_internal/cpython-3.14.7-nogil
+```
+
+再現時は先のcontainer commandへ
+`--mount type=bind,src=/disk/python2014-arm64,dst=/interpreters,readonly`を追加し、
+Pythonを`/interpreters/cpython-<version>/bin/python3`、wheelを表のABIへ変更する。
+名前はABIごとに区別し、timeoutは180秒とした。全4実行は終了code 0で、
+終了後に検証containerが残っていないことも確認した。
+
+pipはSSL不足と、同一プロセスでinstall後にmoduleをimportする方式の将来の非互換を
+警告した。前者は`--network none` / `--no-index`での検証であり、TLS検証を無効化して
+取得したものではない。後者は固定imageのpipで成功したrunnerの制約であり、
+将来のpipでも動く汎用installerとは扱わない。SSL機能の互換性は検証していない。
+
 ## 残る検証
 
-- ARM64のCPython 3.12 / 3.13 / 3.14 / 3.14tでの旧runtime実行
 - ARM実機、旧kernel、実CPU機能、並列性・性能
 - 最低macOS / Windows / CRT
 - 将来C++20標準library機能を追加した実wheel
 
-この1 ABIの成功だけで#116やC++20既定化を完了扱いにはしない。
+この5 ABIの限定smoke成功だけで#116やC++20既定化を完了扱いにはしない。
