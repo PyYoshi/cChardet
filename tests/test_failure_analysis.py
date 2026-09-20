@@ -223,7 +223,9 @@ def test_saved_observations_reject_mismatch(saved_legacy, change):
         report["tool_sha256"] = "invalid"
     path.write_text(json.dumps(report), encoding="utf-8")
     with pytest.raises(ValueError):
-        failure_analysis.saved_observations(path, corpus, sorted((corpus / "fr").iterdir()))
+        failure_analysis.saved_observations(
+            path, corpus, sorted((corpus / "fr").iterdir(), key=lambda p: p.as_posix())
+        )
 
 
 def test_observation_cli_modes_are_exclusive(saved_legacy, monkeypatch):
@@ -241,7 +243,19 @@ def test_saved_observations_reject_changed_corpus_bytes(saved_legacy):
     target = corpus / "fr/UTF-8.txt"
     target.write_bytes(b"x" * len(target.read_bytes()))
     with pytest.raises(ValueError, match="byte length/hash"):
-        failure_analysis.saved_observations(path, corpus, sorted((corpus / "fr").iterdir()))
+        failure_analysis.saved_observations(
+            path, corpus, sorted((corpus / "fr").iterdir(), key=lambda p: p.as_posix())
+        )
+
+
+def test_fixture_order_is_case_sensitive_on_every_platform():
+    from pathlib import PurePosixPath, PureWindowsPath
+
+    for path_type in (PurePosixPath, PureWindowsPath):
+        root = path_type("corpus")
+        paths = [root / "fr/ascii.txt", root / "fr/UTF-8.txt"]
+        ordered = sorted(paths, key=lambda path: failure_analysis.fixture_sort_key(path, root))
+        assert [path.name for path in ordered] == ["UTF-8.txt", "ascii.txt"]
 
 
 @pytest.mark.parametrize("bits", ["3f80", "not-hex!", "7fc00000"])

@@ -91,6 +91,11 @@ def size_bucket(length: int) -> str:
 LEGACY_LABEL_SOURCE = "legacy fixture path; not independently verified"
 
 
+def fixture_sort_key(path: Path, root: Path) -> str:
+    # WindowsPath ordering folds case; report order must be identical on every OS.
+    return path.relative_to(root).as_posix()
+
+
 def saved_observations(report_path: Path, root: Path, paths: list[Path]) -> tuple[list[dict], dict]:
     """Validate saved legacy observations against every byte of the specified corpus."""
     raw = report_path.read_bytes()
@@ -165,7 +170,10 @@ def main() -> None:
             "--observations preserves the saved revision; do not specify --native-revision"
         )
     root = args.uchardet_corpus.resolve()
-    paths = sorted(p for p in root.glob("[a-z][a-z]/*") if p.is_file())
+    paths = sorted(
+        (p for p in root.glob("[a-z][a-z]/*") if p.is_file()),
+        key=lambda path: fixture_sort_key(path, root),
+    )
     if not paths:
         parser.error("corpus contains no fixtures")
     if args.observations:
