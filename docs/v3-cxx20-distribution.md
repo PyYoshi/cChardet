@@ -122,3 +122,6 @@ native compiler matrixでspan / bit_cast / ranges等を確認した。
 さらに[glibc 2.24での限定的な実行確認](v3-minimum-runtime.md)で、保存済みの
 CPython 3.11 / x86_64 wheelのinstalled smokeが成功した。ほかのABI/architectureと
 最低macOS/Windowsは未確認であり、全体gateは維持する。
+
+[sdist build要件と独立再build](v3-sdist-build.md)も記録した。tar.gzからC++20 wheelを
+再構築し独立uv環境のsmokeが成功したが、他platformの最低runtime保証とは別である。
