@@ -1,571 +1,613 @@
-# cChardet v3 roadmap
+# cChardet v3 開発ロードマップ
 
-Status: proposed implementation plan; product direction accepted by the maintainer.
-Baseline inspected: 2026-09-20, cChardet `bc41189` (2.3.0), bundled
-PyYoshi/uchardet `7993e0a`. Implementation milestones below are not completed
-by publishing this document. Dates are not delivery promises.
+状態: 開発の方向性は合意済み。具体的な実装計画・評価閾値は本書の提案を出発点として検証する。
 
-Reading guide:
+現状確認日: 2026-09-20。対象は cChardet `bc41189`（2.3.0）と、同梱する
+PyYoshi/uchardet `7993e0a`。本書の公開をもって各作業が実装済みになったとは扱わない。
+リリース日は未定。
 
-- [Direction and scope](#product-direction-and-scope)
-- [Current evidence](#evidence-at-the-starting-point) and [repository ownership](#repository-boundaries-and-delivery-process)
-- [Phase dependencies and release boundaries](#dependencies-priorities-and-release-boundaries)
-- [Native foundation](#phase-1-make-native-changes-safe-and-explainable)
-- [Corpus and models](#phase-2-reproducible-corpus-and-model-infrastructure)
-- [Failure analysis](#phase-3-failure-analysis-and-improvement-selection)
-- [Detector improvements](#phases-46-intentional-detector-improvements) and [later research](#phases-79-alternative-implementation-and-later-research)
-- [Measurement gates](#measurement-contracts-and-acceptance-gates) and [migration decisions](#v3-contracts-and-migration-decisions)
-- [First implementation batches](#first-implementation-batches) and [release gates](#release-gates-risks-and-progress-tracking)
+本書および今後のv3開発文書は日本語で管理する。
+利用者向けのREADME、APIリファレンス、公開リリースノートなどは英語を基本とする。
+開発上の議論と利用者向けの説明を分け、確定した仕様は利用者向け文書にも反映する。
 
-## Product direction and scope
+## 目次
 
-cChardet v3 targets real-world data ingestion: scraping, crawling, HTML and
-document ingestion, RAG preprocessing, training-corpus preparation, ETL, and
-parallel processing of many files. The core remains a fast, lightweight native
-encoding detector, with particular attention to inputs of a few KiB to a few
-hundred KiB, low allocation, incremental processing, and independent detectors
-running concurrently under conventional and free-threaded CPython.
+- [目指す製品と対象範囲](#direction)
+- [現状と根拠](#baseline)
+- [リポジトリ・ブランチの責務](#ownership)
+- [優先順位・依存関係・リリース範囲](#phases)
+- [Phase 1: native開発基盤](#phase-1)
+- [Phase 2: corpusとmodelの基盤](#phase-2)
+- [Phase 3: 失敗分析](#phase-3)
+- [Phase 4〜6: 検出器の改善](#phase-4-6)
+- [Phase 7〜9: 代替実装と長期研究](#phase-7-9)
+- [測定方法と変更の受け入れ基準](#measurement)
+- [v3で決める契約と移行方針](#contracts)
+- [最初の実装単位](#first-prs)
+- [リリース条件・リスク・進捗管理](#release)
 
-Download growth motivates investigation, but its causes are unverified.
-AI adoption, downstream projects, and ephemeral installations remain hypotheses;
-download counts are not evidence of a particular input distribution.
+<a id="direction"></a>
 
-Full chardet compatibility is not the primary objective. Familiar APIs remain
-valuable, but v3 may deliberately break Python API, C API/ABI, output, or default
-policy compatibility when that enables a demonstrably better design. Compatibility
-must not prevent useful progress. Each break needs a rationale, measurements,
-an explicit contract, and migration guidance; a compatibility adapter is optional
-and must not become permanent complexity in the native hot path.
+## 目指す製品と対象範囲
 
-This is a roadmap for the v3 series, not a requirement to complete every research
-phase before 3.0. Rust, a new engine architecture, and SIMD are conditional later
-work. The first release must deliver a useful, validated improvement beyond
-infrastructure alone; its specific user-visible scope will follow failure analysis.
+cChardet v3は、実際のデータ取り込み処理に適した、高速・軽量・並列化可能な
+native文字コード検出器を目指す。主要用途はスクレイピング、クローリング、
+HTML・文書の取り込み、RAG前処理、学習用corpusの整備、ETL、大量ファイルの並列処理とする。
 
-## Evidence at the starting point
+特に数KiB〜数百KiBの入力における速度、少ないallocation、incremental処理を重視する。
+通常のCPythonとfree-threaded CPythonの双方で、独立したdetectorを効率よく並列実行できる
+設計を維持する。複雑な判定ロジックはPython wrapperへ移さず、native側で扱う。
 
-These are repository observations, not a fresh execution of every existing test.
+ダウンロード数増加の原因は未確定である。AI用途、大規模downstream、使い捨て環境での
+再インストールなどは仮説として扱い、ダウンロード数から入力分布や利用目的を断定しない。
 
-| Area | Existing evidence | Remaining work |
+chardetとの完全互換を最上位目標にはしない。馴染みのあるAPIは価値があるが、
+必要な改善を互換性が妨げる場合は、Python API、C API/ABI、検出結果、デフォルト設定の
+破壊的変更をv3の選択肢に含める。変更には理由、測定結果、明示的な仕様、移行方法を用意する。
+互換アダプターは必要に応じて検討し、nativeの主要な処理経路に恒久的な複雑さを持ち込まない。
+
+本書はv3系列全体のロードマップであり、すべてのPhaseを3.0までに終える計画ではない。
+Rust、新しい検出器architecture、SIMDは条件付きの後続作業とする。
+3.0では基盤整備に加えて利用者に意味のある改善を届けるが、具体的な対象は失敗分析の後に選ぶ。
+
+<a id="baseline"></a>
+
+## 現状と根拠
+
+以下は現在のリポジトリを確認して得た事実であり、本書の作成時に既存テストや測定を
+すべて再実行したという意味ではない。
+
+| 領域 | 既にあるもの・確認先 | 今後必要なこと |
 | --- | --- | --- |
-| Python development | [uv configuration](../pyproject.toml), [Makefile](../Makefile), typing and tests | Preserve locked setup; separate engine tooling from wrapper tooling |
-| CI and native safety | [Test workflow](../.github/workflows/test.yml): Linux ASan/UBSan and Python 3.11–3.14/3.14t on three OSes | Native compiler/configuration matrix, dedicated fuzzing and static analysis gates |
-| Native build | [CMake configuration](../src/ext/uchardet/CMakeLists.txt): CMake 3.5 declaration, C++11, Debug injects ASan flags, global CPU/FP flags | Explicit portable options and target-scoped flags; audit actual minimum version and multi-config behavior |
-| Native tests | [CTest registration](../src/ext/uchardet/test/CMakeLists.txt) excludes five known failing language/encoding cases | Report all cases and reasons; explicit expected-failure inventory, no silent exclusions |
-| Conformance | [Random-byte wrapper test](../tests/test_robustness.py), [native output tool](../src/ext/uchardet/benchmark/uchardet-output.cpp) | Native structured comparison, lifecycle and completion traces, minimized failures |
-| Performance | [Native benchmark](../src/ext/uchardet/benchmark/README.md), [Python benchmarks](../benchmarks/pyperf_compare.py), [threading benchmark](../benchmarks/pyperf_free_threading.py) | Versioned workloads, distributions, allocation/memory and scaling reports |
-| Accuracy | [Evaluation script](../benchmarks/accuracy.py) reports exact/compatible/decode-equivalent and language metrics per corpus | Per-sample records, versioned metric semantics, split discipline and failure taxonomy |
-| Data handling | [Test data policy](test-data-policy.md) | Corpus manifest, license inventory, deterministic generation and leakage checks |
-| Model generation | [Generator guide](../src/ext/uchardet/script/README), [BuildLangModel.py](../src/ext/uchardet/script/BuildLangModel.py), language/charset definitions and generation logs | Audit provenance; separate network acquisition from offline generation; reproducible inputs and parameters |
-| Packaging | [Wheel workflow](../.github/workflows/build.yaml), [wheel smoke test](../tools/wheel_smoke.py) | Retain installed-artifact coverage as native integration evolves |
+| Python開発環境 | [uv設定](../pyproject.toml)、[Makefile](../Makefile)、型情報、テスト | lockされた環境を維持し、engine用toolとwrapper用toolの責務を分ける |
+| CI・native安全性 | [Test workflow](../.github/workflows/test.yml): Linux ASan/UBSan、3 OSでのPython 3.11〜3.14/3.14t | native compiler・build構成のmatrix、専用fuzzing、静的解析の継続実行 |
+| native build | [CMake設定](../src/ext/uchardet/CMakeLists.txt): 最小版宣言は3.5、C++11、DebugでASan付与、CPU/浮動小数点flagはglobal | 明示的で移植可能なoption、target単位のflag、実際の最小版とmulti-config動作の確認 |
+| native test | [CTest登録](../src/ext/uchardet/test/CMakeLists.txt)で既知の失敗5組を除外 | 対象・失敗理由を可視化し、既知の失敗を黙って集計から消さない |
+| 挙動比較 | [random bytesのwrapper test](../tests/test_robustness.py)、[native候補出力tool](../src/ext/uchardet/benchmark/uchardet-output.cpp) | 機械可読な比較、lifecycle・終了状態の追跡、失敗入力の最小化 |
+| 性能測定 | [native benchmark](../src/ext/uchardet/benchmark/README.md)、[Python比較](../benchmarks/pyperf_compare.py)、[threading比較](../benchmarks/pyperf_free_threading.py) | version付きworkload、測定値の分布、allocation・memory・並列scalingの報告 |
+| 精度測定 | [評価script](../benchmarks/accuracy.py)でcorpus別のexact/compatible/decode-equivalentとlanguage指標 | sample単位の記録、評価定義のversion管理、data分割、失敗分類 |
+| test data管理 | [Test data policy](test-data-policy.md) | corpus manifest、license一覧、決定的な生成、data混入の検査 |
+| model生成 | [生成手順](../src/ext/uchardet/script/README)、[BuildLangModel.py](../src/ext/uchardet/script/BuildLangModel.py)、language/charset定義と生成log | 由来の調査、network取得とoffline生成の分離、入力・parameterの固定 |
+| packaging | [wheel workflow](../.github/workflows/build.yaml)、[wheel smoke test](../tools/wheel_smoke.py) | native連携を変更しても配布物をinstallした状態で検証 |
 
-The [published performance analysis](performance-analysis.md) records reductions
-in native elapsed time of 54.5% for whole-file input and 51.6% for 64-byte chunks
-on 158 bundled fixtures relative to the 2.2.0 baseline. These are workload-specific
-measurements, not a universal speedup or a new v3 result. Re-establish baselines
-before changing the engine. Existing output comparisons do not prove universal
-chunk-boundary independence or cross-platform bitwise equality.
+[既存の性能分析](performance-analysis.md)には、同梱fixture 158件について、2.2.0 baselineから
+nativeの実行時間がwhole-fileで54.5%、64-byte chunkで51.6%減少した測定がある。
+これは特定workloadでの結果であり、すべての入力で同じ改善があるという意味でも、
+新しいv3の測定結果でもない。engineを変更する前にbaselineを取り直す。
 
-## Repository boundaries and delivery process
+既存の候補比較だけでは、任意のchunk境界で必ず同じ結果になることや、異なるplatform間での
+bit単位の一致までは証明できない。その保証範囲も今後明示する。
 
-- This repository owns the cross-project roadmap, Python API/CLI, packaging,
-  downstream integration, comparative Python benchmarks and release migration.
-- The maintained PyYoshi/uchardet fork owns native build changes, native safety,
-  fuzzing, introspection, C API, engine benchmarks and engine conformance.
-  Its current integration branch is `cchardet`; retain the actual fork and pin
-  submodule commits. Do not redirect `.gitmodules` to an incompatible upstream.
-- Initially place corpus/model tools with their native consumers in the fork,
-  using locked uv environments for Python tooling. Keep acquisition, generation
-  and evaluation as separate modules. A separate data repository is an explicit
-  future decision, not a prerequisite for progress.
-- Land native changes in reviewable fork PRs, then update the cChardet submodule
-  in a dependent integration PR that tests the exact native commit. Python and
-  uchardet version numbers need not move in lockstep; native ABI versioning is
-  a separate decision.
-- Use Draft PRs. Validate locally and batch related commits before pushing.
-  Cancel superseded CI runs; avoid repeated pushes solely to poll or retry CI.
-  Heavy scheduled jobs and release-wheel builds are separate from quick PR gates.
-- Keep small redistributable fixtures, schemas, recipes, decisions and compact
-  reports in Git. Store large datasets and raw benchmark artifacts separately
-  with hashes and retention locations. CI must not crawl live websites.
+<a id="ownership"></a>
 
-Proposed implementation locations (not existing commands or completed artifacts):
+## リポジトリ・ブランチの責務
 
-| Owner | Proposed artifact |
+### cChardetのブランチ運用
+
+`master`を安定版、`dev`をv3の開発統合先として分ける。
+`dev`は2.3.0リリース後の`master`から開始し、v3の作業branchは原則として`dev`から作成する。
+v3開発用のDraft PRは`dev`をbaseにする。本ロードマップのPRも同じ運用に従う。
+
+安定版に必要な修正は`master`向けPRとして扱い、`dev`にも必要な修正を計画的に反映する。
+v3の破壊的変更を2.xへまとめて逆流させない。
+3.0の公開前に、`dev`の内容を`master`へ統合するrelease PRでリリース条件を確認する。
+公開tagは承認したrelease commitに付け、branch名だけを公開の根拠にしない。
+
+CIは`dev`向けPRと統合後の検証を扱えるようにする。
+現状はTest/Wheelsともpush対象が`master`、PR eventはbase branchの制限なしである。
+このため`dev`向けPRは既存の検証対象になるが、`dev`へのmerge後のpush検証は別途追加する必要がある。
+Rulesの適用範囲、必須check、prereleaseの起点も開発基盤整備で確認する。
+`dev`という名前だけで既存の保護・release設定が引き継がれるとは仮定しない。
+
+### Repository間の分担とPR
+
+- cChardetは、全体ロードマップ、Python API/CLI、packaging、downstream連携、
+  Python経由の競合比較、リリース時の移行案内を管理する。
+- PyYoshi/uchardet forkは、native build、安全性検証、fuzzing、内部状態の追跡、C API、
+  engine benchmark、engineの挙動比較を管理する。現在の連携branchは`cchardet`。
+  今回のcChardetの`dev`導入と混同してfork側のbranchを改名しない。
+  実体のあるforkを使い、submoduleはcommitを固定する。
+  `.gitmodules`をAPI互換性のないupstreamへ切り替えない。
+- corpus/model toolは、まず利用するnative engineと同じforkに置く。
+  Python製toolにはuvでlockした環境を用意し、取得・生成・評価を別moduleとして扱う。
+  data専用repositoryへの分離は後から判断し、初期着手の前提にはしない。
+- native変更をforkのPRでmergeした後、依存するcChardet側PRでsubmoduleを更新する。
+  連携testは実際に固定するnative commitを対象にする。
+  cChardetとuchardetのversion番号を揃える必要はなく、native ABIのversionは別に判断する。
+- PRはDraftで作成する。local検証後に関連変更をまとめてpushし、CIの再試行や状態確認のためだけに
+  pushを繰り返さない。不要なCIはcancelし、重い定期job・release wheel buildと軽いPR検証を分ける。
+- Gitには小さな再配布可能fixture、schema、生成recipe、設計判断、要約reportを置く。
+  大規模dataと生のbenchmark結果は別保管とし、hashと保管先・保持方針を記録する。
+  通常のCIではWebのlive crawlingを行わない。
+
+実装時の配置案は以下とする。まだ存在しないpathを含み、実装済み成果物や実行可能commandを
+表すものではない。
+
+| 管理先 | 配置するもの |
 | --- | --- |
-| cChardet | `docs/decisions/`, `docs/v3-migration.md`, versioned benchmark reports |
-| uchardet | `CMakePresets.json`, `fuzz/`, conformance and trace tools under `test/` or `tools/` |
-| uchardet | `corpus/` schemas/manifests/recipes and `modelgen/` offline generator |
-| uchardet | Model inventory plus logical `legacy`/`generated` origins; physical relocation only when useful |
+| cChardet | `docs/decisions/`、`docs/v3-migration.md`、version付きbenchmark report |
+| uchardet | `CMakePresets.json`、`fuzz/`、`test/`または`tools/`内の挙動比較・trace tool |
+| uchardet | `corpus/`内のschema・manifest・recipe、`modelgen/`内のoffline generator |
+| uchardet | model一覧と`legacy`/`generated`の由来分類。実際のfile移動は必要性がある場合に行う |
 
-## Dependencies, priorities and release boundaries
+<a id="phases"></a>
 
-| Phase | Priority | Depends on | Exit evidence | Release role |
+## 優先順位・依存関係・リリース範囲
+
+| Phase | 優先度 | 依存するもの | 完了を示す成果物 | リリース上の位置づけ |
 | --- | --- | --- | --- | --- |
-| 1. Native development foundation | P0 | Baseline inventory | Portable builds, safety gates, conformance and trace artifacts | Required for 3.0 |
-| 2. Corpus and model infrastructure | P0/P1 | Phase 1 baseline; schema work can overlap | Audited corpus v1, isolated splits, one reproducible model experiment | Required foundation for 3.0; not all models must be replaced |
-| 3. Failure analysis | P1/P2 | Phase 2 evaluation slice and Phase 1 traces | Reproducible failure report and ranked improvement backlog | Selects 3.0 user-visible scope |
-| 4. Focused accuracy improvements | P2 | Phase 3 | Before/after reports, intentional output deltas, migration decisions | Candidate 3.0 scope |
-| 5. Encoding/language expansion | P2 | Phases 2–3 | Independently validated model additions with cost measurements | Candidate 3.0 or later v3 |
-| 6. Staged detection and evidence policy | P3 | Phases 3–5 evidence | Hint, truncation and early-stop policy experiments | Optional 3.0; otherwise later explicit contract review |
-| 7. Experimental Rust engine | P4 | Stable model/conformance contracts from Phases 1–2 | Behavior-preserving parallel engine and comparative reports | Not a 3.0 blocker |
-| 8. Next-generation models/engine | Research | Phases 2–3; Phase 7 if comparing implementations | Architecture proposal supported by measured limits | Later, compatibility reviewed again |
-| 9. Advanced optimization | P5 | Profiled bottleneck and all regression gates | Portable fallback, runtime dispatch, measured net benefit | Conditional |
+| 1. native開発基盤 | P0 | 現状棚卸し | 移植可能なbuild、安全性検証、挙動比較、trace | 3.0の必須基盤 |
+| 2. corpus/model基盤 | P0/P1 | Phase 1のbaseline。schema作業は並行可能 | 監査済みcorpus v1、用途別分割、再現可能なmodel生成の試作 | 3.0の必須基盤。全model置換は不要 |
+| 3. 失敗分析 | P1/P2 | Phase 2の評価dataとPhase 1のtrace | 再現可能な失敗report、優先順位付き改善候補 | 3.0で利用者に届ける変更を選ぶ |
+| 4. 対象を絞った精度改善 | P2 | Phase 3 | 変更前後のreport、意図した候補差分、移行判断 | 3.0の候補 |
+| 5. encoding/language拡充 | P2 | Phase 2〜3 | 独立dataで評価したmodel追加と処理cost測定 | 3.0または後続v3の候補 |
+| 6. 段階的検出とevidence方針 | P3 | Phase 3〜5の知見 | hint、入力制限、早期終了の実験 | 3.0に含めるか個別判断。後続なら互換性を再確認 |
+| 7. Rust試験実装 | P4 | Phase 1〜2のmodel・挙動の契約 | 挙動を維持した並行実装と比較report | 3.0の必須条件ではない |
+| 8. 次世代model/engine | 研究 | Phase 2〜3。実装言語比較にはPhase 7 | 現在の限界を根拠にした設計提案 | 後続。互換性は改めて判断 |
+| 9. 高度な最適化 | P5 | profilingで確認した遅い箇所と回帰検証基盤 | portable fallback、runtime dispatch、実測した効果 | 必要な場合のみ |
 
-The main path is 1 → 2 → 3 → selected 4/5 → 3.0. Corpus schema and model
-inventory can progress during Phase 1; detector behavior changes wait for the
-evaluation foundation. Later phases are not an obligation to rewrite a working
-engine. Do not force a breaking post-3.0 change into a minor version merely
-because it appeared in this roadmap: defer it to a further major if required.
+主要な順序は「1 → 2 → 3 → 選択した4/5 → 3.0」とする。
+corpus schemaとmodelの棚卸しはPhase 1と並行できるが、検出結果を変える作業は評価基盤を待つ。
+後半のPhaseは、問題なく動くengineを必ず書き換えるという約束ではない。
+3.0公開後に必要になった破壊的変更は、ロードマップに載っていたことを理由にminor releaseへ
+押し込まない。必要なら次のmajor releaseで扱う。
 
-## Phase 1: make native changes safe and explainable
+<a id="phase-1"></a>
 
-### Build, analysis and CI
+## Phase 1: native実装を安全に変更し、結果を説明できるようにする
 
-Separate Debug/Release from sanitizer selection. Choose and document supported
-CMake and compiler minima based on the actual build features and wheel targets;
-do not raise the C++ standard merely for modernization. Add target-scoped warning,
-sanitizer, benchmark and fuzz options, static/shared builds, install/export smoke
-tests, and reproducible presets. Native tools must build without importing Python.
-The setuptools extension build currently uses its own integration: verify it
-alongside standalone CMake instead of assuming CMake changes cover wheels.
+### Build・静的解析・CI
 
-Audit platform and floating-point flags before changing them: candidate scores
-may depend on arithmetic behavior. Separate toolchain cleanup from score changes.
-Release binaries must not use `-march=native` or unconditional host-specific ISA.
+Debug/Releaseとsanitizer有効化を分離する。CMake/compilerの最小versionは、実際に使う機能と
+wheelの対象環境から決めて文書化する。現代化だけを理由にC++標準を引き上げない。
+warning、sanitizer、benchmark、fuzzのoptionをtarget単位に整理し、static/shared build、
+install/exportのsmoke test、再現可能なpresetを用意する。
+native toolはPythonをimportせずにbuild・実行できるようにする。
 
-| CI lane | Intended scope | Budget/policy |
+setuptools経由の拡張module buildには独自の連携がある。
+CMakeの検証だけでwheelも確認できたとは扱わず、両方を検証する。
+platform・浮動小数点flagの変更は候補scoreに影響し得るため、toolchain整理とscore変更を分ける。
+配布binaryでは`-march=native`や実行環境を選ぶISAの無条件有効化を行わない。
+
+| CI区分 | 対象 | 初期budget・運用方針 |
 | --- | --- | --- |
-| Every relevant PR | GCC and Clang on Linux, MSVC on Windows, Apple Clang on macOS; representative Debug/Release and static/shared coverage | Cover dimensions without a full Cartesian product; target ≤15 minutes per native lane initially |
-| Every native PR | ASan + UBSan on Linux; deterministic conformance; minimized fuzz regressions | Fail on findings; sanitizer overhead is excluded from performance comparisons |
-| Every native PR | Clang Static Analyzer and focused clang-tidy checks | Baseline legacy findings with reason/owner; no new unexplained findings; improve invariants before suppressing |
-| Every native PR | Short bounded libFuzzer smoke run | Initial budget 60 seconds per target; deterministic regressions always replayed |
-| Scheduled/manual | Longer fuzz campaigns, broader compiler matrix, native ARM64 where available, controlled performance runs | Initial fuzz budget 30 minutes per target; record actual executions, coverage and seed corpus |
-| Release candidate | Supported Python/wheel matrix, installed-wheel smoke, sdist rebuild | Conventional and free-threaded builds; approved support matrix recorded at release |
+| 関連PRごと | Linux GCC/Clang、Windows MSVC、macOS Apple Clang。代表的なDebug/Releaseとstatic/shared | 全組合せではなく必要な軸を覆う。native job単位で15分以内を初期目標 |
+| native PRごと | Linux ASan + UBSan、決定的な挙動比較、最小化済みfuzz回帰入力 | 問題検出時は失敗させる。sanitizer有効時の速度を通常buildと比較しない |
+| native PRごと | Clang Static Analyzer、対象を絞ったclang-tidy | 既存指摘には理由・担当を付け、新しい未説明の指摘を増やさない。抑制よりinvariant明示を優先 |
+| native PRごと | 時間制限付きlibFuzzer smoke test | 初期値はtargetごと60秒。既知の回帰入力は毎回再実行 |
+| 定期・手動 | 長時間fuzz、compiler構成の拡大、利用可能ならnative ARM64、統制した環境での性能測定 | fuzzはtargetごと30分を初期値とし、実行回数・coverage・seed corpusを記録 |
+| Release candidate | サポートするPython/wheel matrix、installed-wheel smoke、sdistからのbuild | 通常版とfree-threaded版。リリース時の対応範囲を明示 |
 
-These are initial operational budgets, not current CI configuration or proof of
-adequate fuzz coverage. Record timings and adjust them with evidence. Evaluate
-MSan for initialized-memory coverage and TSan for independent-detector races when
-instrumented dependencies/platforms are practical. Consider CodeQL after local
-analysis is useful and its maintenance cost is understood.
+これらの時間は初期案であり、現在のCI設定でも、十分なfuzz coverageの証明でもない。
+実測に応じて調整する。依存libraryのinstrumentationとplatform条件が整う場合に、
+未初期化memory検出のMSan、独立detector間の競合検出のTSanを検討する。
+CodeQLはlocal解析が役立つ状態になってから、導入・維持costを踏まえて判断する。
 
-### Native conformance and fuzzing
+### Nativeの挙動比較とfuzzing
 
-Extend the output tool into machine-readable conformance records. For each
-fixture and deterministic generated input, exercise one-shot and 1-, 7-, 64-,
-and 1,024-byte feeds, plus seeded random boundaries. Cover empty/very short input,
-embedded NUL, malformed multibyte sequences, long repeated/adversarial input,
-reset/reuse, repeated finalization, candidate access and completion behavior.
-Use bounded fuzz inputs; large-input and allocation-failure tests need separate
-resource budgets and fault-injection paths rather than multi-GiB PR fixtures.
+既存の候補出力toolを拡張し、比較結果を機械可読にする。
+fixtureと決定的に生成した入力ごとに、one-shot、1・7・64・1,024 byte単位、
+seed固定のrandom境界でfeedする。
+空・極短入力、NUL、壊れたmultibyte sequence、長い繰り返しや不利な入力、reset/reuse、
+複数回のfinalize、candidate取得、終了状態を対象にする。
+fuzz入力には上限を設ける。巨大入力やallocation失敗は別のresource budgetとfault injectionで
+検証し、通常のPRに数GiBのfixtureを要求しない。
 
-Use two different comparisons:
+次の2種類の比較を区別する。
 
-1. **Build/implementation equivalence:** old versus new under the same feed
-   schedule and environment. Compare candidate count/order, encoding, language,
-   confidence, final encoding, errors and completion events.
-2. **Chunk invariance:** identical logical bytes under different feed schedules.
-   First record current differences. Decide whether each is a defect, a specified
-   early-stop consequence, or an intentional v3 semantic change. Matching two
-   builds does not establish chunk invariance.
+1. **変更前後・実装間の同等性**: 同じ環境・同じfeed手順で旧実装と新実装を比較する。
+   candidate数・順序、encoding、language、confidence、最終結果、error、終了eventを対象にする。
+2. **chunk境界によらない結果の一致**: 同じbytesを異なる区切りで渡した場合を比較する。
+   まず現状の差を記録し、bug、仕様上の早期終了の影響、意図したv3の仕様変更のどれかを判断する。
+   変更前後で同じだったことは、chunk境界への非依存性を証明しない。
 
-Capture how many bytes the caller supplied, how many the engine actually examined
-where observable, and the event at which `done` changes. A chunk-level stop cannot
-be assumed to identify the exact byte that triggered it. Specify whether feeding
-after completion is ignored, rejected or processed before comparing traces.
+呼び出し側が渡したbyte数、観測可能な範囲でengineが実際に調べたbyte数、`done`が変化した
+eventを記録する。chunk単位の終了判定を、終了の根拠になった正確なbyte位置とはみなさない。
+終了後のfeedを無視・拒否・継続処理のどれにするかも、trace比較の前に定義する。
 
-For same-toolchain behavior-preserving work, exact output is the initial gate.
-The existing decimal output tool is a starting point; add raw floating-point
-representation if claiming bitwise equality. Cross-toolchain differences require
-analysis and an explicit numerical contract, not an unexplained epsilon.
+同じtoolchainで挙動維持を目的とする変更は、まずexact comparisonを基準にする。
+既存toolの10進数出力は出発点として使うが、bit単位の一致を主張する場合は浮動小数点の
+生の表現も記録する。異なるtoolchain間の差は、根拠のないepsilonで隠さず、数値計算の契約を決める。
 
-Fuzz the public API and relevant internal model/state-machine entry points, with
-one-shot/incremental differential properties. Failures become minimized fixtures
-with seeds, build flags and reproducer commands under the test-data policy.
-Exercise OOM cleanup/error reporting using injectable allocation failures; no
-exception may unexpectedly cross a C ABI boundary. Define thread safety for
-independent detectors and shared immutable model data; sharing a mutable detector
-is a separate contract, not implied by releasing the GIL.
+public APIと関連するmodel/state machine内部をfuzzし、one-shotとincrementalの比較も行う。
+失敗は最小化し、seed、build flag、再現commandを付けてtest data policyに従って保存する。
+allocation失敗を注入し、OOM時の解放・error通知を検証する。
+C ABI境界から想定外の例外が漏れないようにする。
 
-### Introspection and model archaeology
+独立detectorと共有する不変model dataのthread safetyを定義する。
+可変なdetectorを複数threadで共有できるかは別の契約であり、GILを解放するだけでは保証されない。
 
-Add opt-in native traces for active/rejected probers, scores, language, state
-transitions, early-stop reasons and ranking/tie decisions. Stable reason codes
-and model/prober IDs support analysis; verbose event formats may remain developer
-interfaces. Compile tracing out or disable it with measured negligible cost in
-release builds. Do not record source text by default.
+### 内部状態の追跡とmodel生成過程の調査
 
-Inventory every model family, generator, input source, revision, license notice,
-parameters, generated file and handwritten transformation. Begin with
-`script/BuildLangModel.py`, its language/charset definitions and existing logs.
-The guide documents automated single-byte model generation; do not assume the
-same pipeline regenerates multibyte tables. Mark missing provenance as unknown
-instead of inferring it. Deliver a reproducibility gap report before extraction.
+任意で有効化するnative traceに、稼働・除外されたprober、score、language、状態遷移、
+早期終了理由、rankingと同点処理の理由を記録する。
+分析に使う理由codeとmodel/prober IDは安定させ、詳細event形式は開発用interfaceとして扱ってよい。
+release buildではtraceをcompile時に除外するか、無効時costが十分小さいことを測定する。
+入力本文はデフォルトでlogに残さない。
 
-Phase 1 is complete when a fresh checkout can build and run the documented
-checks, all tracked safety findings and known test failures are visible, native
-comparison runs are reproducible, representative failures have useful traces,
-and the model inventory identifies what can and cannot currently be regenerated.
+model familyごとにgenerator、入力source、revision、license表記、parameter、生成file、
+手動変更を棚卸しする。`script/BuildLangModel.py`、language/charset定義、既存logから始める。
+既存手順で自動生成が説明されているのはsingle-byte modelであり、multibyte tableにも
+同じ手順が使えるとは仮定しない。追跡できない由来は「不明」と記録し、推測で埋めない。
+generatorを分離する前に、再現できる部分とできない部分のreportを作る。
 
-## Phase 2: reproducible corpus and model infrastructure
+Phase 1の完了条件は、新規checkoutから文書どおりにbuild・検証できること、既知の安全性問題と
+test失敗が見えること、native比較を再現できること、代表的な誤判定をtraceで説明できること、
+model生成の再現可能範囲と不足が明確になっていることとする。
 
-### Corpus dimensions and leakage prevention
+<a id="phase-2"></a>
 
-Keep corpus **role** independent of corpus **layer**. Roles are training/model
-generation, tuning, validation, and independent evaluation. Layers are:
+## Phase 2: corpusとmodelの再現可能な基盤を作る
 
-| Layer | Purpose | Initial material and constraints |
+### Corpusの役割・層とdata混入の防止
+
+corpusの**用途**と**性質による層**を別々に扱う。
+用途はtraining/model生成、tuning、validation、independent evaluationの4区分とする。
+層は次のとおり。
+
+| 層 | 目的 | 初期候補と制約 |
 | --- | --- | --- |
-| A: character coverage | Codec mappings, state transitions and boundary cases | Versioned mapping inputs and generated structural cases; not natural-language accuracy evidence |
-| B: controlled text | Language models, ranking, confidence and size curves | Audited multilingual Unicode sources, strictly re-encoded |
-| C: independent evaluation | External generalization and comparison | Pinned chardet and charset-normalizer corpora plus other independently maintained sets |
-| D: real-world documents | Malformation, declarations and actual ingestion | Local archive extraction and explicitly redistributable documents; no raw Common Crawl pages committed |
+| A: 文字・構造の網羅 | codec mapping、状態遷移、境界条件 | version固定のmappingと生成case。自然言語精度の根拠にはしない |
+| B: 制御した自然文 | language model、ranking、confidence、入力sizeごとの傾向 | 由来を確認した多言語Unicode sourceをstrictに再encode |
+| C: 独立評価 | 汎化性能と競合比較 | revision固定のchardet/charset-normalizer corpusなど、独立して管理されるdata |
+| D: 実際の文書 | 壊れたdata、宣言、現実の取り込み処理 | local archive抽出と再配布可能な文書。Common Crawl本文はcommitしない |
 
-Split by original document/source group **before** deriving encodings, fragments,
-HTML variants or sizes. Persist split seed, algorithm and assignments. Detect
-exact and near duplicates, including overlap with legacy corpus/model sources
-where possible. Unknown legacy training overlap prevents claiming a fully
-independent result; report it. Once an evaluation failure is used to tune a
-model, mark that exposure and use a fresh holdout for the next independent claim.
+encoding変換、切り出し、HTML化、size別生成を行う**前に、元の文書/source group単位で分割**する。
+分割のseed、algorithm、割り当て結果を固定する。
+完全一致・近似重複を検出し、可能な範囲でlegacy corpus/modelのsourceとの重複も調べる。
+過去の学習dataとの重複が不明なら、完全に独立した評価とは主張しない。
+評価dataの失敗を見てtuningした場合は、その参照を記録する。
+以後の独立評価には新しい未参照のholdoutを用意する。
+同じ原文の文字コード違い・size違いを別の独立文書として数えない。
 
-Source candidates, pending per-dataset review, are Leipzig for multilingual text,
-Unicode data for mappings/boundaries, individually reviewed Gutenberg works for
-long documents, and Common Crawl for local Web evaluation. Do not assume a
-collection-wide license, redistribution right, or permission for generated models.
-Keep acquisition adapters optional; failure to access a remote corpus must not
-break normal builds or silently reduce an evaluation denominator.
+source候補は、多言語自然文のLeipzig、mapping・境界条件のUnicode data、作品ごとに権利確認した
+Gutenberg、local Web評価のCommon Crawlとする。
+collection全体で同じlicense・再配布権・生成modelの配布条件が適用されるとは仮定せず、
+dataset単位で確認する。取得adapterは任意で使えるものとし、取得不能によって通常buildが
+壊れたり、評価の母数が黙って減ったりしないようにする。
 
-For archive-derived samples, record snapshot, WARC location, offset/length,
-content hash, extraction recipe, and label evidence. Declaration alone is not
-ground truth. Separate verified labels, compatible possibilities and unresolved
-cases; unresolved cases contribute robustness/coverage observations, not fabricated
-accuracy scores. Archive availability and deletion requests can limit reproduction;
-report missing samples explicitly.
+archive由来sampleはsnapshot、WARC位置、offset/length、content hash、抽出recipe、正解labelの
+根拠を持つ。charset宣言だけを正解にはしない。
+確認済みlabel、複数のcompatibleな可能性、未解決caseを分ける。
+未解決caseは堅牢性や遭遇頻度の観測に使い、正解率を出すために推測でlabelを付けない。
+archiveの公開状況や削除要請で再現できなくなったsampleは、欠落として明示する。
 
-### Manifest and generation contract
+### Manifestと生成の契約
 
-Implement versioned JSON/JSONL schemas with validators and small accepted/rejected
-examples. The initial fields are:
+version付きJSON/JSONL schema、validator、受理・拒否される小さな記述例を用意する。
+初期の必須項目は以下とする。
 
-| Record | Required information |
+| 記録 | 必須情報 |
 | --- | --- |
-| Source | Stable ID, source URL/location, license identifier/text reference and review status, revision, original hash, language and labeling method |
-| Sample | Schema/corpus version, sample and source-group IDs, role/layer, language, encoding and label certainty, encoder/version, source-text and byte hashes, byte/character lengths, transformation parameters, generation timestamp |
-| Derivation | Parent ID, normalization policy, selected text range, target and actual size, split assignment, truncation/invalidity status, HTML template and declaration fields when applicable |
-| Run | Manifest hash, tool/engine commits, environment, command, seed, excluded/missing counts and reasons, artifact hashes |
+| Source | 安定したID、URL/保管位置、license識別子・原文参照・確認状態、revision、元dataのhash、languageとlabel決定方法 |
+| Sample | schema/corpus version、sample/source-group ID、用途・層、language、encodingとlabel確度、encoder/version、source textとbytesのhash、byte/文字数、変換parameter、生成日時 |
+| 派生関係 | 親ID、正規化方針、切り出し範囲、目標/実size、分割先、途中切断・不正sequenceの状態、該当するHTML templateと宣言 |
+| 実行記録 | manifest hash、tool/engine commit、環境、command、seed、除外/欠落数と理由、成果物hash |
 
-Preserve raw Unicode sources. Make normalization, newline conversion, case
-handling and text selection explicit and versioned; do not silently normalize
-away useful evidence. Encode with strict errors and verify round-trip decoding.
-Report unrepresentable text as a rejected derivation, not `ignore`/`replace` output.
-Codec aliases, variants such as CP932 versus Shift_JIS, and superset relationships
-need a versioned registry tied to actual mapping behavior.
+元のUnicode sourceを保存し、正規化、改行変換、大文字小文字処理、本文選択を明示・version管理する。
+判定に役立つ情報を黙って正規化で消さない。
+encodeはstrictを使い、decodeで元に戻ることを確認する。
+表現できない文は生成対象から外した理由を記録し、`ignore`/`replace`で黙って変換しない。
+alias、CP932とShift_JISのようなvariant、superset関係は実際のmappingに基づくversion付き定義で扱う。
 
-Generate target budgets of 16, 32, 64, 128, 256 and 512 B, then 1, 4, 16, 64 and
-256 KiB. Clean samples stop at complete encoded boundaries and record actual size;
-stateful encodings must finalize/reset correctly within the budget. Separate
-explicitly truncated/adversarial samples may end mid-sequence. Never pad short
-sources with repeated text to pretend they are representative larger documents.
-Keep equal-content comparisons separate from equal-byte-budget comparisons.
+入力sizeは16・32・64・128・256・512 B、1・4・16・64・256 KiBを目標budgetにする。
+正常sampleは完全なencoded文字境界で止め、実sizeを記録する。
+stateful encodingは終端・状態の復帰も含めてbudget内で正しく生成する。
+sequence途中で切れるsampleは、明示的な途中切断・異常系として別に生成する。
+短いsourceを繰り返しで埋めて、大きな自然文の代表として扱わない。
+同じ本文を使う比較と、同じbyte budgetを使う比較も区別する。
 
-Separate text clean/adversarial and HTML clean/declared/undeclared/mismatched/
-malformed fixtures. Include HTTP versus meta conflicts, UTF-8 declarations over
-CP932 bytes, absent declarations, XML declarations, and entity-heavy markup.
-Record generated declarations independently of actual bytes. Add API responses,
-CSV, e-mail, subtitles and document exports incrementally as audited workload
-families; synthetic HTML is not a substitute for real Web validation.
+plain textはclean/adversarial、HTMLはclean/declared/undeclared/mismatched/malformedに分ける。
+HTTPとmetaの不一致、UTF-8宣言なのにCP932のbytes、宣言なし、XML宣言、entityの多いmarkupなどを含める。
+宣言内容と実際のencodingは独立に記録する。
+API response、CSV、e-mail、subtitle、document exportも由来を確認したworkloadとして段階的に追加する。
+生成HTMLだけで実Webの評価を済ませない。
 
-### Model generation and provenance
+### Model生成とprovenance
 
-Extract acquisition → normalization → language/encoding filtering → statistics
-→ validation → emission into independently testable steps. Start with one
-single-byte language/encoding family selected after the inventory. Use a tiny
-redistributable corpus to test determinism, plus a separate realistic training
-set to assess model quality. A toy deterministic model is not a production model.
+取得 → 正規化 → language/encodingによる選別 → 統計生成 → 検証 → 出力を、それぞれ検証可能な工程に分ける。
+まず棚卸しを基にsingle-byteのlanguage/encoding familyを1つ選ぶ。
+再配布可能な小さなcorpusで決定性を検証し、別途、現実的なtraining dataでmodel品質を調べる。
+小さなdataから再現可能に生成できただけでは、実用modelが完成したとはしない。
 
-Pin generator/runtime/dependency versions with uv, sort traversal and output,
-fix random seeds, and isolate network access to acquisition. Run generation twice
-in clean environments and compare canonical model content hashes. Store run time
-outside canonical content or use a reproducible timestamp policy; provenance
-metadata must not make otherwise identical models differ.
+generator/runtime/dependencyはuvで固定し、走査・出力順序、乱数seedを固定する。
+network利用は取得工程に限定する。
+独立したclean環境で2回生成し、canonicalなmodel内容のhashが一致することを確認する。
+実行日時はcanonicalな内容から分離するか再現可能な時刻規則を使い、
+記録用timestampのために同じmodelが異なるhashにならないようにする。
 
-Each generated model records model/format versions, generator version/commit,
-corpus revision/hash, source license references, language/encoding family,
-parameters, origin category, generated-at policy and content hash. Legacy models
-retain their actual notices and unknown fields. New generation does not erase
-the provenance of reused tables or transformations.
+生成modelにはmodel/format version、generator version/commit、corpus revision/hash、
+source license参照、language/encoding family、生成parameter、由来分類、生成日時の規則、
+内容hashを付ける。legacy modelの実際のlicense表記や不明項目は保持する。
+新しいgeneratorで処理しても、再利用したtableや変換処理の由来が消えるわけではない。
 
-Define a small language-neutral representation for the pilot model, including
-table dimensions, order, numeric types, quantization and validation constraints.
-Prefer build-time C++ emission initially; do not add runtime loading/allocation
-without a demonstrated need. Validate dimensions, ranges and references before
-emission. A later Rust emitter must consume the same canonical artifact. The
-first schema need not represent every historical model; document unsupported
-families and evolve the format with explicit versions.
+試作modelには、特定言語に依存しない小さな表現形式を定義する。
+tableの次元、順序、数値型、量子化、検証条件を明示し、まずbuild時のC++ source生成を使う。
+必要性を示さずruntime loaderやallocationを追加しない。
+出力前に次元・値域・参照を検証し、将来のRust emitterも同じcanonical artifactを使う。
+初期schemaで歴史的modelすべてを表す必要はなく、未対応familyを明記してversionを上げながら拡張する。
 
-Track engine, generator, corpus and model licensing independently. MPL-2.0 is a
-candidate for a derived Rust implementation, not an approved blanket relicensing
-of existing code or tables. License/provenance review is a gate before importing,
-redistributing or changing notices; unresolved data may remain locally referenced.
+engine、generator、corpus、modelのlicenseは独立して管理する。
+MPL-2.0は派生Rust実装の候補であり、既存codeやtableを一括でrelicenseする決定ではない。
+取り込み・再配布・license表記変更の前に由来と条件を確認し、未解決dataはlocal参照に留める選択肢を持つ。
 
-Phase 2 exits with corpus v1 and tested split/manifest validators, deterministic
-size/encoding/HTML generation, an audited provenance inventory, and a reproducible
-pilot model with a C++ emitter. Do not require recreating unknown historical
-training data or replacing all legacy models to pass this milestone.
+Phase 2は、corpus v1、検証済みのmanifest/分割validator、決定的なsize/encoding/HTML生成、
+provenance一覧、C++ emitterを含む再現可能な試作modelが揃った時点で完了とする。
+不明な歴史的training dataの復元や、全legacy modelの置換は完了条件にしない。
 
-## Phase 3: failure analysis and improvement selection
+<a id="phase-3"></a>
 
-Run the pinned 2.3.0 reference and current engine against all available frozen
-corpora. Preserve per-sample predictions, candidates, scores, label certainty,
-source group, input size, model version and optional traces. Publish counts and
-denominators per corpus, language, encoding family, size and workload; distinguish
-missing data, unsupported codecs, abstentions, crashes and wrong predictions.
+## Phase 3: 失敗を分析し、改善対象を選ぶ
 
-Use multiple labels with supporting evidence rather than force every failure
-into one exclusive category:
+固定した2.3.0 referenceと開発中engineを、利用可能な固定済みcorpus全体に対して実行する。
+sampleごとの予測、候補、score、label確度、source group、入力size、model version、必要なtraceを残す。
+corpus・language・encoding family・size・workload別に件数と母数を公開し、
+data欠落、未対応codec、判定保留、crash、誤判定を区別する。
 
-| Classification | Evidence needed |
+失敗は無理に一つへ分類せず、根拠とともに複数labelを付けられるようにする。
+
+| 分類 | 必要な根拠 |
 | --- | --- |
-| `UNSUPPORTED_ENCODING`, `MODEL_MISSING` | Support/model inventory and missing codec or language coverage |
-| `WRONG_ENCODING_FAMILY`, `RIGHT_FAMILY_WRONG_CODEC` | Versioned family/mapping definitions and observed candidates |
-| `SUPERSET_AMBIGUITY`, `INSUFFICIENT_EVIDENCE` | Same bytes valid/equivalent under multiple codecs, or too little distinguishing evidence |
-| `RANKING_FAILURE` | Plausible correct candidate loses, with trace evidence beyond candidate presence alone |
-| `CONFIDENCE_CALIBRATION` | Repeated held-out mismatch between defined score interpretation and observed correctness |
-| `STRUCTURAL_VALIDATION_FAILURE`, `LANGUAGE_MODEL_FAILURE` | Decoder/state-machine or model/prober evidence |
-| `DECLARATION_CONFLICT` | Actual bytes and metadata/declaration evidence disagree |
-| `UNRESOLVED` | Evidence insufficient; retain competing explanations |
+| `UNSUPPORTED_ENCODING`、`MODEL_MISSING` | 対応一覧・model一覧と、欠けているcodecまたはlanguage coverage |
+| `WRONG_ENCODING_FAMILY`、`RIGHT_FAMILY_WRONG_CODEC` | version付きfamily/mapping定義と候補の観測結果 |
+| `SUPERSET_AMBIGUITY`、`INSUFFICIENT_EVIDENCE` | 複数codecで同じbytesが妥当・同値になること、または識別根拠の不足 |
+| `RANKING_FAILURE` | 正しい可能性のある候補が負けた理由を示すtrace。候補に含まれることだけでは断定しない |
+| `CONFIDENCE_CALIBRATION` | 定義したscoreの意味と実際の正解頻度が、未使用dataでも継続してずれること |
+| `STRUCTURAL_VALIDATION_FAILURE`、`LANGUAGE_MODEL_FAILURE` | decoder/state machineまたはmodel/proberの挙動による根拠 |
+| `DECLARATION_CONFLICT` | bytesとmetadata・宣言内容の不一致 |
+| `UNRESOLVED` | 根拠不足。考えられる原因を残して調査する |
 
-Measure top-k candidate recall to separate candidate generation from ranking.
-Confidence is initially a score, not a guaranteed probability. Define the event
-being calibrated (exact codec, compatible decoding, or joint language/encoding),
-plot reliability/abstention curves with bin counts, and evaluate calibrated
-probabilities only on held-out data. Report sparse strata rather than drawing
-strong conclusions from a few documents. Resample by source group when estimating
-uncertainty so many derived variants do not masquerade as independent observations.
+top-k candidate recallを測り、候補生成とrankingの問題を分ける。
+confidenceは初めから正解確率とはみなさず、まずscoreとして扱う。
+何の正しさを校正するのか（exact codec、compatibleなdecode、languageとの組合せ）を定義し、
+binごとの件数を伴う信頼度曲線や、判定保留率と誤り率の関係を調べる。
+確率としての校正結果は未使用dataで評価する。
 
-Rank work by observed occurrence and failure cost, achievable accuracy gain,
-implementation effort, runtime/memory cost and provenance readiness. High cost
-must lower priority, not increase it through a literal multiplication formula.
-Frequency estimates from a convenience corpus are not global Web frequencies.
-Publish the evidence and uncertainty behind each selected encoding family.
+少数の文書しかない区分から強い結論を出さず、件数の不足を明示する。
+不確かさを推定する際はsource group単位で再標本化し、多数の派生sampleを独立観測として扱わない。
 
-Phase 3 exits with a replayable report, manually checked representative failures,
-a ranked backlog and a 3.0 scope decision. Re-run reviewed metric definitions
-identically across competitors; the current use of `chardet.evaluation` is a
-versioned dependency, not an immutable definition of correctness.
+改善候補は、実際の遭遇頻度と誤判定cost、見込める精度改善、実装工数、実行時間・memoryの増分、
+provenanceの整備状況から優先順位を付ける。
+costが高いほど優先度が上がるような単純な掛け算は使わない。
+収集しやすいcorpusでの頻度を、そのままWeb全体の頻度とはみなさない。
+選んだencoding familyごとに根拠と不確かさを公開する。
 
-## Phases 4–6: intentional detector improvements
+Phase 3は、再実行可能なreport、人が確認した代表的失敗、優先順位付きbacklog、3.0範囲の決定で完了とする。
+評価指標の定義はレビュー・version固定し、競合すべてに同じものを適用する。
+現在の`chardet.evaluation`依存もversion付きの実装であり、永遠に不変な正解定義として扱わない。
 
-### Phase 4: focused corrections
+<a id="phase-4-6"></a>
 
-Start with demonstrated structural/BOM problems, model selection, ranking and
-confidence. For each change, link the failure class, fix the general byte/model
-property, and provide positive, negative and ambiguous cases. Publish complete
-before/after per-corpus results and candidate deltas, including regressions.
-Do not tune directly to an external benchmark or accumulate ad hoc heuristics.
-Changes to language confidence must distinguish language evidence from an
-encoding label: ASCII does not imply English, and mixed-language input may
-require unknown/multiple-language semantics rather than a false precise answer.
+## Phase 4〜6: 根拠に基づいて検出器を改善する
 
-### Phase 5: targeted coverage
+### Phase 4: 対象を絞った修正
 
-Candidate groups include Japanese, Simplified/Traditional Chinese, Korean,
-Cyrillic, Central/Eastern European, Turkish, Greek, Hebrew, Arabic and Vietnamese.
-This is an investigation list, not a claim that all these groups are absent.
-Select actual language/codec gaps using Phase 3 evidence. Each model addition
-needs provenance, disjoint training/tuning/evaluation, independent and real-world
-validation, negative-family checks, initialization/allocation cost, model size,
-throughput and candidate-stability measurements. Compare legacy and new models
-through the same engine before attributing differences to an engine rewrite.
+確認できた構造検証・BOMの問題、model選択、ranking、confidenceから着手する。
+変更ごとに失敗分類を紐付け、一般化できるbytes/modelの性質を修正し、
+成立する例・成立しない例・曖昧な例を用意する。
+corpusごとの変更前後の全結果と候補差分を、悪化したcaseも含めて公開する。
+外部benchmarkに直接合わせる調整や、その場しのぎのheuristicの積み重ねは避ける。
 
-### Phase 6: staged evidence and content hints
+languageのconfidenceはencoding labelと区別する。
+ASCIIだから英語とは限らず、複数言語が混じる入力は、無理に一つを断定せず
+unknownや複数languageを表す仕様が必要か検討する。
 
-Prototype cheap structural checks (BOM, ASCII, valid UTF-8, UTF-16/32 structure,
-escape sequences) and optional XML/HTML/HTTP hints. Valid UTF-8 alone does not
-prove intended encoding, especially for short ASCII-compatible input. Document
-which signals are definitive under the chosen contract and which merely rank
-candidates. Specify conflict, absent metadata, malformed markup and hint-invalid
-input behavior; use bounded native parsing and measure its cost.
+### Phase 5: 必要性の高いcoverageを増やす
 
-Evaluate a separate API or explicit content hint without silently imposing Web
-semantics on generic detection. Keep the statistical decision logic native.
-Compare evidence limits of 64 KiB, 200 KiB, 1 MiB and unlimited across workloads,
-including inputs whose distinguishing evidence occurs late. Report bytes examined,
-accuracy/confidence, latency, allocation and memory. The existing unlimited
-default is a baseline, not a v3 constraint: change it if the evidence supports
-the choice, with an explicit opt-out and migration documentation.
+調査候補は日本語、簡体字・繁体字中国語、韓国語、Cyrillic、中東欧、トルコ語、ギリシャ語、
+ヘブライ語、アラビア語、ベトナム語とする。
+これは候補一覧であり、これらがすべて未対応という意味ではない。
+実際に不足するlanguage/codecの組合せはPhase 3の結果から選ぶ。
 
-Early termination and candidate pruning require proofs or measured bounds for
-discarded candidates and tests for later contradicting bytes. Use profiling and
-failure analysis before architecture changes; avoid adding SIMD to compensate
-for redundant work. Phases 4–6 exit per selected feature, not as one large merge.
+model追加ごとにprovenance、training/tuning/evaluationの分離、独立corpusと実dataでの検証、
+別familyの誤検出、初期化・allocation cost、model size、throughput、候補安定性を確認する。
+旧modelと新modelを同じengineで比較してから、engine書き換えの効果を判断する。
 
-## Phases 7–9: alternative implementation and later research
+### Phase 6: 段階的な判定とcontent hint
 
-An experimental Rust engine starts only after shared model/conformance contracts
-are useful. Its purpose is safer maintenance and contributor tooling as well as
-performance evaluation. Keep C++ as the runnable reference and choose a bounded
-vertical slice before expanding coverage. Initial ports preserve behavior and
-reuse approved models; do not mix score/model improvements with porting.
+安価な構造検証（BOM、ASCII、UTF-8としての妥当性、UTF-16/32構造、escape sequence）と、
+任意のXML/HTML/HTTP hintを試作する。
+特に短いASCII互換入力では、UTF-8として妥当なだけで元のencodingを確定できるわけではない。
+選んだ仕様の下で確定的な根拠になるものと、候補の順位付けに使うものを分ける。
 
-Use typed encoding/language/candidate/state representations, detector-local
-mutable state and explicit ownership. Normal detector logic should be safe Rust;
-localize and document `unsafe` at FFI, dispatch or optimized kernels. Evaluate
-`cargo test`, rustfmt, clippy, property tests, fuzzing, Miri and sanitizers according
-to what they can actually check. A thin C ABI is an option, not a reason to copy
-the C API into the internal Rust design. Specify buffer lifetimes, ownership,
-panic/error translation and independent-detector thread safety at any FFI boundary.
+metadataの不一致・欠落、壊れたmarkup、hintとbytesの不整合時の挙動を定義する。
+native側で処理量に上限のあるparseを行い、costを測る。
+HTML専用APIまたは明示的hintを検討し、汎用detectにWeb固有の意味を黙って持ち込まない。
+統計的な判定ロジックはnative側に置く。
 
-Compare the same feed schedules, malformed inputs, lifecycle, completion events,
-candidate order/language/confidence and model content. Require exact equality
-where the arithmetic contract permits; investigate mismatches before allowing
-documented numerical tolerances. Also compare native latency, throughput, memory,
-allocation, parallel scaling, binary size, build/install cost and wheel coverage.
-Rust syntax alone does not establish safety, independence or license eligibility.
+evidence limitは64 KiB、200 KiB、1 MiB、unlimitedを比較する。
+識別に必要な情報が後半に現れる入力も含め、調べたbyte数、精度・confidence、latency、
+allocation、memoryを報告する。
+現在のunlimited defaultは比較基準であり、v3の制約ではない。
+根拠が揃えば変更し、明示的に制限を解除する方法と移行案内を用意する。
 
-Promote Rust, maintain both engines, or keep C++ primary only after an explicit
-decision report. Broader independently generated models and new architectures
-follow evidence of existing limits, with separate compatibility decisions.
-SIMD/architecture-specific kernels come last: require a profiled bottleneck,
-runtime feature dispatch, portable fallback, cross-architecture correctness and
-net wins on the actual small/medium workloads. Reject optimizations whose dispatch,
-allocation or maintenance costs exceed their measured benefit.
+早期終了と候補の枝刈りは、捨てる候補の上限に関する根拠、または実測による評価を必要とする。
+後続bytesが判断を覆すcaseを検証する。
+architecture変更の前にprofilingと失敗分析を行い、重複計算をSIMDで埋め合わせない。
+Phase 4〜6は大きな一括mergeではなく、選んだ機能ごとに完了を判定する。
 
-## Measurement contracts and acceptance gates
+<a id="phase-7-9"></a>
 
-Use the native C API benchmark for engine tuning. Use installed release wheels
-for cChardet/chardet/charset-normalizer comparisons; native engine timings and
-Python API timings answer different questions and must be published separately.
-Enable available competitor native accelerators and verify loaded module paths;
-report pure-Python fallback as a separate configuration, never infer it from a
-package name. Record versions, wheel hashes, interpreter/GIL mode, compiler flags,
-CPU/OS, affinity and power policy where available, corpus hashes and commands.
+## Phase 7〜9: 代替実装と長期研究
 
-Preload bytes outside timing, warm code/model paths consistently, alternate
-baseline/candidate run order and retain distributions. Measure both fresh and
-reused detectors; warming must not silently remove initialization cost from the
-fresh case. Separate top-result and all-candidate queries, serial and threaded
-runs, and one-shot versus incremental input. Keep end-to-end I/O measurements
-separate. Record affinity as unavailable on unsupported systems rather than
-claiming identical controls. Publish p50/p95 latency, throughput, allocation
-counts/bytes, peak memory and model/binary footprint with instrument limitations.
+Rustの試験実装は、共通のmodel形式と挙動比較の契約が使えるようになってから着手する。
+目的は性能比較に加え、安全に保守できることと開発参加の容易さである。
+C++を実行可能なreferenceとして残し、最初は入力から結果までを通せる小さな範囲を選ぶ。
+初期portは承認済みmodelを再利用して挙動を維持し、score/model改善と同じ変更に混ぜない。
 
-Accuracy reports include exact codec, compatible/superset and decode-equivalent
-metrics, language and joint accuracy, abstention, and unknown-label exclusions.
-Use strict decoding and separately handle invalid/truncated inputs where
-decode-equivalence is undefined. Preserve per-corpus and stratified counts; macro
-and workload-weighted summaries may supplement but never replace them.
+encoding、language、candidate、状態を型で表し、可変状態はdetector内に閉じ、所有関係を明確にする。
+通常の検出logicはsafe Rustを基本とし、`unsafe`はFFI、dispatch、最適化kernelなどへ局所化して
+必要な理由を記録する。
+`cargo test`、rustfmt、clippy、property-based test、fuzzing、Miri、sanitizerは、
+それぞれ実際に検証できる範囲を踏まえて使う。
 
-Maintain a release scorecard in addition to the accuracy/performance reports:
+薄いC ABI層は選択肢だが、Rust内部へC APIの構造をそのまま移す理由にはしない。
+FFI境界ではbufferの寿命、所有権、panic/errorの変換、独立detectorのthread safetyを定義する。
 
-| Dimension | Evidence to retain |
+同じfeed手順、壊れた入力、lifecycle、終了event、候補順序・language・confidence、model内容を比較する。
+数値計算の契約上可能ならexactに一致させ、不一致を調査した後でのみ根拠のある許容差を検討する。
+native latency、throughput、memory、allocation、並列scaling、binary size、build/install cost、
+wheel対応範囲も比較する。
+Rustで書いたという事実だけでは、安全性、独立した著作物であること、license適合性の証明にはならない。
+
+Rustを主実装にするか、両engineを維持するか、C++を主実装のままにするかは、比較reportの後に決める。
+独自生成modelの拡大や新architectureは、既存の限界を示す根拠が得られてから、互換性も別途判断する。
+
+SIMDやarchitecture固有kernelは最後に検討する。
+profilingで確認した遅い箇所、runtime feature dispatch、portable fallback、architecture間の正しさ、
+小〜中規模workloadでの実際の利益を条件とする。
+dispatch・allocation・保守のcostが効果を上回る最適化は採用しない。
+
+<a id="measurement"></a>
+
+## 測定方法と変更の受け入れ基準
+
+engineの性能改善にはnative C API benchmarkを使う。
+cChardet/chardet/charset-normalizer間の比較にはinstall済みrelease wheelを使う。
+native engineの処理時間とPython API経由の時間は意味が異なるため、別々に公表する。
+
+競合に利用可能なnative acceleratorがあれば有効にし、実際にloadされたmodule pathを確認する。
+Pure Python fallbackは別構成として報告し、package名だけから実装方式を推測しない。
+version、wheel hash、interpreter/GIL mode、compiler flag、CPU/OS、利用可能ならaffinityと電力設定、
+corpus hash、commandを記録する。
+
+bytesは測定前にmemoryへ読み込み、code/modelを同じ条件でwarm-upする。
+baselineと変更版の実行順を交互にし、測定値の分布を保存する。
+detectorを毎回生成する場合とreuseする場合の両方を測る。
+warm-upを理由に、毎回生成する測定から初期化costを黙って除外しない。
+
+最上位結果だけの取得と全候補取得、serialとmulti-thread、one-shotとincrementalを分ける。
+I/O込みのend-to-end測定は別枠にする。
+affinityを設定できないplatformでは未設定と記録し、同じ統制条件を満たしたと主張しない。
+p50/p95 latency、throughput、allocation回数・byte数、peak memory、model/binary sizeを、
+測定toolの制約とともに報告する。
+
+精度reportにはexact codec、compatible/superset、decode-equivalent、language、
+encodingと言語の組合せ、判定保留、正解不明による除外を含める。
+decodeはstrictに行い、不正・途中切断入力でdecode-equivalenceを定義できない場合は別に扱う。
+corpus別・区分別の件数を維持し、macro平均やworkloadで重み付けした平均だけにまとめない。
+
+リリース時には精度・性能reportに加え、次の評価表を維持する。
+
+| 評価軸 | 残す根拠 |
 | --- | --- |
-| Coverage | Supported codec/language/script inventory, unsupported observed samples, coverage weighted only by a declared workload distribution |
-| Robustness | Unique minimized fuzz defects, sanitizer findings, chunk/lifecycle mismatches, OOM handling results and campaign coverage/budget |
-| Maintainability | Fresh-checkout setup steps/time, tested compiler/platform combinations, analyzer backlog, deterministic model-generation results and unresolved provenance |
-| Alternative engines | FFI/unsafe inventory with reasons, build complexity, conformance differences and maintenance cost alongside speed/memory |
+| Coverage | codec/language/script対応一覧、観測した未対応sample、明示したworkload分布に限った重み付きcoverage |
+| 堅牢性 | 最小化した異なるfuzz不具合、sanitizer指摘、chunk/lifecycle不一致、OOM処理結果、fuzzのcoverageとbudget |
+| 保守性 | 新規checkoutからのsetup手順・時間、検証したcompiler/platform、静的解析の残課題、model生成の再現性、由来の未解決事項 |
+| 代替engine | FFI/unsafeの使用箇所と理由、buildの複雑さ、挙動差、速度・memoryと並べた維持cost |
 
-Do not interpret zero observed fuzz failures as proof of memory safety, or a
-larger encoding count as evidence of better real-world accuracy.
+fuzzで失敗を観測しなかったことをmemory safetyの証明とはしない。
+対応encoding数が増えたことだけを、実際のdataに対する精度改善ともみなさない。
 
-Initial review thresholds, to be frozen with the Phase 1 benchmark protocol:
+Phase 1のbenchmark手順とともに確定する、初期のレビュー基準は次のとおり。
 
-- Safety: no untriaged crash, sanitizer error, new analyzer finding or invalid
-  output. Known findings remain explicit; an xfail is not a passing accuracy case.
-- Mechanical/port changes: no unexplained candidate or lifecycle changes within
-  the defined equivalence contract. Intentional changes use a separate review.
-- Performance: investigate repeatable >5% native median latency or throughput
-  degradation on any primary workload, or >10% p95/memory/allocation increase.
-  Define throughput degradation as lower bytes/sec and latency degradation as
-  higher elapsed time; do not interchange their percentages. Zero-allocation
-  paths require absolute counts instead of percentages. Noise/underpowered runs
-  are inconclusive and must be repeated on a controlled runner, not declared wins.
-- Accuracy: enumerate every changed known-label outcome; no aggregate gain may
-  hide an unexplained family/size regression. Expected ambiguous changes and
-  statistically uncertain improvements must be labeled as such.
-- An accuracy/performance tradeoff may be accepted through a documented decision
-  with scope, measurements and mitigation. Thresholds trigger review, not a ban
-  on valuable v3 changes or a license to regress just below the threshold.
+- **安全性**: 未調査のcrash、sanitizer error、新しい静的解析指摘、不正な出力を残さない。
+  既知の問題は明示し、xfailを精度testの成功として数えない。
+- **機械的変更・port**: 定義した同等性の範囲で、未説明の候補・lifecycle差分を残さない。
+  意図して変える挙動は別のレビュー対象にする。
+- **性能**: 主要workloadのいずれかで、native median latency/throughputに再現する5%超の悪化、
+  またはp95/memory/allocationに10%超の増加があれば調査する。
+  throughputの悪化はbytes/secの減少、latencyの悪化は時間の増加であり、同じ百分率として扱わない。
+  allocationが0だった処理は百分率ではなく絶対数で比較する。
+  noiseが大きい、または測定数が不足する結果は未確定とし、統制した環境で再測定する。
+- **精度**: 正解が既知の入力で変わった結果をすべて列挙する。
+  全体の改善でfamily/size別の未説明の悪化を隠さない。
+  曖昧な入力で想定した変化や統計的に未確定の改善は、そのように明示する。
+- **トレードオフ**: 精度と性能の交換は、対象範囲、測定結果、緩和方法を記録した判断で受け入れられる。
+  閾値はレビューのきっかけであり、価値あるv3変更の禁止でも、閾値未満なら無条件に悪化してよいという意味でもない。
 
-## v3 contracts and migration decisions
+<a id="contracts"></a>
 
-Create decision records before implementing each affected public contract:
+## v3で決める契約と移行方針
 
-| Decision | Questions to resolve | Decision deadline |
+publicな挙動を変更する前に、以下の設計判断を文書として残す。
+
+| 判断対象 | 決めること | 判断時期 |
 | --- | --- | --- |
-| Result and confidence | Mapping versus typed result, unknown/abstention, score semantics, language naming, candidate ties | Before a new public result API; freeze by beta |
-| Streaming | `done`, feed-after-done, finalize/reset, partial multibyte state, chunk invariance and errors | Before conformance expectations become the v3 contract |
-| Resource/evidence policy | Default `max_bytes`, caller-visible truncation, input copies/lifetimes, mutable buffers during GIL-free work, OOM | Before introducing limits or buffer changes |
-| Hints and scope | Generic versus HTML/XML detection, metadata precedence, invalid/binary and mixed-encoding input behavior | Before a hint API or new fallback policy |
-| Native boundary | Exported symbols, ABI version/SONAME where applicable, ownership, error codes, Cython coupling | Before native API changes and integration PR |
-| Platforms | Python/compiler/CMake minima, architectures, free-threaded support and packaging burden | Before beta; do not drop a supported platform accidentally |
-| Data/models | Format versioning, compatible readers, provenance and distribution rights | Before model publication |
-| Engine choice | Rust trial exit criteria, dual-engine cost, default engine | Only after Phase 7 evidence |
+| 結果・confidence | mappingか型付きresultか、unknown/判定保留、scoreの意味、language名、候補の同点処理 | 新しい結果APIの実装前。Betaまでに固定 |
+| Streaming | `done`、終了後feed、finalize/reset、未完のmultibyte状態、chunk非依存性、error | 挙動比較の期待値をv3の契約にする前 |
+| Resource・evidence | default `max_bytes`、切り詰めの通知、copyと寿命、GIL解放中の可変buffer、OOM | 制限やbuffer処理の変更前 |
+| Hint・検出範囲 | 汎用とHTML/XMLの区別、metadata優先順位、不正/binary/混在encoding入力の扱い | hint APIまたはfallback方針の変更前 |
+| Native境界 | 公開symbol、該当するABI version/SONAME、所有権、error code、Cythonとの結合 | native API変更と連携PRの前 |
+| Platform | Python/compiler/CMake最小版、architecture、free-threaded対応、packaging負担 | Beta前。偶然サポートを失わない |
+| Data/model | format version、reader互換性、由来、配布条件 | model公開前 |
+| Engine選択 | Rust試作の完了条件、両実装の維持cost、default engine | Phase 7の根拠が揃ってから |
 
-For each break document old/new examples, affected consumers, conversion or
-replacement API, version boundary, rationale, regression evidence and rollback.
-Prefer an explicit migration over an ambiguous compatibility flag. Deprecation
-in 2.x is useful when cheap, but is not mandatory before a justified v3 break.
-No promise is made here to backport new features or maintain 2.x indefinitely;
-define the maintenance window at beta. Freeze 2.3.0 as a benchmark reference,
-not as a permanent constraint on results or an implicit probability specification.
+破壊的変更ごとに、旧/新の例、影響する利用者、変換方法または代替API、変更されるversion、
+理由、回帰検証、戻す方法を示す。
+意味が曖昧な互換flagより、明確な移行を優先する。
+低costでできるなら2.xでの非推奨化は有用だが、正当なv3変更の必須条件にはしない。
 
-## First implementation batches
+2.xへの新機能backportや無期限保守は本書では約束しない。Beta時点で保守期間を定義する。
+2.3.0はbenchmark referenceとして固定し、結果やconfidenceの意味を永久に縛る仕様にはしない。
 
-Each row is a bounded PR-sized starting point; split further when native and
-wrapper ownership requires dependent PRs. All are initially planned.
+<a id="first-prs"></a>
 
-| ID | Owner | Work and deliverable | Acceptance/dependency |
+## 最初の実装単位
+
+各行はPRに分けて着手する単位の案とする。
+nativeとwrapperで管理先が異なる場合は、依存関係を示した別PRに分ける。
+現時点ではすべて未着手。本ロードマップPRと`dev`作成は、以下の実装完了には数えない。
+
+| ID | 管理先 | 作業・成果物 | 受け入れ条件・依存関係 |
 | --- | --- | --- | --- |
-| V3-01 | uchardet + cChardet | Baseline inventory: known failures, toolchains, model families, native/wrapper benchmark manifest and raw result hashes | Replays documented; no new performance claim without measurements |
-| V3-02 | uchardet | Separate sanitizer options from Debug; build presets and supported-toolchain guide | GCC/Clang/MSVC configure/build/test; depends on V3-01 inventory |
-| V3-03 | uchardet | Structured native output, comparison harness and completion/lifecycle cases | Same-schedule equivalence and chunk differences reported separately; V3-01 |
-| V3-04 | uchardet | ASan/UBSan presets, bounded fuzz targets and regression seeds | Reproducible smoke campaign; minimized failure replay; V3-02/03 |
-| V3-05 | uchardet | Analyzer/tidy baseline and invariant-focused fixes | No new findings; fixes isolated from detector tuning; V3-02/03 |
-| V3-06 | uchardet | Opt-in prober/ranking trace tool | Explains representative failures; disabled cost measured; V3-03 |
-| V3-07 | uchardet | Corpus manifest/split schemas, license inventory and validators | Reject missing rights metadata and cross-split derivations; may overlap V3-02 |
-| V3-08 | uchardet | Offline strict re-encoding, boundary-safe size and HTML generation | Deterministic hashes, rejected-derivation counts, leakage tests; V3-07 |
-| V3-09 | uchardet | Legacy generator/provenance report, then offline pilot model and C++ emission | Unknowns explicit; two clean generations match; V3-01/07/08 |
-| V3-10 | cChardet + uchardet | Failure report, top-k analysis and ranked coverage/ranking backlog | Reviewed examples and untouched holdout; V3-03/06/08 |
-| V3-11 | cChardet | 3.0 scope/contract decisions and initial migration guide | Select measurable user-visible work from V3-10; do not invent scope to satisfy a date |
-| V3-12 | Both, separate PRs | Selected fixes/models, submodule integration and reports | Gates above, wheel/API tests and intentional delta review; V3-09/10/11 as applicable |
+| V3-01 | 両repository | baseline棚卸し: 既知の失敗、toolchain、model family、native/wrapper benchmark manifest、生の測定結果hash。`dev`のCI・Rules確認 | 再現手順を記録。測定なしに新しい性能効果を主張しない |
+| V3-02 | uchardet | sanitizerとDebugの分離、build preset、対応toolchain手順 | GCC/Clang/MSVCでconfigure/build/test。V3-01の棚卸しに依存 |
+| V3-03 | uchardet | 機械可読なnative出力、比較harness、終了/lifecycle case | 同じfeedでの同等性とchunk間差分を分けて報告。V3-01 |
+| V3-04 | uchardet | ASan/UBSan preset、上限付きfuzz target、回帰seed | 再現可能なsmoke実行と最小化入力の再検証。V3-02/03 |
+| V3-05 | uchardet | Analyzer/tidyの既存指摘一覧、invariantを明確にする修正 | 新しい指摘を増やさず、判定のtuningと分ける。V3-02/03 |
+| V3-06 | uchardet | 任意で有効化するprober/ranking trace | 代表的失敗を説明でき、無効時costを測定済み。V3-03 |
+| V3-07 | uchardet | corpus manifest/分割schema、license一覧、validator | 権利情報欠落や分割を跨ぐ派生dataを拒否。V3-02と並行可能 |
+| V3-08 | uchardet | offline strict再encode、正常境界でのsize生成、HTML生成 | 決定的hash、生成できなかった件数、data混入test。V3-07 |
+| V3-09 | uchardet | legacy generator/由来調査、offline試作modelとC++出力 | 不明点を明示し、clean環境の2回の生成が一致。V3-01/07/08 |
+| V3-10 | 両repository | 失敗report、top-k分析、coverage/ranking改善の優先順位 | 代表例を確認済みで、未参照holdoutがある。V3-03/06/08 |
+| V3-11 | cChardet | 3.0範囲・契約の設計判断、移行案内の初版 | V3-10から測定可能な利用者向け改善を選ぶ。日程を満たすために範囲を捏造しない |
+| V3-12 | 両repository、別PR | 選択した修正/model、submodule連携、report | 上記の基準、wheel/API test、意図した差分のレビュー。該当するV3-09/10/11 |
 
-## Release gates, risks and progress tracking
+<a id="release"></a>
 
-**Alpha:** Phases 1–2 have a working vertical slice, selected user-facing
-improvements run through the evaluation pipeline, and experimental/breaking APIs
-are labeled. Publish what remains incomplete; alpha does not establish stability.
+## リリース条件・リスク・進捗管理
 
-**Beta:** Phase 3 scope is agreed, selected features pass their gates, public
-contracts and migration examples are frozen, corpus/model provenance is reviewed,
-and the platform/support matrix and 2.x maintenance policy are documented. Expand
-downstream smoke coverage with representative HTML/CSV/streaming/threaded use.
+### Alpha・Beta・正式版の条件
 
-**Release candidate and 3.0:** reproduce the frozen evaluation and controlled
-performance reports; resolve blocking safety and unexplained semantic regressions;
-validate all supported wheels and sdist installations including type information,
-CLI and free-threaded behavior. Link code/model/corpus revisions and artifacts.
-Review release notes against the preceding stable release; do not republish 2.x
-features as new. Follow [the release procedure](releasing.md), with prerelease
-handling updated and tested before the first alpha. Full corpus replacement,
-Rust, staged detection and SIMD are not blanket release blockers.
+**Alpha**: Phase 1〜2の一連の工程が小さな対象で動き、選択した利用者向け改善を評価pipelineに
+通せること。試験中・破壊的なAPIを明記し、未完了の項目も公開する。
+Alpha公開を安定性の保証とはしない。
 
-| Risk | Mitigation or decision trigger |
+**Beta**: Phase 3で範囲を合意し、選択した機能が受け入れ基準を満たすこと。
+publicな契約と移行例を固定し、corpus/modelの由来を確認済みとする。
+対応platformと2.xの保守方針を文書化する。
+HTML/CSV/streaming/threadingなど、代表的なdownstream利用をsmoke testへ加える。
+
+**Release candidate・3.0**: 固定した評価と統制した性能測定を再現し、公開を妨げる安全性問題と
+未説明の挙動回帰を解消する。
+対応するwheelとsdistをinstallした状態で、型情報、CLI、free-threaded動作まで検証する。
+code/model/corpusのrevisionと成果物を紐付ける。
+release notesは直前のstableとの差分にし、2.xの機能を新機能として再掲しない。
+[リリース手順](releasing.md)に従い、最初のAlpha前にprerelease用の手順も整備・検証する。
+
+全corpusの置換、Rust、段階的検出、SIMDの完了を一律に3.0の条件にはしない。
+
+### 主なリスクと対応
+
+| リスク | 対応・再判断のきっかけ |
 | --- | --- |
-| Compatibility stalls needed design work | Use v3 breaks with migration records; reevaluate future major boundaries after 3.0 |
-| No clear accuracy win after infrastructure | Publish negative findings, improve labels/traces and revisit scope; do not manufacture benchmark wins |
-| Corpus bias/leakage or ambiguous labels | Source-group splits, exposure ledger, fresh holdouts, certainty-aware metrics |
-| Lost/unlicensed corpus or unknown model origin | Quarantine redistribution, keep hashes/recipes and explicit unknowns; prioritize auditable replacement |
-| New models increase latency or memory | Per-model cost reports, evaluate pruning only with evidence, reject unjustified cost |
-| Platform/floating-point drift | Compiler matrix, fixed contracts and preserved mismatch artifacts |
-| CI cost or Actions rate limits | Local validation, batched pushes, bounded PR lanes and scheduled heavy work |
-| Rust port grows without product benefit | Bounded pilot and comparative decision gate; retain C++ reference |
-| Documentation becomes stale | Update milestone evidence and decisions in the implementing PR |
+| 互換性が必要な改善を妨げる | v3の破壊的変更と移行記録を使う。3.0以後は次のmajorが必要か再評価 |
+| 基盤を整えても明確な精度改善が出ない | 改善しなかった結果も公開し、label/traceを改善して範囲を見直す。benchmarkの見かけだけを良くしない |
+| corpusの偏り・混入・正解の曖昧さ | source groupで分割、参照履歴、未使用holdout、確度を区別した指標 |
+| corpusの消失・配布権不明・model由来不明 | 再配布を保留し、hash/recipeと不明点を保持。監査可能な置換を優先 |
+| 新modelで速度・memoryが悪化 | modelごとのcostを報告し、根拠のある枝刈りを検討。正当化できない増分は採用しない |
+| platformや浮動小数点計算による差 | compiler matrix、明示した契約、不一致の再現artifactを保存 |
+| CI cost・Actions rate limit | local検証、まとめたpush、上限付きPR job、重い処理の定期実行 |
+| Rust portだけが膨らむ | 小さな試作と比較判断を区切りにし、C++ referenceを維持 |
+| 文書と実装が乖離する | 実装PRで完了の根拠と設計判断も更新 |
 
-Track each work item as planned, in progress, blocked, deferred or completed.
-Completion requires links to merged implementation, reproducible commands,
-artifact hashes and acceptance evidence. Record blockers and why a milestone is
-deferred; do not silently redefine its scope. Revisit this roadmap after Phase 1,
-after the first failure report, and at each release gate. Update release scope
-and decisions in Git so contributors can distinguish accepted direction,
-proposed thresholds, experimental options and demonstrated results.
+### 進捗の記録方法
+
+作業は未着手・進行中・blocked・延期・完了で管理する。
+完了にはmerge済み実装、再現command、artifact hash、受け入れ条件の根拠への参照を必要とする。
+blockerや延期理由は記録し、黙って完了条件を縮めない。
+
+Phase 1終了時、最初の失敗report完成時、各リリース判定時に本書を見直す。
+合意した方向性、提案中の閾値、試験的な選択肢、測定済みの結果を区別し、
+範囲の変更と設計判断をGitの履歴で追跡できる状態を維持する。
