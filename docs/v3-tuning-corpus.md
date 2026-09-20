@@ -51,3 +51,37 @@ strict decode-equivalent、language、正解codecの候補内存在を分離し�
 失敗入力だけの選別や入力の切り詰めはしない。全候補・confidence bits・done観測も残す。
 較正候補を試す場合は、その候補集合と採否基準を事前に固定する。
 baseline観測だけで標準採用・性能gate完了とはしない。生成modelの配布条件も未確定。
+
+## 係数未変更のtuning baseline
+
+上記2モデルを実験用targetへ接続し、tuning 8録音のUTF-8/cp1252全16入力を
+one-shot/freshで評価した。French cp1252の1 slotのみを差し替え、他のmodel・ranking・
+係数は変更していない。両buildの標準target出力一致とbuild provenanceを照合した。
+各process上限10秒、入力4 KiB以下。入力の選別・切り詰めは行っていない。
+
+| 入力 | model | exact codec | decode-equivalent | language一致 |
+| --- | --- | ---: | ---: | ---: |
+| cp1252 | legacy | 4/8 | 8/8 | 8/8 |
+| cp1252 | identity | 1/8 | 4/8 | 8/8 |
+| cp1252 | filtered | 2/8 | 5/8 | 8/8 |
+| UTF-8 | legacy | 8/8 | 8/8 | 8/8 |
+| UTF-8 | identity | 8/8 | 8/8 | 8/8 |
+| UTF-8 | filtered | 8/8 | 8/8 | 8/8 |
+
+cp1252入力でdecodeは成功するが正解文字列と異なる件数はidentity 4件、filtered 3件。
+今回、正解codecの候補内存在件数はexact codec件数と同じだった。
+decode-equivalentは当該入力上の一致であり、encoding全体の互換性・superset判定ではない。
+legacyの学習corpusとの重複は不明なので、公平な未学習比較の保証とは区別する。
+
+2回の比較でreport全体がbyte一致した。
+private report: `archives/v3-corpus/paris24-tuning-engine-v1.json`。
+content hash: `d34ffb575ce241519978ff704c9da96c821f67f3cae39dff54cbbde23f6ea9a6`。
+file SHA-256: `70bf3cbb333edff74ea707a4149bab24752bcb3c368da5859e8b8c4cc26916f7`。
+
+再現は`engine_probe.py --training ARTIFACT NEW_BUILD_DIRECTORY`で2つのbuildを作り、
+`engine_comparison.py IDENTITY FILTERED MANIFEST IDENTITY_BUILD FILTERED_BUILD OUTPUT --split tuning`
+を実行する。引数ARTIFACTは本書の24録音版、MANIFESTはtraining/tuning分割版を使う。
+32録音版modelをこのtuning manifestへ渡すと、既存の学習重複検査で拒否される。
+
+この結果を較正前の固定baselineとし、validationを見ながら係数を選ばない。
+ここでは新たなvalidation予測や独立holdout予測は実行していない。
