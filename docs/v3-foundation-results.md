@@ -80,6 +80,10 @@ hashと件数のみを公開し、原文・archive・生成本文はGitへ同梱
 
 ## 保留と継続可能な作業
 
+[会話ジャンルのvalidation corpus](v3-spoken-corpus.md)を追加した。
+Paris Storiesの16録音文書・692文を固定取得し、128variant生成・別出力のbyte一致と
+固定tableのcoverage診断を確認した。trainingやnative精度評価は行っていない。
+
 [標準機能・コーパス偏り・生成物再実行の追加検証](v3-reproducibility-results.md)では、
 独立C++20 probe、重複候補の連結成分、単一生成物の排他的公開を記録した。
 

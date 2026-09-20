@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "source_revision": "dec76f7a1731318b033c578d534410b0a3d4ea5c",
+  "source_license": "CC-BY-SA-4.0",
+  "downloaded_bytes": 1169312,
+  "split": "validation",
+  "documents": 16,
+  "sentences": 692,
+  "utf8_text_bytes": 41876,
+  "successful_variants": 128,
+  "skipped_variants": 0,
+  "manifest_hash": "6340aff3b3d424fced87b782d75036c64152b4840eec98a05dc9a5b4f90216aa",
+  "evaluation": {
+    "report_hash": "644eb9a8afc596576760dc52383a232595910c6b7d1e331173dfc1404a5b558d",
+    "training_artifact_hash": "856a8ba06a4a6d8450ddb3f4afeafdf99223a2c715350ce6e381a8e271c80515",
+    "source_count": 16,
+    "bytes": 40777,
+    "letters": 30445,
+    "frequent_letters": 30388,
+    "unknown_letters": 57,
+    "adjacent_letter_pairs": 22213,
+    "matrix_pairs": 22158,
+    "outside_matrix_pairs": 55,
+    "unseen_matrix_pairs": 531,
+    "category_mass": [531, 0, 1550, 20077],
+    "deployment_status": "NOT_ENGINE_CALIBRATED"
+  },
+  "cross_domain_overlap": {
+    "report_hash": "0d3f9cd3ceb3e680f67a3f55a5f7352edbb7e84172d7502cc757cc89071e06fb",
+    "sources": 219,
+    "skipped_independent": 1,
+    "pair_comparisons": 23871,
+    "findings": 2,
+    "cross_manifest_findings": 0,
+    "cross_split_findings": 0
+  },
+  "native_predictions": false,
+  "independent_predictions": false,
+  "new_training": false
+}
