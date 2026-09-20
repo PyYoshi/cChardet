@@ -161,3 +161,15 @@ fresh/reuseと固定randomを含む6 scheduleでも最終候補が一致した�
 
 これはfeed後のsnapshotであり、全byteの状態遷移履歴ではない。rejectの根本原因や
 ranking理由は未解決のまま。P01保留中の作業や追加の不正入力探索は再開していない。
+
+[固定model coverageの文書平均・サイズ別評価](v3-coverage-strata.md)では、
+会話16文書が1〜4 KiBに集中し、短文・大文書の評価が欠けていることを明示した。
+microだけでなく文書macroを厳密分数で記録し、未定義分母・空区間を区別する。
+
+[trace ON/OFFの限定測定](v3-trace-cost.md)では同一buildのlibraryとbenchmarkが
+byte一致した。native小fixtureの計測値も記録したが、最初の条件に時間ドリフトがあり、
+同一実行ファイルの差を高速化やregressionとして扱わない。
+
+[ranking契約のsource調査](v3-ranking-contract.md)では、threshold、既知languageの
+重複整理、同点順序、weightを別段階として整理した。入力ごとの原因証明とは分け、
+保存値照合の`UNRESOLVED`を根拠なく確定理由へ置き換えない。
