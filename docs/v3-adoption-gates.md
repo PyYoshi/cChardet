@@ -54,6 +54,10 @@ raw byte-bigram試作、SequenceModel形式契約、training仕様の精緻化�
 対象call-siteの0回と、全detectorのallocation/memory gateは区別する。
 初回確保・peak/live memory・共有library内部等は未測定のままである。
 
+[会話trainingを使う固定generator比較](v3-spoken-model-comparison.md)では、
+2つのvalidation corpusでcategory 0が減少し、positive側の内部スコアが高い範囲になった。
+ただしpaired分離件数は旧モデルと同じで、encoding accuracy改善・標準採用の根拠にはしない。
+
 ## 互換性とmigration
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
