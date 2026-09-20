@@ -8,8 +8,9 @@
 - [uchardet #10](https://github.com/PyYoshi/uchardet/pull/10): build preset、Debug/sanitizer分離、compiler CI。8構成成功。
 - [uchardet #11](https://github.com/PyYoshi/uchardet/pull/11): 候補の正確な比較、任意の内部observer、観測artifact。9 CI成功。
 - [uchardet #12](https://github.com/PyYoshi/uchardet/pull/12): corpus、model生成試作、固定source取得recipe。9 CI成功。
+- [uchardet #13](https://github.com/PyYoshi/uchardet/pull/13): UTF-8 test I/OとC++11の移植性修正。corpusのWindows/macOS検証を追加し11 CI成功。
 
-native統合点: `043c3eb`。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
+native統合点: `9ac0f79`。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
 C++20はnative compiler matrixでは通ったが、Cython/wheelの全配布条件を満たすという承認ではない。
 
 ## 既存corpusの失敗分類
