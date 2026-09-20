@@ -84,3 +84,7 @@ Rust validationは[前回のpaired評価](v3-paired-encoding-controls.md)と同�
 
 後続の[限定処理コスト](v3-spoken-model-cost.md)では単一proberの計時とallocation call-siteを
 観測した。trial末尾側に変動があり、全体の性能/memory gate完了とは扱わない。
+
+[候補競合まで含めた後続評価](v3-full-engine-model-comparison.md)では、生成モデルの
+cp1252 decode-equivalent精度に後退が確認された。単一proberの改善をdetector全体の
+改善として解釈せず、生成モデルは非デフォルト実験に留める。
