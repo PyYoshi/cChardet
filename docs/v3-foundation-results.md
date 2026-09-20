@@ -165,3 +165,7 @@ ranking理由は未解決のまま。P01保留中の作業や追加の不正入�
 [固定model coverageの文書平均・サイズ別評価](v3-coverage-strata.md)では、
 会話16文書が1〜4 KiBに集中し、短文・大文書の評価が欠けていることを明示した。
 microだけでなく文書macroを厳密分数で記録し、未定義分母・空区間を区別する。
+
+[trace ON/OFFの限定測定](v3-trace-cost.md)では同一buildのlibraryとbenchmarkが
+byte一致した。native小fixtureの計測値も記録したが、最初の条件に時間ドリフトがあり、
+同一実行ファイルの差を高速化やregressionとして扱わない。
