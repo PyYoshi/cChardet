@@ -80,6 +80,10 @@ hashと件数のみを公開し、原文・archive・生成本文はGitへ同梱
 
 ## 保留と継続可能な作業
 
+[コーパス重複監査と固定モデルの validation 診断](v3-corpus-quality.md)を追加した。
+Tatoeba 400文から近似候補15組を検出し、別章での未観測文字・pairを整数集計した。
+native 検出・独立 holdout 予測は実施しておらず、精度改善の実績とは扱わない。
+
 追加の基盤整備:
 
 - [manifest分析tool](v3-manifest-analysis.md): 評価対象と対象外を明示し、旧pilot 96件を予測なしで棚卸し。
