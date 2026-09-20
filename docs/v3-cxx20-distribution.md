@@ -82,4 +82,35 @@ native CMakeのcompiler matrix成功だけではPython wheelの条件を満た�
 - installed wheel smoke成功、build設定10件と既存基本test15件が成功。
 - ELF要求symbol versionは最大`GLIBC_2.14`、`GLIBCXX_3.4.21`、`CXXABI_1.3.9`。
   これは当該artifactの観測値であり、manylinux認証や最低環境の宣言ではない。
-- 手動wheel matrixは本変更では起動していない。他OS・manylinux・3.14tの配布検証は未完了。
+- このローカル確認時点では手動wheel matrixは未実行。後続のCI結果を以下に記録する。
+
+## 配布matrixの確認結果（2026-09-20）
+
+[専用run 35513146332](https://github.com/PyYoshi/cChardet/actions/runs/35513146332)は
+3 OSすべて成功した。対象headは`87a69e3df6b1014f2b19b050103b14bbcd7a6c72`、
+checkoutしたPR merge commitは`71508b9a5b741793b75ea9ec998f638541d5b9f2`。
+後続の`7c20739`は分析toolとそのtestのファイル順序だけを修正しており、wheel source・
+build設定・smoke入力は同じ。ただし後続SHA自体でこの専用matrixを実行したとは扱わない。
+
+| OS | wheel数 | architecture | 実compile引数 | installed smoke |
+| --- | ---: | --- | --- | --- |
+| Linux | 10 | x86_64 / aarch64 | `-std=c++20` | 10成功 |
+| macOS | 10 | x86_64 / arm64 | `-std=c++20` | 10成功 |
+| Windows | 10 | win32 / win_amd64 | `/std:c++20 /Zc:__cplusplus` | 10成功 |
+
+各OSでCPython 3.11〜3.14と3.14tを対象とした。wrapperとnative `uchardet.cpp`の
+compile行をそれぞれ各10件確認した。3.14t両architectureのsmokeにはGILを再有効化
+していないことのassertを含む。これは全APIの並列正当性を証明する試験ではない。
+
+- Linux: manylinux_2_28 containerでbuild/testし、auditwheelが全10 wheelに
+  `manylinux_2_24`と`manylinux_2_28`の両tagを付与した。
+  2.24 runtimeで実行したわけではない。
+- macOS: macOS 26.6.2 arm64 runnerでarm64をnative実行、x86_64を`arch -x86_64`で実行。
+  arm64 tagは全て11_0。x86_64はcp311が10_9、cp312/313が10_13、cp314/314tが10_15。
+  delocateによるarchitecture検証は成功したが、これら最低OSでの実行確認ではない。
+- Windows: Windows Server 2025、Visual Studio 18、MSVC toolset path `14.51.36231`。
+  `/MD`と3.14tの`Py_GIL_DISABLED=1`を確認。旧Windows・最低CRTでの実行確認ではない。
+
+この結果で「現行配布workflowによるC++20指定buildとinstalled smoke」は確認できた。
+最低runtimeの実行確認や今後追加する標準library機能のavailabilityは別gateとして残す。
+既定規格・対応platformをこの結果だけで変更しない。

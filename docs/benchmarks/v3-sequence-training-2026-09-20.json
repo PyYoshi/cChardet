@@ -1,0 +1,33 @@
+{
+  "record_version": 1,
+  "purpose": "generation-reproducibility-not-detection-accuracy",
+  "generator_commit": "ee0aa5e96ae52b79d08864789678a52af4433ea4",
+  "profile": "cp1252-identity-sequence-training-v1",
+  "deployment_status": "NOT_ENGINE_CALIBRATED",
+  "generated_model_license": "UNDETERMINED",
+  "runtime": {"implementation": "CPython", "python": "3.14.2", "unicode": "16.0.0"},
+  "corpus_content_hash": "94f1a63c80db0d1c72db0a8c6afdb732a372ceb377f8dd5a0c358a07e5083571",
+  "selected_training_documents": 1,
+  "selected_training_bytes": 11946,
+  "source_id": "rust-book-fr-ch00-00-introduction-cp1252",
+  "artifact_content_hash": "e754f7909043746553118be10404641ba979d09585575f09505b5e2de5c9cbaf",
+  "artifact_file_sha256": "69fb49a6394ba07d327375b3b09c57831b31cc5f8e8d1e149464ec7dd8978a58",
+  "contract_content_hash": "f9821d0fa578c24c7ac95fccde3cdc3112e596f1ee59f55b5a0e45aee238ee9b",
+  "frequent_character_count": 54,
+  "typical_positive_ratio_bits": "3f75493f",
+  "audit": {"frequent_pair_mass": 7455, "letter_pair_mass": 7455, "positive_pair_mass": 7143},
+  "checks": {
+    "artifact_recomputed_from_counts": true,
+    "regenerated_from_manifest_bytes": true,
+    "separate_output_byte_identical": true,
+    "native_executed": false,
+    "holdout_predictions": false,
+    "model_artifact_published": false
+  },
+  "limitations": [
+    "Identity filtering is not calibrated to the existing native SBCS filter.",
+    "The 95/99-percent quantization thresholds are uncalibrated experimental choices.",
+    "Reproducible generation does not establish encoding accuracy or confidence calibration.",
+    "The model artifact and source text remain outside Git; this record contains only provenance and summary metrics."
+  ]
+}
