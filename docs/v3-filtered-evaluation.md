@@ -72,3 +72,6 @@ Git管理外の `archives/v3-corpus/` に保持する。頻度統計は匿名化
 proberのsequence counterとconfidence校正、候補競合を含むencoding/language精度、
 新旧モデルの性能比較は未完了。通常のdetectorへ新規modelを登録していない。
 P01は再開しない。この比較だけで #123 / #125 / #126 を完了扱いにしない。
+
+後続の[native prober照合](v3-native-sequence-probe.md)では、Paris Storiesの全32組で
+整数counterの一致を確認した。confidence校正・全detectorの正解率は引き続き未確認。
