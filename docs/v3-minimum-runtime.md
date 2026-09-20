@@ -166,7 +166,7 @@ O2はcompile引数と出力名を変更して独立に実行する。
 
 ## まだ確認していない範囲
 
-- ARM64のglibc 2.24実行
+- ARM64の残り4 ABIと実機でのglibc 2.24実行（[CPython 3.11のQEMU検証](v3-arm64-runtime.md)は成功）
 - 最低macOS / Windows / CRTでの実行
 - C++20の追加標準ライブラリ機能をwheelへ入れた場合のruntime依存
 - 古いkernel、異なるCPU、任意のLinux distributionの網羅
