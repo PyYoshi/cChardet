@@ -118,3 +118,7 @@ compile行をそれぞれ各10件確認した。3.14t両architectureのsmokeに�
 2026-09-21に[機能単位の独立probe](v3-reproducibility-results.md)を追加し、
 native compiler matrixでspan / bit_cast / ranges等を確認した。
 上記30 wheelは追加probeを組み込んだartifactの検証ではなく、最低runtime gateも残る。
+
+さらに[glibc 2.24での限定的な実行確認](v3-minimum-runtime.md)で、保存済みの
+CPython 3.11 / x86_64 wheelのinstalled smokeが成功した。ほかのABI/architectureと
+最低macOS/Windowsは未確認であり、全体gateは維持する。
