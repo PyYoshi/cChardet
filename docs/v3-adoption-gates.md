@@ -69,6 +69,10 @@ generator基盤と非デフォルト観測targetは維持し、内部選抜の�
 2 profileの因子0.90が事前基準を満たした。ただしこれは8録音のtuning内で選んだ候補であり、
 標準採用の保留は維持する。旧32録音版と再学習・ratio変更版の結果を混同しない。
 
+[因子を固定したincremental評価](v3-ratio-chunks.md)ではchunkによる精度・候補差が残った。
+1-byteの悪化はlegacyにもあるが、7-byteでは生成modelがlegacyより低いdecode-equivalent
+件数となった。whole-inputのtuning成功をincremental採用gateの成功へ読み替えない。
+
 ## 互換性とmigration
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
