@@ -120,7 +120,7 @@ native compiler matrixでspan / bit_cast / ranges等を確認した。
 上記30 wheelは追加probeを組み込んだartifactの検証ではなく、最低runtime gateも残る。
 
 さらに[glibc 2.24での限定的な実行確認](v3-minimum-runtime.md)で、保存済みの
-CPython 3.11 / x86_64 wheelのinstalled smokeが成功した。ほかのABI/architectureと
+CPython 3.11〜3.14 / 3.14tのx86_64全5 wheelのinstalled smokeが成功した。ARM64と
 最低macOS/Windowsは未確認であり、全体gateは維持する。
 
 [sdist build要件と独立再build](v3-sdist-build.md)も記録した。tar.gzからC++20 wheelを
