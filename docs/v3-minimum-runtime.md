@@ -114,6 +114,56 @@ installであり、TLS検証を無効化してネットワーク取得したわ�
 このinterpreter移植環境を汎用Python環境やSSL対応の検証として扱わない。
 また、対象は上記の固定buildであり、現在のdev全体を再buildした結果ではない。
 
+## C++20標準機能probeの旧runtime実行
+
+追加でnativeの `tools/cxx20/features.cpp` を単独buildした。
+sourceはuchardet `9aac6f101b514b7ab54de06cb617501f05086ebf` に含まれ、SHA-256は
+`a7c2d47536a7886477e561902605da544530650a70ade5666c8a1dd6cf417595`。
+detectorへlinkせず、wheelにも組み込んでいない。
+
+buildには公式image
+`quay.io/pypa/manylinux_2_28_x86_64@sha256:531d7aa844bbb0c131d4ab011d3db741c4abc8d498cd5ccc86121046f62303b4`
+を使用した。GCCは `14.2.1 20250110 (Red Hat 14.2.1-11)`。
+既存wheelと同じmanylinux_2_28系統だが、wheel CIと同一image digestとは主張しない。
+追加取得は圧縮約535 MBで予算内。
+
+`-std=c++20 -Wall -Wextra -Wpedantic` と `-O0` / `-O2` で別々にbuildし、
+build環境と前記glibc 2.24 imageの両方で終了code 0だった。
+O0も実行し、最適化で処理が省略される可能性をO2だけで評価しない。
+確認内容はspan、bit_cast、concepts、ranges sort/filter、integer比較、erase_ifとRAII所有者。
+いずれもprobeに書かれた小さな操作に限定した確認である。
+
+| build | 実行ファイル SHA-256 | 最大要求symbol version |
+| --- | --- | --- |
+| O0 | `13bd9d959b318a2a8821d54432df3ce7aa551b406a297458fa8078ee8ebfd7e1` | GLIBC_2.2.5 / GLIBCXX_3.4 / CXXABI_1.3.9 / GCC_3.0 |
+| O2 | `eb8b08935b6105ed10433d97158e0e191f4093a6ee78b54c6b30acc16adf9e0c` | GLIBC_2.2.5 / GLIBCXX_3.4.9 / CXXABI_1.3.9 / GCC_3.0 |
+
+`readelf --version-info` で要求symbolを確認し、旧imageでの `ldd` は旧image内の
+libstdc++ / libcを参照した。新しい共有ライブラリは持ち込んでいない。
+probeの出力にある `stdlib_version: 20250110` は**compile時のheader情報**であり、
+実行時にその版の共有ライブラリを読み込んだという意味ではない。
+
+再現例（imageは上記digestへ固定する。出力先は新しい専用ディレクトリを作成する）:
+
+```sh
+docker run --rm --network none --read-only --cap-drop ALL \
+  --security-opt no-new-privileges --user 1000:1000 \
+  --tmpfs /tmp:rw,nosuid,nodev,size=64m \
+  --mount type=bind,src=/path/to/uchardet/tools/cxx20/features.cpp,dst=/source/features.cpp,readonly \
+  --mount type=bind,src=/disk/cxx20-features,dst=/output \
+  quay.io/pypa/manylinux_2_28_x86_64@sha256:531d7aa844bbb0c131d4ab011d3db741c4abc8d498cd5ccc86121046f62303b4 \
+  g++ -std=c++20 -O0 -Wall -Wextra -Wpedantic /source/features.cpp -o /output/features-o0
+docker run --rm --network none --read-only --cap-drop ALL \
+  --security-opt no-new-privileges --user 1000:1000 \
+  --mount type=bind,src=/disk/cxx20-features,dst=/probe,readonly \
+  quay.io/pypa/manylinux_2_24_x86_64@sha256:a332ca25073bf71c6be54fe3c18e477418eedc194685f7263624ef4dfac91f9e \
+  /probe/features-o0
+```
+
+O2はcompile引数と出力名を変更して独立に実行する。
+これはC++20全体の互換性、あらゆるtemplate実体化、format/filesystem等の未使用機能、
+または将来のwheelへ組み込んだ場合の互換性を保証しない。採用前の実wheel検証は維持する。
+
 ## まだ確認していない範囲
 
 - ARM64のglibc 2.24実行
