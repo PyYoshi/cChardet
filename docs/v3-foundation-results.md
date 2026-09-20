@@ -143,3 +143,7 @@ archive自体のmetadata差、他compiler、一般的な性能測定とは区別
 観測した。model外の文字対は分母のみ増えるため、単純なcategory比率と同一視できない。
 これはUnicode language detectorの観測であり、新規SBCS trainerとの適合を確認したわけではない。
 reject/ranking原因はunknownを維持し、#120全体は未完了とする。
+
+[raw Reportと最終候補の対応照合](v3-report-attribution.md)も追加した。
+保存artifactの完全一致候補を列挙するだけでrankingを再実装せず、同値重複の曖昧さや
+異なるinput/buildを照合した可能性を隠さない。既存小fixtureの9通りでも確認した。
