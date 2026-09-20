@@ -10,7 +10,7 @@
 - [uchardet #12](https://github.com/PyYoshi/uchardet/pull/12): corpus、model生成試作、固定source取得recipe。9 CI成功。
 - [uchardet #13](https://github.com/PyYoshi/uchardet/pull/13): UTF-8 test I/OとC++11の移植性修正。corpusのWindows/macOS検証を追加し11 CI成功。
 
-native統合点: `9ac0f79`。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
+native統合点: `005cd06`（#14のcorpus reportingを含む）。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
 C++20はnative compiler matrixでは通ったが、Cython/wheelの全配布条件を満たすという承認ではない。
 
 ## 既存corpusの失敗分類
@@ -59,6 +59,12 @@ French/cp1252のtraining本文11,946 bytesから新規byte-bigram modelを生成
 既存SequenceModelへのadapterと同じengineでの品質比較は未実装。
 
 ## 保留と継続可能な作業
+
+追加の基盤整備:
+
+- [manifest分析tool](v3-manifest-analysis.md): 評価対象と対象外を明示し、旧pilot 96件を予測なしで棚卸し。
+- [C++20配布検証](v3-cxx20-distribution.md): 任意有効化によるローカルwheel検証。既定値は維持。
+- [uchardet #14](https://github.com/PyYoshi/uchardet/pull/14): 生成成功/skip理由の記録、ground truth由来、metadataのみのsplit監査。11 CI成功。
 
 [判断ログP01](v3-decision-log.md#p01-安全性検証の一部を保留2026-09-20)に従い、
 追加安全性検証と未検証修正は保留した。既存sanitizer CIは維持している。

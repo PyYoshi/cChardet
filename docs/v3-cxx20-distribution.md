@@ -1,0 +1,68 @@
+<!-- SPDX-License-Identifier: MIT -->
+# V3-02: C++20配布互換性の検証
+
+## 位置づけ
+
+`CCHARDET_CXX_STANDARD=20`は開発者向けの明示的なbuild opt-inであり、
+既定規格、対応Python、OS、runtimeの最低条件を変更しない。
+未設定時は従来のGCC/Clang C++11、MSVC C++14を使う。
+空文字列を含むその他の値はエラーとする。native CMake側の規格設定とは独立している。
+
+同じExtensionにCython生成wrapperとuchardet sourceを渡すため、両方に規格が適用される。
+`CXXFLAGS`で規格を渡す方法はsetuptools側の引数に上書きされ得るので使わない。
+このopt-inでもユーザー独自compiler wrapper等の挙動は保証せず、実際のcompile logを確認する。
+
+規格切替時は既存objectを再利用しないよう、新しいworktreeでbuildする。
+以下はPOSIX shellの例。成果物と環境のパスは未使用のものを選ぶ。
+
+```sh
+uv venv /tmp/cchardet-cxx20-env --python 3.14
+CCHARDET_CXX_STANDARD=20 uv build --wheel --verbose --out-dir /tmp/cchardet-cxx20-dist
+uv pip install --python /tmp/cchardet-cxx20-env/bin/python /tmp/cchardet-cxx20-dist/*.whl
+/tmp/cchardet-cxx20-env/bin/python tools/wheel_smoke.py
+c++ -std=c++20 -Wall -Wextra -pedantic tools/cxx20_smoke.cpp -o /tmp/cchardet-cxx20-smoke
+/tmp/cchardet-cxx20-smoke
+```
+
+standalone probeは`std::span`とRAII所有者をcompile/runする。
+viewが所有者より長生きしない最小例であり、detectorの安全性の証明ではない。
+MSVCでは`cl /std:c++20 /Zc:__cplusplus /EHsc tools/cxx20_smoke.cpp`に相当する。
+probeをwheelやhot pathには組み込まない。
+
+## 手動CIと採用gate
+
+`C++20 wheel compatibility (manual)`は手動起動専用で、push/PRでは起動しない。
+既存cibuildwheel設定を共有し、Linux・macOS・Windows、既存architecture、
+Python 3.11〜3.14/3.14tを維持する。Linux containerへopt-inを明示的に転送する。
+wheel smoke testとartifact保存を行うが、公開処理は持たない。
+通常CIの必須checkを増やさず、masterのRulesも変更しない。
+
+[GitHubの仕様](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
+では`workflow_dispatch`のworkflowがdefault branchにも存在する必要がある。
+現時点では`dev`だけの実装であり、GitHub上の手動起動経路は未開通。
+このために`master`へ追加はせず、当面は上記のローカル検証を使用する。
+matrixの実行方法は、default branchへの導入が承認された段階で確定する。
+
+C++20を既定化する前に以下を確認する。
+
+- 手動matrixの各build/test結果と、wrapper/native両方の実compile引数。
+- manylinux repair結果・tag・依存symbolと対象runtimeでのimport。
+- macOS deployment target・libc++の利用機能availabilityと両architecture。
+- MSVC toolset・配布CRT条件、Windows wheelのimport。
+- CPython 3.14tでGILを再有効化せず既存smoke testが成功すること。
+
+native CMakeのcompiler matrix成功だけではPython wheelの条件を満たさない。
+ローカルLinux wheelの成功もmanylinux互換性や他OS互換性を証明しない。
+新しい標準library機能を本体へ導入する際は、規格フラグだけの検証とは別に再検証する。
+現行環境の切り捨てが必要なら、既定化を保留して判断ログへ記録する。
+
+## ローカル確認結果（2026-09-20）
+
+- CPython 3.14.2、GCC 16.2.1、Cython 3.3.0、setuptools 84.0.0。
+- uchardet `9ac0f79feefb0c58c11fb8ea1ca000c51f7d96f9`。
+- fresh worktreeから`cp314-cp314-linux_x86_64` wheelをbuildし、独立uv環境へinstall。
+- wrapperとnative sourceのcompile行末に`-std=c++20`があることを確認。
+- installed wheel smoke成功、build設定10件と既存基本test15件が成功。
+- ELF要求symbol versionは最大`GLIBC_2.14`、`GLIBCXX_3.4.21`、`CXXABI_1.3.9`。
+  これは当該artifactの観測値であり、manylinux認証や最低環境の宣言ではない。
+- 手動wheel matrixは本変更では起動していない。他OS・manylinux・3.14tの配布検証は未完了。
