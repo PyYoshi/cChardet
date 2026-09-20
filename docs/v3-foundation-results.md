@@ -115,9 +115,31 @@ BOM分割の一部を改善する一方、通常入力の候補副作用、compl
 
 - #116: C++20の30 wheel build/smokeは成功。最低配布runtimeと新標準library機能のavailability確認は残る
 - #118/#119: P01の安全性検証と修正。OOM注入・weight/reset契約も未完了
-- #120: group直下の状態は追加済み。内部language detector・reject/ranking理由は未観測
+- #120: group直下とlanguage detectorのstate/counterは追加済み。reject/ranking理由は未観測
 - #123: native filterとtrainingの適合、model品質比較、生成modelの権利判断
 - #124: 独立corpus・real-world入力を含む失敗分析、family/coverage/校正の原因分類
 - #125/#126: 3.0採用範囲、移行契約、試作の採否
 
 上記を完了扱いにせず、保留部分を切り離して後続の独立作業を進める。
+
+## 多言語script pilotの追加（2026-09-21）
+
+[日本語・アラビア語・ヘブライ語CC0 pilot](v3-script-corpus.md)を追加した。
+31文・186 variantsの再生成一致を確認したが、日本語・アラビア語は各2文しかない。
+取得成功を代表的な精度評価や十分なcoverageと扱わず、追加sourceの必要性を記録した。
+
+## language detector観測の追加（2026-09-21）
+
+既定OFFのnative traceで、内部language detectorのstate・累積文字数・sequence統計を
+読み取れるようにした。追加のconfidence計算や名前取得methodは呼ばず、既存headerは
+friend宣言のみ。モデル名は静的labelであって予測結果ではない。
+
+従来の空・ASCII・135-byte日本語の同一feedで旧snapshot/raw Reportと最終候補が一致した。
+GCC16.2.1の同一Release buildでは全61 engine object memberがbyte一致した。
+archive自体のmetadata差、他compiler、一般的な性能測定とは区別する。
+手順・比較のskip条件は[native診断文書](../src/ext/uchardet/benchmark/introspection.ja.md)。
+
+日本語fixtureのFrench language modelではsequence総数35に対して4分類counter合計0を
+観測した。model外の文字対は分母のみ増えるため、単純なcategory比率と同一視できない。
+これはUnicode language detectorの観測であり、新規SBCS trainerとの適合を確認したわけではない。
+reject/ranking原因はunknownを維持し、#120全体は未完了とする。
