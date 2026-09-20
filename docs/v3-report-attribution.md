@@ -59,3 +59,13 @@ GCC16.2.1 / Release / static buildを使用した。merge先は `a56fd9584d11e7a
 | `日本語の文章です。` を5回 | 135 | `85a90cf384c10ea7cb1bd217352fad10c14393daaf7aaccd9227b2344aef2c2f` |
 
 新規fuzz、不正入力探索、大入力、独立holdout評価、既定model/API変更は行っていない。
+
+## prober内部観測追加後の再確認
+
+native `063ad3e9a62c90db482550e278a8682b98d0198a`
+（merge `e3c8526ab0effa6960dff173be991a18e732782d`）でも同じ28 testsが成功した。
+追加のsnapshot fieldがあっても、保存済みraw値と最終候補の照合結果は変わらない。
+同じGCC16.2.1 / Release / static buildのtool SHA-256:
+
+- trace: `018734eb85809cbeb8ff9946d4ea25196d48d8bfd94f2836f0ef75463e0bb9ce`
+- conformance: `2944d943c50af9a76222617e9591bb6294526b5e18d6390b978501187d67501e`
