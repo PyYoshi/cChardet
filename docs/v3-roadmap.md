@@ -673,18 +673,18 @@ nativeとwrapperで管理先が異なる場合は、依存関係を示した別P
 
 | ID | 管理先 | 作業・成果物 | 受け入れ条件・依存関係 |
 | --- | --- | --- | --- |
-| V3-01 | 両repository | baseline棚卸し、両repositoryの`dev`のCI・Rules確認、新規fileのcomponent別license判断。既知の失敗・toolchain・model family・benchmark manifestと測定hashを記録 | 再現手順を記録。測定なしに性能効果を主張しない。新規実装前に対象licenseを決定 |
-| V3-02 | 両repository、別PR | sanitizerとDebugの分離、build preset、C++20機能と配布互換性の検証、規格採用の設計判断 | GCC/Clang/MSVCとApple Clang、CMakeとCython経由で検証。最低対応runtimeでwheelを実行しsdist要件も記録。V3-01に依存 |
-| V3-03 | uchardet | 機械可読なnative出力、比較harness、終了/lifecycle case | 同じfeedでの同等性とchunk間差分を分けて報告。V3-01 |
-| V3-04 | uchardet | ASan/UBSan preset、上限付きfuzz target、回帰seed | 再現可能なsmoke実行と最小化入力の再検証。V3-02/03 |
-| V3-05 | uchardet中心、必要に応じwrapper | Analyzer/tidyの既存指摘一覧、RAII・借用buffer・状態/値の型・compile時検証による安全性改善 | 小さなPRに分けて候補同等性とallocation/memory/latencyを検証。規格更新・判定のtuningと分ける。V3-02/03、安全性検証はV3-04も利用 |
-| V3-06 | uchardet | 任意で有効化するprober/ranking trace | 代表的失敗を説明でき、無効時costを測定済み。V3-03 |
-| V3-07 | uchardet | corpus manifest/分割schema、license一覧、validator | 権利情報欠落や分割を跨ぐ派生dataを拒否。V3-02と並行可能 |
-| V3-08 | uchardet | offline strict再encode、正常境界でのsize生成、HTML生成 | 決定的hash、生成できなかった件数、data混入test。V3-07 |
-| V3-09 | uchardet | legacy generatorの参考調査、新規offline generator・試作model・C++出力。旧script廃止は参照確認後に別PR | 決定性・再実行のべき等性・未使用dataでの品質を別々に検証。新規generatorのlicense決定済み。V3-01/07/08 |
-| V3-10 | 両repository | 失敗report、top-k分析、coverage/ranking改善の優先順位 | 代表例を確認済みで、未参照holdoutがある。V3-03/06/08 |
-| V3-11 | cChardet | 3.0範囲・契約の設計判断、移行案内の初版 | V3-10から測定可能な利用者向け改善を選ぶ。日程を満たすために範囲を捏造しない |
-| V3-12 | 両repository、別PR | 選択した修正/model、submodule連携、report | 上記の基準、wheel/API test、意図した差分のレビュー。該当するV3-09/10/11 |
+| [V3-01](https://github.com/PyYoshi/cChardet/issues/115) | 両repository | baseline棚卸し、両repositoryの`dev`のCI・Rules確認、新規fileのcomponent別license判断。既知の失敗・toolchain・model family・benchmark manifestと測定hashを記録 | 再現手順を記録。測定なしに性能効果を主張しない。新規実装前に対象licenseを決定 |
+| [V3-02](https://github.com/PyYoshi/cChardet/issues/116) | 両repository、別PR | sanitizerとDebugの分離、build preset、C++20機能と配布互換性の検証、規格採用の設計判断 | GCC/Clang/MSVCとApple Clang、CMakeとCython経由で検証。最低対応runtimeでwheelを実行しsdist要件も記録。V3-01に依存 |
+| [V3-03](https://github.com/PyYoshi/cChardet/issues/117) | uchardet | 機械可読なnative出力、比較harness、終了/lifecycle case | 同じfeedでの同等性とchunk間差分を分けて報告。V3-01 |
+| [V3-04](https://github.com/PyYoshi/cChardet/issues/118) | uchardet | ASan/UBSan preset、上限付きfuzz target、回帰seed | 再現可能なsmoke実行と最小化入力の再検証。V3-02/03 |
+| [V3-05](https://github.com/PyYoshi/cChardet/issues/119) | uchardet中心、必要に応じwrapper | Analyzer/tidyの既存指摘一覧、RAII・借用buffer・状態/値の型・compile時検証による安全性改善 | 小さなPRに分けて候補同等性とallocation/memory/latencyを検証。規格更新・判定のtuningと分ける。V3-02/03、安全性検証はV3-04も利用 |
+| [V3-06](https://github.com/PyYoshi/cChardet/issues/120) | uchardet | 任意で有効化するprober/ranking trace | 代表的失敗を説明でき、無効時costを測定済み。V3-03 |
+| [V3-07](https://github.com/PyYoshi/cChardet/issues/121) | uchardet | corpus manifest/分割schema、license一覧、validator | 権利情報欠落や分割を跨ぐ派生dataを拒否。V3-02と並行可能 |
+| [V3-08](https://github.com/PyYoshi/cChardet/issues/122) | uchardet | offline strict再encode、正常境界でのsize生成、HTML生成 | 決定的hash、生成できなかった件数、data混入test。V3-07 |
+| [V3-09](https://github.com/PyYoshi/cChardet/issues/123) | uchardet | legacy generatorの参考調査、新規offline generator・試作model・C++出力。旧script廃止は参照確認後に別PR | 決定性・再実行のべき等性・未使用dataでの品質を別々に検証。新規generatorのlicense決定済み。V3-01/07/08 |
+| [V3-10](https://github.com/PyYoshi/cChardet/issues/124) | 両repository | 失敗report、top-k分析、coverage/ranking改善の優先順位 | 代表例を確認済みで、未参照holdoutがある。V3-03/06/08 |
+| [V3-11](https://github.com/PyYoshi/cChardet/issues/125) | cChardet | 3.0範囲・契約の設計判断、移行案内の初版 | V3-10から測定可能な利用者向け改善を選ぶ。日程を満たすために範囲を捏造しない |
+| [V3-12](https://github.com/PyYoshi/cChardet/issues/126) | 両repository、別PR | 選択した修正/model、submodule連携、report | 上記の基準、wheel/API test、意図した差分のレビュー。該当するV3-09/10/11 |
 
 <a id="release"></a>
 
@@ -727,10 +727,13 @@ release notesは直前のstableとの差分にし、2.xの機能を新機能と�
 ### 進捗の記録方法
 
 GitHubでの作業は[cChardetのv3 Issue一覧](https://github.com/PyYoshi/cChardet/issues?q=is%3Aissue+label%3Av3)
-へ集約し、ロードマップ追跡IssueからV3-01〜V3-12へリンクする。
+へ集約し、[ロードマップ追跡Issue #114](https://github.com/PyYoshi/cChardet/issues/114)から
+V3-01〜V3-12の子Issueと依存関係を確認できるようにする。
 uchardet実装もここで追跡し、実装先repository・base branch・依存Issue・完了条件を明記する。
 実装PRは対象Issueへリンクし、native側のmergeだけでPython連携まで完了したとは扱わない。
-初期の作業は「v3 基盤整備・スコープ確定」milestoneにまとめ、期日は根拠が揃うまで設定しない。
+初期の作業は[「v3 基盤整備・スコープ確定」milestone](https://github.com/PyYoshi/cChardet/milestone/1)
+にまとめ、期日は根拠が揃うまで設定しない。長期計画には既存stale設定の除外対象である
+`pinned`ラベルを付け、未更新という理由だけで自動整理されないようにする。
 Rust/SIMDなどの条件付き研究を3.0の必須作業として扱わない。
 
 作業は未着手・進行中・blocked・延期・完了で管理する。
