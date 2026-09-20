@@ -37,6 +37,12 @@ Python 3.11〜3.14/3.14tを維持する。Linux containerへopt-inを明示的�
 wheel smoke testとartifact保存を行うが、公開処理は持たない。
 通常CIの必須checkを増やさず、masterのRulesも変更しない。
 
+[GitHubの仕様](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
+では`workflow_dispatch`のworkflowがdefault branchにも存在する必要がある。
+現時点では`dev`だけの実装であり、GitHub上の手動起動経路は未開通。
+このために`master`へ追加はせず、当面は上記のローカル検証を使用する。
+matrixの実行方法は、default branchへの導入が承認された段階で確定する。
+
 C++20を既定化する前に以下を確認する。
 
 - 手動matrixの各build/test結果と、wrapper/native両方の実compile引数。
