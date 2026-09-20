@@ -45,6 +45,11 @@ candidate不在からmodel不在を断定することはできない。
 | exact候補がない／候補ゼロ | `EXPECTED_CANDIDATE_ABSENT` / `NO_CANDIDATE` | `UNRESOLVED` |
 | evaluator codec不在／入力・ラベル要確認 | 既存の対応category | `UNRESOLVED` |
 
+上表の `NOT_APPLICABLE` は `expected_decodes: true` かつ
+`evaluator_codec_available: true` の場合に限る。exactなencoding名が返っていても、
+そのcodecで入力をstrict decodeできない／検証codecが利用できない／検証情報がない場合は
+`UNRESOLVED` を維持する。既存のexact booleanやcategoryは変更しない。
+
 `NOT_APPLICABLE` はこのencoding観測で原因分類を要求しないという意味であり、
 language判定の正しさや一意なcodecの推定を保証しない。
 `UNRESOLVED` は原因未確定であり、未対応encoding、model不在、confidence calibration失敗を意味しない。
@@ -88,6 +93,35 @@ decode-equivalentは引き続き `decode_equivalent_evaluable` を分母とし�
 legacy fixtureの分析でも同じmappingと原因statusを使用する。
 由来が不明なsource kindや形式は `unknown` とし、自然文・HTMLであると推測しない。
 mappingや件数の追加はdetectorを変更せず、既存の正解判定にも影響しない。
+
+## 保存済みlegacy観測の再分類（native実行なし）
+
+既存の `failure_analysis` JSONを新しい集計形式へ再分類する場合は、次を使用できる。
+
+```sh
+uv run python -m benchmarks.failure_analysis \
+  --observations /path/to/saved-legacy-report.json \
+  --uchardet-corpus src/ext/uchardet/test
+```
+
+`--observations` と `--native-tool` は排他的。保存済み観測モードではsubprocessを起動せず、
+native executableも読み込まない。`--native-revision` の上書き指定は禁止する。
+従来のnative実行モードは `--native-tool` と `--native-revision` を引き続き使用する。
+
+保存済みreportはschema 1の `uchardet-legacy` のみを受け付ける。
+指定corpusの全fixtureと、sample数・相対pathの辞書順・byte長・SHA-256を照合する。
+expected encoding／languageは従来と同じfixture path由来であり、保存済みlabelと一致すること、
+`expected_label_source` が既存のlegacy由来記述であること、splitが `legacy-validation` であることも確認する。
+不足・追加・並べ替え・別corpus・label変更・byte変更は停止し、合うsampleだけの部分集計は行わない。
+holdoutやmanifest評価reportをこの経路へ混ぜない。
+
+candidate順序とconfidence bitsを保存観測から引き継ぎ、現在のevaluatorでexact／compatible／
+decode-equivalentと観測分類を再計算する。これは新しいnative性能・精度測定ではない。
+入力reportに記録された `native_revision` と `tool_sha256` はそのまま保持する。
+`observation_source` に元reportのhashと元evaluator情報（未記録ならnull）、
+report直下に現在のevaluator versionとsample順序を明記する。
+元reportのhashは追跡用であり、署名やnative toolの真正性を保証するものではない。
+出力には再分類結果のみを含め、元の観測ファイルは変更しない。
 
 入力上限は評価対象を選ぶ条件であり、長いsampleをその場で切断しない。
 上限内であることはnative実装の安全性を証明しない。

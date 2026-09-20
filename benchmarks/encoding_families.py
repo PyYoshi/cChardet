@@ -62,8 +62,16 @@ def family_observation(expected: str, predicted: str | None) -> dict:
     )
 
 
-def cause_status(category: str) -> str:
+def cause_status(
+    category: str,
+    *,
+    expected_decodes: bool | None = None,
+    evaluator_codec_available: bool | None = None,
+) -> str:
     # These statuses concern encoding observations, not language correctness.
+    # Exact label spelling does not prove that the input satisfies that label.
+    if expected_decodes is not True or evaluator_codec_available is not True:
+        return "UNRESOLVED"
     if category in {"EXACT_MATCH", "EXACT", "COMPATIBLE_OR_DECODE_EQUIVALENT"}:
         return "NOT_APPLICABLE"
     return "UNRESOLVED"

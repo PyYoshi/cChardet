@@ -227,3 +227,28 @@ def test_family_workload_denominators_and_per_input_observations(corpus):
     inventory = analysis.make_report(manifests, stored["samples"])
     assert "evaluated" not in inventory["groups"]["family:utf-8"]
     assert all("prediction" not in s for s in inventory["samples"])
+
+
+def test_manifest_cause_preserves_input_review_even_with_exact_category(corpus):
+    manifests = analysis.load_manifests([corpus])
+    samples = analysis.select_samples(manifests, {"validation"}, 16)
+
+    def observer(sample):
+        return dict(
+            category="EXACT_MATCH",
+            cause_status="UNRESOLVED",
+            exact=True,
+            expected_decodes=False,
+            evaluator_codec_available=True,
+            compatible=True,
+            decode_equivalent=False,
+            language_correct=True,
+            encoding_and_language_correct=True,
+            top_k={"1": True},
+            candidates=[],
+        )
+
+    report = analysis.make_report(manifests, samples, observer)
+    assert report["groups"]["all"]["EXACT_MATCH"] == 1
+    assert report["groups"]["all"]["cause_status:UNRESOLVED"] == 1
+    assert report["groups"]["all"].get("cause_status:NOT_APPLICABLE", 0) == 0

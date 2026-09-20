@@ -153,7 +153,11 @@ def make_report(manifests: list[dict], samples: list[dict], observer=None) -> di
             prediction = dict(observer(sample))
             candidates = prediction.get("candidates", [])
             prediction.update(
-                cause_status=cause_status(prediction["category"]),
+                cause_status=cause_status(
+                    prediction["category"],
+                    expected_decodes=prediction.get("expected_decodes"),
+                    evaluator_codec_available=prediction.get("evaluator_codec_available"),
+                ),
                 **family_observation(
                     sample["encoding"], candidates[0]["encoding"] if candidates else None
                 ),
