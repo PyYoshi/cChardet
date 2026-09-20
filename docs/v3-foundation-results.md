@@ -10,7 +10,7 @@
 - [uchardet #12](https://github.com/PyYoshi/uchardet/pull/12): corpus、model生成試作、固定source取得recipe。9 CI成功。
 - [uchardet #13](https://github.com/PyYoshi/uchardet/pull/13): UTF-8 test I/OとC++11の移植性修正。corpusのWindows/macOS検証を追加し11 CI成功。
 
-native統合点: `4f95249`（#15のmodel接続契約を含む）。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
+native統合点: `aa46261`（#17のTatoeba取り込みを含む）。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
 C++20はnative compiler matrixでは通ったが、Cython/wheelの全配布条件を満たすという承認ではない。
 
 ## 既存corpusの失敗分類
@@ -56,7 +56,21 @@ French/cp1252のtraining本文11,946 bytesから新規byte-bigram modelを生成
 
 これは生成機構の診断であり、文字コード正解率でも既存modelに対する改善率でもない。
 独立holdout枠の予測はまだ開いていない。生成modelの配布条件は未確定で、artifact自体は公開しない。
-既存SequenceModelへのadapterと同じengineでの品質比較は未実装。
+SequenceModelの形式契約とC++出力は追加済みだが、自然文からのtraining/quantization接続と
+同じengineでの品質比較は未完了。
+
+### 別sourceの追加
+
+[Tatoeba CC0 pilot](../src/ext/uchardet/corpus/sources/TATOEBA.md)を追加した。
+公式の仏語・露語CC0 archiveを各1回取得し、圧縮転送量は計827,069 bytes。
+各200 sentenceを採用し、UTF-8/legacy codecとサイズ別の計2,400 variantを試行、
+2,367件成功・33件skipとなった。skipはsentence数ではなくvariant数。
+別出力先で再生成し、manifest・本文・生成reportがすべてbyte一致した。
+
+全sourceはvalidation専用で、翻訳関係未確認のため同じoriginグループとする。
+独立holdoutやtrainingには混ぜず、native評価は実施していない。
+低いsentence ID順の抽出は代表性のある無作為抽出ではない。
+hashと件数のみを公開し、原文・archive・生成本文はGitへ同梱しない。
 
 ## 保留と継続可能な作業
 
@@ -66,6 +80,8 @@ French/cp1252のtraining本文11,946 bytesから新規byte-bigram modelを生成
 - [C++20配布検証](v3-cxx20-distribution.md): 任意有効化によるローカルwheel検証。既定値は維持。
 - [uchardet #14](https://github.com/PyYoshi/uchardet/pull/14): 生成成功/skip理由の記録、ground truth由来、metadataのみのsplit監査。11 CI成功。
 - [uchardet #15](https://github.com/PyYoshi/uchardet/pull/15): 明示的なSequenceModel接続契約とC++出力。人工modelの構造体適合・binary32一致を検証し11 CI成功。既定modelへの登録はしない。
+- [uchardet #16](https://github.com/PyYoshi/uchardet/pull/16): group直下childのactive/stateと前回snapshotとの差分。小fixtureで従来出力一致を確認し11 CI成功。詳細原因はunknownのまま。
+- [uchardet #17](https://github.com/PyYoshi/uchardet/pull/17): Tatoeba CC0 snapshotとoffline取り込み。source 17 testsとframework 24 tests、11 CI成功。検出精度を測った結果ではない。
 - [改善対象の暫定順位](v3-improvement-priorities.md): 保存済み観測と原因未確定を分離し、model形式・corpus多様性・品質評価の順序を整理。
 
 [判断ログP01](v3-decision-log.md#p01-安全性検証の一部を保留2026-09-20)に従い、
@@ -78,10 +94,10 @@ BOM分割の一部を改善する一方、通常入力の候補副作用、compl
 
 残作業:
 
-- #116: C++20のCython/wheel・配布runtime互換性検証
+- #116: C++20の30 wheel build/smokeは成功。最低配布runtimeと新標準library機能のavailability確認は残る
 - #118/#119: P01の安全性検証と修正。OOM注入・weight/reset契約も未完了
-- #120: group内部のprober・reject/ranking理由。現状observerは最上位のみ
-- #123: 既存engine用adapter、model品質比較、生成modelの権利判断
+- #120: group直下の状態は追加済み。内部language detector・reject/ranking理由は未観測
+- #123: training/quantizationから形式契約への接続、model品質比較、生成modelの権利判断
 - #124: 独立corpus・real-world入力を含む失敗分析、family/coverage/校正の原因分類
 - #125/#126: 3.0採用範囲、移行契約、試作の採否
 
