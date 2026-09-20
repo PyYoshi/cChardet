@@ -78,10 +78,17 @@ uchardet_sources = [
 ]
 sources += uchardet_sources
 
+# Development-only opt-in; release builds keep their existing language standard.
+cxx_standard = os.environ.get("CCHARDET_CXX_STANDARD")
+if cxx_standard not in (None, "20"):
+    raise ValueError("CCHARDET_CXX_STANDARD must be unset or '20'")
+
 if sys.platform == "win32":
     extra_compile_args = ["/std:c++14", "/Zc:__cplusplus"]
 else:
     extra_compile_args = ["-std=c++11"]
+if cxx_standard == "20":
+    extra_compile_args[0] = "/std:c++20" if sys.platform == "win32" else "-std=c++20"
 
 # The Windows headers are shared by regular and free-threaded CPython, so the
 # build must provide the configuration macro explicitly.
