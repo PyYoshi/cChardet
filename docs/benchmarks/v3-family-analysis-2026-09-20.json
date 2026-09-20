@@ -1,0 +1,47 @@
+{
+  "summary_schema_version": 1,
+  "corpus": "uchardet-legacy",
+  "mode": "saved-observations-reclassification",
+  "native_executed": false,
+  "holdout_evaluated": false,
+  "native_revision": "7993e0afe3b6c64f0ea3b43c7d4987118f6c5c12",
+  "native_tool_sha256": "2944d943c50af9a76222617e9591bb6294526b5e18d6390b978501187d67501e",
+  "source_report_sha256": "04bf1e26feb43270233d25dd106670e164f17ed81df918f66d5abe8d7a2b59b0",
+  "source_evaluator_version": null,
+  "reclassified_report_sha256": "ba0ab69a623290ab9bbf0700749b8076b2e046b50cb0a2fb653a9b0202a7b095",
+  "current_evaluator_version": "7.6.0",
+  "family_mapping_version": "codec-family-v1",
+  "verified_fixture_count": 158,
+  "metrics": {
+    "exact": 153,
+    "compatible": 154,
+    "decode_equivalent": 147,
+    "decode_equivalent_evaluable": 149,
+    "language_correct": 151
+  },
+  "observations": {
+    "EXACT_MATCH": 153,
+    "COMPATIBLE_OR_DECODE_EQUIVALENT": 3,
+    "EXPECTED_CANDIDATE_ABSENT": 2
+  },
+  "cause_status": {
+    "NOT_APPLICABLE": 147,
+    "UNRESOLVED": 11
+  },
+  "unresolved_breakdown": {
+    "expected_candidate_absent": 2,
+    "python_codec_unavailable_despite_exact_label": 9
+  },
+  "family_unknown": {
+    "files": 34,
+    "exact": 34,
+    "decode_equivalent_evaluable": 25
+  },
+  "limitations": [
+    "Saved observations are byte/hash checked, not signed attestations.",
+    "The original report did not record its evaluator version.",
+    "Family unknown is a reporting limitation, not detector non-support.",
+    "Legacy fixture labels are not independently verified ground truth.",
+    "Neither this corpus nor these counts represent real-world frequency."
+  ]
+}
