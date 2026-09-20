@@ -159,7 +159,9 @@ corpus schemaとmodelの棚卸しはPhase 1と並行できるが、検出結果�
 ### Build・静的解析・CI
 
 Debug/Releaseとsanitizer有効化を分離する。CMake/compilerの最小versionは、実際に使う機能と
-wheelの対象環境から決めて文書化する。現代化だけを理由にC++標準を引き上げない。
+wheelの対象環境から決めて文書化する。
+C++20を有力候補として検証し、安全性・保守性に役立つ機能を採用する。
+既存のC++11維持を目標にはせず、採用する機能と配布条件を根拠に規格を決める。
 warning、sanitizer、benchmark、fuzzのoptionをtarget単位に整理し、static/shared build、
 install/exportのsmoke test、再現可能なpresetを用意する。
 native toolはPythonをimportせずにbuild・実行できるようにする。
@@ -168,6 +170,46 @@ setuptools経由の拡張module buildには独自の連携がある。
 CMakeの検証だけでwheelも確認できたとは扱わず、両方を検証する。
 platform・浮動小数点flagの変更は候補scoreに影響し得るため、toolchain整理とscore変更を分ける。
 配布binaryでは`-march=native`や実行環境を選ぶISAの無条件有効化を行わない。
+
+### C++規格とmemory safetyの改善
+
+規格の更新だけで安全になるとは扱わず、所有権・寿命・境界条件をcodeで表現するために使う。
+まずC++20で必要な機能を小さく試し、配布対象すべてで検証してから採用を確定する。
+さらに新しい規格の機能も、解決する問題と配布costを示せる場合は個別に検討する。
+
+| 改善対象 | 採用候補 | 確認すること |
+| --- | --- | --- |
+| 所有するbuffer・resource | `std::vector`、`std::unique_ptr`などのRAII | 解放漏れ・二重解放・error経路の後始末を減らす。再利用するbufferのallocation回数や初期化costも測る |
+| 借用するbuffer | C++20の`std::span`、読み取り専用なら`std::span<const T>` | pointerとlengthの食い違いを減らす。所有者・有効期間・再allocationによる無効化を明示する |
+| 状態・値の区別 | `enum class`、index/長さなど用途ごとの型 | magic valueや異なる単位の混同を減らす。C APIとの変換点で値域を検証する |
+| model tableの整合性 | `constexpr`、`static_assert` | tableの寸法・定義・参照の整合性をbuild時に検証する。生成物にも検証を適用する |
+
+RAIIなど既存規格でも使える機能の導入を、C++20採用の決定まで待つ必要はない。
+一方、`std::span`は所有権を持たず、参照先の寿命や範囲外アクセスを自動的に保証するものではない。
+境界検査、整数overflow、符号付き/符号なし変換、buffer無効化の規則は別途整理する。
+`const`なviewでも別threadによる元bufferの書き換えは防げないため、Pythonから借用する可変bufferと
+GIL解放の扱いも確認する。ASan/UBSan、fuzzing、allocation失敗の検証と組み合わせる。
+
+規格採用の判断では、構文のcompile成功と、標準library・runtime・ABIの互換性を分けて確認する。
+
+- Linux: 対象manylinux imageと最小glibc条件を固定し、必要なC++機能をbuildする。
+  `auditwheel`で`GLIBC_*`/`GLIBCXX_*`などの要求を調べ、最低対応環境でwheelを実行する。
+  musllinuxを追加する場合は別の配布対象として検証する。
+- Windows: 対応MSVC toolsetとruntime条件を決め、生成したwheelのimport・native処理を検証する。
+- macOS: Apple Clang、SDK、deployment target、libc++の機能可用性を確認し、最低対応OSで実行する。
+- Python連携: standalone CMakeとCython/setuptoolsの両経路で同じ規格方針を適用し、
+  通常版・free-threaded版のwheelと、sdistからのbuildに必要なcompiler条件を確認する。
+
+結果は「使う機能・規格・最小toolchain・最低対応OS/runtime・検証artifact」を対応付けた
+設計判断に残す。利用したい機能が現在の最低環境で使えない場合は、代替実装だけでなく
+v3で最低環境を引き上げる選択肢も、利用者への影響と利益を比較して判断する。
+
+PRは、規格/build設定の変更、所有権・型の整理、検出algorithmの変更に分ける。
+所有権の整理は小さな対象から進め、同じ入力・feed手順で候補結果を比較し、
+allocation・memory・latencyの変化を測る。必要なerror契約の変更は明示的にレビューする。
+規格更新と同時にscoreやrankingを変えず、差分の原因を追える状態を維持する。
+
+### CIの実行範囲
 
 | CI区分 | 対象 | 初期budget・運用方針 |
 | --- | --- | --- |
@@ -529,6 +571,7 @@ publicな挙動を変更する前に、以下の設計判断を文書として�
 | Resource・evidence | default `max_bytes`、切り詰めの通知、copyと寿命、GIL解放中の可変buffer、OOM | 制限やbuffer処理の変更前 |
 | Hint・検出範囲 | 汎用とHTML/XMLの区別、metadata優先順位、不正/binary/混在encoding入力の扱い | hint APIまたはfallback方針の変更前 |
 | Native境界 | 公開symbol、該当するABI version/SONAME、所有権、error code、Cythonとの結合 | native API変更と連携PRの前 |
+| C++規格・安全性 | C++20を有力候補とした機能選定、RAII/借用view/型の方針、標準library・runtime条件 | 規格依存機能の導入前。各配布環境での検証を根拠に決める |
 | Platform | Python/compiler/CMake最小版、architecture、free-threaded対応、packaging負担 | Beta前。偶然サポートを失わない |
 | Data/model | format version、reader互換性、由来、配布条件 | model公開前 |
 | Engine選択 | Rust試作の完了条件、両実装の維持cost、default engine | Phase 7の根拠が揃ってから |
@@ -552,10 +595,10 @@ nativeとwrapperで管理先が異なる場合は、依存関係を示した別P
 | ID | 管理先 | 作業・成果物 | 受け入れ条件・依存関係 |
 | --- | --- | --- | --- |
 | V3-01 | 両repository | baseline棚卸し: 既知の失敗、toolchain、model family、native/wrapper benchmark manifest、生の測定結果hash。`dev`のCI・Rules確認 | 再現手順を記録。測定なしに新しい性能効果を主張しない |
-| V3-02 | uchardet | sanitizerとDebugの分離、build preset、対応toolchain手順 | GCC/Clang/MSVCでconfigure/build/test。V3-01の棚卸しに依存 |
+| V3-02 | 両repository、別PR | sanitizerとDebugの分離、build preset、C++20機能と配布互換性の検証、規格採用の設計判断 | GCC/Clang/MSVCとApple Clang、CMakeとCython経由で検証。最低対応runtimeでwheelを実行しsdist要件も記録。V3-01に依存 |
 | V3-03 | uchardet | 機械可読なnative出力、比較harness、終了/lifecycle case | 同じfeedでの同等性とchunk間差分を分けて報告。V3-01 |
 | V3-04 | uchardet | ASan/UBSan preset、上限付きfuzz target、回帰seed | 再現可能なsmoke実行と最小化入力の再検証。V3-02/03 |
-| V3-05 | uchardet | Analyzer/tidyの既存指摘一覧、invariantを明確にする修正 | 新しい指摘を増やさず、判定のtuningと分ける。V3-02/03 |
+| V3-05 | uchardet中心、必要に応じwrapper | Analyzer/tidyの既存指摘一覧、RAII・借用buffer・状態/値の型・compile時検証による安全性改善 | 小さなPRに分けて候補同等性とallocation/memory/latencyを検証。規格更新・判定のtuningと分ける。V3-02/03、安全性検証はV3-04も利用 |
 | V3-06 | uchardet | 任意で有効化するprober/ranking trace | 代表的失敗を説明でき、無効時costを測定済み。V3-03 |
 | V3-07 | uchardet | corpus manifest/分割schema、license一覧、validator | 権利情報欠落や分割を跨ぐ派生dataを拒否。V3-02と並行可能 |
 | V3-08 | uchardet | offline strict再encode、正常境界でのsize生成、HTML生成 | 決定的hash、生成できなかった件数、data混入test。V3-07 |
