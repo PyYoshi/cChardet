@@ -59,3 +59,6 @@ P01の保留作業は再開せず、標準model・公開API・既存engineを変
 
 次は tuning/validation の同じfilter条件での観測と、prober側の分母・特殊orderの
 扱いの照合を分けて進める。入力統計の改善だけで #123 や採用gate を完了扱いにしない。
+
+後続の[同一filter入力のvalidation比較](v3-filtered-evaluation.md)では、filtered trainingの
+未観測pairが増える結果を得た。filter適合をそのまま品質改善とは扱わない。
