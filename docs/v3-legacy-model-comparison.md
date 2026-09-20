@@ -82,3 +82,6 @@ P01の安全性調査・fuzz・大入力停止調査は再開しない。
 モデル関連70テストはnative toolsありで全成功、なしでは62成功/8skip。
 実比較harnessはLinux diagnosticsで実行した。追加4テストはローカルClangでも成功。
 cChardetローカル統合は289 passed / 27 skipped / 76 subtests passed。
+
+後続の[同一文章のencoding対照](v3-paired-encoding-controls.md)でUTF-8 variantへの反応も
+観測した。構造的にdecode不能な対照と、decode可能だが別の文字列になる対照を分けている。
