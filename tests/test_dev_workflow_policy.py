@@ -46,6 +46,16 @@ def test_full_wheel_matrix_and_read_only_permissions_remain():
     assert "permissions:\n  contents: read" in text
 
 
+def test_title_opt_out_is_limited_to_dev_wheels():
+    text = workflow("build-dev.yml")
+    guard = "    if: ${{ !contains(github.event.pull_request.title, '[skip-build]') }}"
+    assert guard in text.split("  wheels:\n", 1)[1].split("    steps:", 1)[0]
+    assert text.count("github.event.pull_request.title") == 1
+    for name in ("build.yaml", "test.yml", "test-dev.yml"):
+        assert "skip-build" not in workflow(name)
+        assert "github.event.pull_request.title" not in workflow(name)
+
+
 def test_master_release_and_explicit_rebuild_events_remain():
     assert events(workflow("build.yaml")).strip() == """push:
     branches: [master]

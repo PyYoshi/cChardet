@@ -1,7 +1,7 @@
 name: Build wheels (dev)
 
 on:
-  # dev requires a PR; build the full wheel matrix before merging.
+  # dev requires a PR; build wheels unless its title explicitly opts out.
   # Post-merge tests remain in test-dev.yml. For an explicit rebuild use
   # the existing Build wheels workflow (build.yaml) with ref=dev.
   pull_request:
@@ -19,6 +19,8 @@ concurrency:
 
 jobs:
   wheels:
+    # Evaluate before expanding the matrix; never interpolate the title into shell.
+    if: ${{ !contains(github.event.pull_request.title, '[skip-build]') }}
     name: Wheels / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
