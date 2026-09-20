@@ -1,18 +1,29 @@
 # SPDX-License-Identifier: MIT
-name: C++20 wheel compatibility (manual)
+name: C++20 wheel compatibility (opt-in)
 
 on:
   workflow_dispatch:
+  pull_request:
+    types: [labeled]
+    branches: [dev]
+    paths-ignore:
+      - '**.md'
+      - '**.rst'
 
 permissions:
   contents: read
 
 concurrency:
-  group: cxx20-wheels-${{ github.ref }}
+  # An unrelated label event must not cancel an already running opt-in build.
+  group: cxx20-wheels-${{ github.event_name }}-${{ github.ref }}-${{ github.event.label.name }}
   cancel-in-progress: true
 
 jobs:
   wheels:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev') ||
+      (github.event_name == 'pull_request' && github.event.action == 'labeled' &&
+      github.event.label.name == 'v3-cxx20-validation')
     name: C++20 wheels (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:

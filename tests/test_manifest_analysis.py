@@ -178,3 +178,77 @@ def test_cli_inventory_and_guards(corpus):
         result = subprocess.run(command + args, capture_output=True, text=True, encoding="utf-8")
         assert result.returncode == 2
         assert "requires explicit" in result.stderr
+
+
+def test_family_workload_denominators_and_per_input_observations(corpus):
+    manifests = analysis.load_manifests([corpus])
+    samples = analysis.select_samples(manifests, {"validation"}, 16)
+    # Only metadata and mock observations: do not launch a native detector or evaluate holdout.
+    samples[0]["encoding"] = "UTF8"
+
+    def observer(sample):
+        assert sample["split"] == "validation"
+        return dict(
+            candidates=[{"encoding": "windows-1251"}],
+            category="EXPECTED_CANDIDATE_ABSENT",
+            cause_status="UNSUPPORTED_ENCODING",  # An observer's unproven cause is not adopted.
+            exact=False,
+            compatible=False,
+            decode_equivalent=False,
+            language_correct=False,
+            encoding_and_language_correct=False,
+            top_k={"1": False, "3": False, "5": False},
+        )
+
+    report = analysis.make_report(manifests, samples, observer)
+    assert report["family_mapping_version"] == "codec-family-v1"
+    for key in (
+        "family:utf-8",
+        "encoding:utf-8",
+        "source_kind:synthetic",
+        "format:text",
+        f"workload:{manifests[0]['manifest']['content_hash']}:synthetic:text",
+    ):
+        group = report["groups"][key]
+        assert group["available"] == 12
+        assert group["selected"] == group["evaluated"] == 1
+        assert group["cause_status:UNRESOLVED"] == 1
+        assert group["family_relation:DIFFERENT_FAMILY"] == 1
+    observed = [s for s in report["samples"] if "prediction" in s]
+    assert len(observed) == 1
+    prediction = observed[0]["prediction"]
+    assert prediction["category"] == "EXPECTED_CANDIDATE_ABSENT"
+    assert prediction["cause_status"] == "UNRESOLVED"
+    assert prediction["expected_family"] == "utf-8"
+    assert prediction["predicted_family"] == "cyrillic"
+    assert all("prediction" not in s for s in report["samples"] if s["split"] == "independent")
+    # Stored reports can be inventoried again without retaining or evaluating predictions.
+    stored = json.loads(json.dumps(report))
+    inventory = analysis.make_report(manifests, stored["samples"])
+    assert "evaluated" not in inventory["groups"]["family:utf-8"]
+    assert all("prediction" not in s for s in inventory["samples"])
+
+
+def test_manifest_cause_preserves_input_review_even_with_exact_category(corpus):
+    manifests = analysis.load_manifests([corpus])
+    samples = analysis.select_samples(manifests, {"validation"}, 16)
+
+    def observer(sample):
+        return dict(
+            category="EXACT_MATCH",
+            cause_status="UNRESOLVED",
+            exact=True,
+            expected_decodes=False,
+            evaluator_codec_available=True,
+            compatible=True,
+            decode_equivalent=False,
+            language_correct=True,
+            encoding_and_language_correct=True,
+            top_k={"1": True},
+            candidates=[],
+        )
+
+    report = analysis.make_report(manifests, samples, observer)
+    assert report["groups"]["all"]["EXACT_MATCH"] == 1
+    assert report["groups"]["all"]["cause_status:UNRESOLVED"] == 1
+    assert report["groups"]["all"].get("cause_status:NOT_APPLICABLE", 0) == 0

@@ -31,7 +31,8 @@ probeをwheelやhot pathには組み込まない。
 
 ## 手動CIと採用gate
 
-`C++20 wheel compatibility (manual)`は手動起動専用で、push/PRでは起動しない。
+`C++20 wheel compatibility (opt-in)`は明示的な依頼時だけmatrixを実行する。
+通常のpush、PR作成、commit追加（`synchronize`）では起動しない。
 既存cibuildwheel設定を共有し、Linux・macOS・Windows、既存architecture、
 Python 3.11〜3.14/3.14tを維持する。Linux containerへopt-inを明示的に転送する。
 wheel smoke testとartifact保存を行うが、公開処理は持たない。
@@ -39,9 +40,25 @@ wheel smoke testとartifact保存を行うが、公開処理は持たない。
 
 [GitHubの仕様](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
 では`workflow_dispatch`のworkflowがdefault branchにも存在する必要がある。
-現時点では`dev`だけの実装であり、GitHub上の手動起動経路は未開通。
-このために`master`へ追加はせず、当面は上記のローカル検証を使用する。
-matrixの実行方法は、default branchへの導入が承認された段階で確定する。
+この経路は将来用に維持するが、jobは`dev`のdispatchだけ許可する。
+このためだけに`master`へworkflowを追加することはしない。
+
+現在は、workflowを含む`dev`向けPRへ`v3-cxx20-validation` labelを付けて起動する。
+[`pull_request`イベント](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)
+を使用するためdefault branchへのworkflow追加は不要で、Draft PRでも利用できる。
+merge conflictのあるPRでは起動しない。forkからのPRにはGitHubの承認制限が適用され得る。
+`pull_request_target`やwrite権限、公開credentialは使用せず、PRのmerge refを検証する。
+
+- 対象はbaseが`dev`で、PR全体の差分に`.md`/`.rst`以外の変更があるもの。
+- 検証したいcommitをpushした後、担当者が上記labelを明示的に付与する。
+- 他labelの付与ではjobをskipする。すでに動いているmatrixもキャンセルしない。
+- labelを残したままcommitを追加しても再実行しない。新しいcommitを検証する場合は
+  labelを外して再付与する。同じcommitの一時的な失敗はActionsの再実行を使う。
+- 再実行ボタンは元のrunのcommitを対象とするので、新しいcommitの検証には使わない。
+- labelの有無だけでは検証済みと判断せず、merge前にrunのSHAと結果を確認する。
+
+branch/path条件は[GitHubのfilter仕様](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onpull_requestpull_request_targetbranchesbranches-ignore)
+に従う。docs-only PRはlabelを付けても起動せず、通常CIの必須checkにも指定しない。
 
 C++20を既定化する前に以下を確認する。
 

@@ -14,6 +14,13 @@ import subprocess
 from collections import Counter
 from pathlib import Path
 
+from benchmarks.encoding_families import (
+    FAMILY_MAPPING_VERSION,
+    canonical_encoding,
+    cause_status,
+    encoding_family,
+    family_observation,
+)
 from benchmarks.failure_analysis import classify, size_bucket
 
 
@@ -76,6 +83,8 @@ def select_samples(manifests: list[dict], splits: set[str], max_bytes: int | Non
                 source_kind=source["kind"],
                 language=source["language"],
                 encoding=record["encoding"],
+                canonical_encoding=canonical_encoding(record["encoding"]),
+                encoding_family=encoding_family(record["encoding"]),
                 split=record["split"],
                 format=record["format"],
                 declared_encoding=record.get("declared_encoding"),
@@ -137,15 +146,32 @@ def make_report(manifests: list[dict], samples: list[dict], observer=None) -> di
     samples = [{k: v for k, v in sample.items() if k != "prediction"} for sample in samples]
     groups = {}
     for sample in samples:
+        sample["canonical_encoding"] = canonical_encoding(sample["encoding"])
+        sample["encoding_family"] = encoding_family(sample["encoding"])
         if sample["selected"] and observer is not None:
             # Abort on execution errors. Never turn them into skipped or wrong predictions.
-            sample["prediction"] = observer(sample)
+            prediction = dict(observer(sample))
+            candidates = prediction.get("candidates", [])
+            prediction.update(
+                cause_status=cause_status(
+                    prediction["category"],
+                    expected_decodes=prediction.get("expected_decodes"),
+                    evaluator_codec_available=prediction.get("evaluator_codec_available"),
+                ),
+                **family_observation(
+                    sample["encoding"], candidates[0]["encoding"] if candidates else None
+                ),
+            )
+            sample["prediction"] = prediction
         keys = [
             "all",
             f"corpus:{sample['corpus_hash']}",
             f"split:{sample['split']}",
             f"language:{sample['language']}",
-            f"encoding:{sample['encoding']}",
+            f"encoding:{sample['canonical_encoding']}",
+            f"family:{sample['encoding_family']}",
+            f"source_kind:{sample['source_kind']}",
+            f"workload:{sample['corpus_hash']}:{sample['source_kind']}:{sample['format']}",
             f"size:{sample['size_bucket']}",
             f"format:{sample['format']}",
         ]
@@ -159,6 +185,8 @@ def make_report(manifests: list[dict], samples: list[dict], observer=None) -> di
                 prediction = sample["prediction"]
                 count["evaluated"] += 1
                 count[prediction["category"]] += 1
+                count[f"cause_status:{prediction['cause_status']}"] += 1
+                count[f"family_relation:{prediction['family_relation']}"] += 1
                 for metric in (
                     "exact",
                     "compatible",
@@ -172,6 +200,7 @@ def make_report(manifests: list[dict], samples: list[dict], observer=None) -> di
                     count[f"top_{k}"] += correct
     return dict(
         report_schema_version=1,
+        family_mapping_version=FAMILY_MAPPING_VERSION,
         mode="evaluation" if observer is not None else "inventory-only",
         evaluator_version=importlib.metadata.version("chardet"),
         corpora=[
@@ -189,6 +218,7 @@ def make_report(manifests: list[dict], samples: list[dict], observer=None) -> di
             "Selected subset metrics do not describe excluded sizes or splits.",
             "Translated chapters from one book are not independent-author evaluation.",
             "Candidate absence is not a diagnosis of missing model coverage.",
+            "Encoding family groups are reporting buckets, not compatibility or causality.",
         ],
     )
 
