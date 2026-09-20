@@ -53,7 +53,8 @@ def test_explicit_family_mapping_aliases_and_unknowns():
     assert encoding_family("ISO-8859-5") == "cyrillic"
     assert encoding_family("ISO-8859-7") == "greek"
     assert encoding_family("Windows-1253") == "greek"
-    assert encoding_family("ISO-8859-3") == "unknown"  # Valid codec not yet explicitly mapped.
+    assert encoding_family("ISO-8859-3") == "latin-southern"
+    assert encoding_family("cp037") == "unknown"  # Valid codec outside this reporting table.
     assert encoding_family("windows-made-up") == "unknown"
     assert encoding_family(None) == "unknown"
     assert encoding_family("utf-16-le") != encoding_family("utf-8")
@@ -67,6 +68,43 @@ def test_cause_status_is_not_automatic_diagnosis():
     assert result["category"] == "EXACT_MATCH"
     assert result["cause_status"] == "NOT_APPLICABLE"
     assert result["family_relation"] == "SAME_FAMILY"
+
+
+@pytest.mark.parametrize(
+    ("encoding", "family"),
+    [
+        ("IBM852", "latin-central-european"),
+        ("MAC-CENTRALEUROPE", "latin-central-european"),
+        ("ISO-8859-16", "latin-southeastern"),
+        ("ISO-8859-3", "latin-southern"),
+        ("ISO-8859-4", "latin-northern"),
+        ("IBM865", "latin-northern"),
+        ("IBM862", "hebrew"),
+        ("ISO-8859-10", "latin-northern"),
+        ("IBM855", "cyrillic"),
+        ("CP737", "greek"),
+        ("GEORGIAN-ACADEMY", "georgian"),
+        ("GEORGIAN-PS", "georgian"),
+        ("VISCII", "vietnamese"),
+        ("EUC-TW", "chinese-traditional"),
+    ],
+)
+def test_v2_explicit_groups(encoding, family):
+    assert encoding_family(encoding) == family
+    assert encoding_family(encoding.lower()) == family
+    assert encoding_family(encoding.replace("-", "_")) == family
+
+
+def test_native_name_mapping_does_not_supply_decoder_or_diagnosis():
+    result = classify(b"abc", "GEORGIAN-PS", [{"encoding": "GEORGIAN-PS"}])
+    assert result["expected_family"] == "georgian"
+    assert result["family_relation"] == "SAME_FAMILY"
+    assert result["evaluator_codec_available"] is False
+    assert result["decode_equivalent"] is None
+    assert result["cause_status"] == "UNRESOLVED"
+    assert canonical_encoding("GEORGIAN-PS") == "GEORGIAN-PS"
+    assert encoding_family("GEORGIAN-MADE-UP") == "unknown"
+    assert encoding_family("EUC-TW-MADE-UP") == "unknown"
 
 
 def test_legacy_report_uses_explicit_unknown_workload_and_family(tmp_path, monkeypatch, capsys):
@@ -96,7 +134,7 @@ def test_legacy_report_uses_explicit_unknown_workload_and_family(tmp_path, monke
     )
     failure_analysis.main()
     report = json.loads(capsys.readouterr().out)
-    assert report["family_mapping_version"] == "codec-family-v1"
+    assert report["family_mapping_version"] == "codec-family-v2"
     for key in ("family:utf-8", "corpus:uchardet-legacy", "source_kind:unknown", "format:unknown"):
         assert report["grouped"][key]["files"] == 1
         assert report["grouped"][key]["cause_status:UNRESOLVED"] == 1

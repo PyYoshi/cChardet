@@ -21,7 +21,10 @@ uv run --locked python -m benchmarks.failure_analysis \
 | UTF-16 | 4件中exact 2件。日本語LE/BEの2件は正解候補不在 | 構造判定の改善候補。ただしmodel不足/早期棄却/入力不足の原因は未確定 |
 | Western Latin | 25件中exact 23件。2件はdecode-equivalent | 異なるcodec名だけを理由に精度修正しない |
 | Hebrew | 2件中exact 1件、compatible 2件 | superset/互換関係を維持して扱う |
-| family未分類 | 34件、全件exact | detector未対応ではなく分析側mappingの未整備 |
+| family未分類 | v1で34件、全件exact | detector未対応ではなく分析側mappingの未整備 |
+
+2026-09-21の[family mapping v2](v3-family-mapping.md)で未分類34件を明示分類した。
+分類field以外のsample値は全件不変。以下のv1に基づく診断を精度改善とは読み替えない。
 
 残りのfixtureはexact一致。これは外部corpusや実Web上の精度を保証しない。
 各familyの母数が少なく、実運用での出現頻度も測れていないので、

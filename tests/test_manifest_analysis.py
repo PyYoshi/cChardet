@@ -201,7 +201,7 @@ def test_family_workload_denominators_and_per_input_observations(corpus):
         )
 
     report = analysis.make_report(manifests, samples, observer)
-    assert report["family_mapping_version"] == "codec-family-v1"
+    assert report["family_mapping_version"] == "codec-family-v2"
     for key in (
         "family:utf-8",
         "encoding:utf-8",
