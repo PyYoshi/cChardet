@@ -11,7 +11,7 @@
 | C++20 | native matrix、Python 30 wheelのbuild/installed smoke | 最低runtime、新たに導入する標準library機能のavailability | build opt-in。既定規格は維持 |
 | 内部trace | group直下のstate/active、同一feedの小fixture出力一致 | 内部language状態、reject/ranking理由 | 開発用・既定OFF。公開APIではない |
 | corpus生成 | manifest検証、split監査、変換不能の明示、実pilot再生成一致 | domain/言語の多様性、translation/近重複確認、独立評価 | 生成基盤として採用。精度向上とは数えない |
-| 新規model形式 | 明示契約、人工tableのC++構造体適合、provenance | training仕様、engine filter適合、未使用data上の品質、配布条件 | 実験用。既存modelを置換しない |
+| 新規model形式 | 明示契約、人工tableのC++構造体適合、provenance、未較正training profileの再現性 | engine filter適合、未使用data上の品質、配布条件 | 実験用。既存modelを置換しない |
 | 保存観測分析 | corpus hash照合、exact/compatible/decode-equivalent分離 | 実Web頻度、独立corpus、原因診断 | 評価tool。candidate順位を変えない |
 
 細部の根拠は[基盤結果](v3-foundation-results.md)、[C++20配布記録](v3-cxx20-distribution.md)、

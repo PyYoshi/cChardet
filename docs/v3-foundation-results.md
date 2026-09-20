@@ -10,7 +10,7 @@
 - [uchardet #12](https://github.com/PyYoshi/uchardet/pull/12): corpus、model生成試作、固定source取得recipe。9 CI成功。
 - [uchardet #13](https://github.com/PyYoshi/uchardet/pull/13): UTF-8 test I/OとC++11の移植性修正。corpusのWindows/macOS検証を追加し11 CI成功。
 
-native統合点: `aa46261`（#17のTatoeba取り込みを含む）。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
+native統合点: `1056e60`（#18のPython-only training profileを含む）。C++標準の既定値、公開API、標準model、runtime対応条件は変更していない。
 C++20はnative compiler matrixでは通ったが、Cython/wheelの全配布条件を満たすという承認ではない。
 
 ## 既存corpusの失敗分類
@@ -56,8 +56,14 @@ French/cp1252のtraining本文11,946 bytesから新規byte-bigram modelを生成
 
 これは生成機構の診断であり、文字コード正解率でも既存modelに対する改善率でもない。
 独立holdout枠の予測はまだ開いていない。生成modelの配布条件は未確定で、artifact自体は公開しない。
-SequenceModelの形式契約とC++出力は追加済みだが、自然文からのtraining/quantization接続と
-同じengineでの品質比較は未完了。
+SequenceModelの形式契約とC++出力は追加済み。同じengineでの品質比較は未完了。
+
+さらにPython-onlyの[明示training profile](../src/ext/uchardet/models/experimental/SEQUENCE_TRAINING.md)
+で、同じFrench training文書から54文字の形式契約を生成した。
+整数countsからの再計算、manifest本文からの再生成照合、別出力先とのbyte一致を確認した。
+[hashと確認結果](benchmarks/v3-sequence-training-2026-09-20.json)を公開するが、model本文は公開しない。
+文書境界・同頻度tie・category化・binary32丸めを固定した未較正profileであり、
+既存SBCS filterに合わせたtrainingやconfidence較正ができたことを意味しない。
 
 ### 別sourceの追加
 
@@ -82,6 +88,7 @@ hashと件数のみを公開し、原文・archive・生成本文はGitへ同梱
 - [uchardet #15](https://github.com/PyYoshi/uchardet/pull/15): 明示的なSequenceModel接続契約とC++出力。人工modelの構造体適合・binary32一致を検証し11 CI成功。既定modelへの登録はしない。
 - [uchardet #16](https://github.com/PyYoshi/uchardet/pull/16): group直下childのactive/stateと前回snapshotとの差分。小fixtureで従来出力一致を確認し11 CI成功。詳細原因はunknownのまま。
 - [uchardet #17](https://github.com/PyYoshi/uchardet/pull/17): Tatoeba CC0 snapshotとoffline取り込み。source 17 testsとframework 24 tests、11 CI成功。検出精度を測った結果ではない。
+- [uchardet #18](https://github.com/PyYoshi/uchardet/pull/18): 未較正のPython-only training profile。14限定testsと11 CI成功。自然文trainingでも生成・再計算の再現性を確認したが、native品質比較はしていない。
 - [改善対象の暫定順位](v3-improvement-priorities.md): 保存済み観測と原因未確定を分離し、model形式・corpus多様性・品質評価の順序を整理。
 
 [判断ログP01](v3-decision-log.md#p01-安全性検証の一部を保留2026-09-20)に従い、
@@ -97,7 +104,7 @@ BOM分割の一部を改善する一方、通常入力の候補副作用、compl
 - #116: C++20の30 wheel build/smokeは成功。最低配布runtimeと新標準library機能のavailability確認は残る
 - #118/#119: P01の安全性検証と修正。OOM注入・weight/reset契約も未完了
 - #120: group直下の状態は追加済み。内部language detector・reject/ranking理由は未観測
-- #123: training/quantizationから形式契約への接続、model品質比較、生成modelの権利判断
+- #123: native filterとtrainingの適合、model品質比較、生成modelの権利判断
 - #124: 独立corpus・real-world入力を含む失敗分析、family/coverage/校正の原因分類
 - #125/#126: 3.0採用範囲、移行契約、試作の採否
 
