@@ -99,13 +99,46 @@ CIは`dev`向けPRと統合後の検証を扱えるようにする。
 Rulesの適用範囲、必須check、prereleaseの起点も開発基盤整備で確認する。
 `dev`という名前だけで既存の保護・release設定が引き継がれるとは仮定しない。
 
+### uchardetのブランチ運用とsubmodule連携
+
+PyYoshi/uchardetも`dev`をv3の開発統合先として分離する。
+開始点はcChardet 2.3.0が使用している`7993e0afe3b6c64f0ea3b43c7d4987118f6c5c12`とする。
+既存の`cchardet`を改名・置換せず、v2のnative保守先として残す。
+
+| 用途 | cChardet側 | PyYoshi/uchardet側 | 連携方法 |
+| --- | --- | --- | --- |
+| v2安定版・保守 | `master`（v3公開前） | `cchardet` | v2互換の修正をnative側へmerge後、承認したcommitへsubmoduleを更新 |
+| v3開発 | `dev` | `dev` | native側の`dev`向けPRをmerge後、cChardetの`dev`向けPRでcommitを固定 |
+| 過去の実装 | 過去のtag・履歴 | `obsoleted-cchardet` | 履歴参照用。新規開発やv2保守のbaseにはしない |
+
+uchardetのv3作業branchは`dev`から作り、Draft PRのbaseも`dev`とする。
+既存のuchardet `master`はv3統合先に転用せず、現在の履歴を維持する。
+双方のrepositoryで`dev`を作っても、自動的に同じ時点の実装になるわけではない。
+
+cChardetのv3開発側では`.gitmodules`の`branch`を`dev`、v2保守側では`cchardet`とする。
+URLは引き続きPyYoshi forkを指す。`branch`は主に`git submodule update --remote`で参照する
+branchの指定であり、通常のcheckoutやCIが使うのは親repositoryに記録したcommitである。
+branch指定だけの変更ではgitlinkを進めず、実際のnative更新は別途レビュー・検証する。
+CIやrelease buildでbranch先端を自動取得せず、必ず記録されたcommitを使う。
+
+共通のbug修正は、v2でも成立する小さな修正なら`cchardet`へ先に適用し、
+`dev`向けの別PRでcherry-pickまたは同等の修正を反映する。
+v3で先に見つけた問題はv2への影響を調べ、必要な修正だけを個別にbackportする。
+元PR・commitと反映先を紐付け、両方で検証する。v3のbranch全体をv2へmergeしない。
+upstream由来の修正も、各branchへの必要性とAPI互換性を確認して取り込む。
+
+3.0公開時にもuchardetの`cchardet`はv2保守先として維持し、`dev`はv3系列の統合先として使う。
+nativeのrelease対象commitを記録し、cChardet releaseのgitlinkで固定する。
+cChardetの`master`をv3へ移行する前には、2.xの保守を継続する場合の専用branchと保守期間を
+Betaまでに決める。安定版branchを移行したためにv2の修正先が消える状態にしない。
+uchardetの`dev`に適用するCI・RulesもPhase 1で確認し、branch作成を保護設定の完了とは扱わない。
+
 ### Repository間の分担とPR
 
 - cChardetは、全体ロードマップ、Python API/CLI、packaging、downstream連携、
   Python経由の競合比較、リリース時の移行案内を管理する。
 - PyYoshi/uchardet forkは、native build、安全性検証、fuzzing、内部状態の追跡、C API、
-  engine benchmark、engineの挙動比較を管理する。現在の連携branchは`cchardet`。
-  今回のcChardetの`dev`導入と混同してfork側のbranchを改名しない。
+  engine benchmark、engineの挙動比較を管理する。v2は`cchardet`、v3は`dev`で管理する。
   実体のあるforkを使い、submoduleはcommitを固定する。
   `.gitmodules`をAPI互換性のないupstreamへ切り替えない。
 - corpus/model toolは、まず利用するnative engineと同じforkに置く。
@@ -594,7 +627,7 @@ nativeとwrapperで管理先が異なる場合は、依存関係を示した別P
 
 | ID | 管理先 | 作業・成果物 | 受け入れ条件・依存関係 |
 | --- | --- | --- | --- |
-| V3-01 | 両repository | baseline棚卸し: 既知の失敗、toolchain、model family、native/wrapper benchmark manifest、生の測定結果hash。`dev`のCI・Rules確認 | 再現手順を記録。測定なしに新しい性能効果を主張しない |
+| V3-01 | 両repository | baseline棚卸し: 既知の失敗、toolchain、model family、native/wrapper benchmark manifest、生の測定結果hash。両repositoryの`dev`のCI・Rules確認 | 再現手順を記録。測定なしに新しい性能効果を主張しない |
 | V3-02 | 両repository、別PR | sanitizerとDebugの分離、build preset、C++20機能と配布互換性の検証、規格採用の設計判断 | GCC/Clang/MSVCとApple Clang、CMakeとCython経由で検証。最低対応runtimeでwheelを実行しsdist要件も記録。V3-01に依存 |
 | V3-03 | uchardet | 機械可読なnative出力、比較harness、終了/lifecycle case | 同じfeedでの同等性とchunk間差分を分けて報告。V3-01 |
 | V3-04 | uchardet | ASan/UBSan preset、上限付きfuzz target、回帰seed | 再現可能なsmoke実行と最小化入力の再検証。V3-02/03 |
