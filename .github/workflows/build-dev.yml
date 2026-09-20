@@ -1,11 +1,9 @@
 name: Build wheels (dev)
 
 on:
-  push:
-    branches: [dev]
-    paths-ignore:
-      - '**.md'
-      - '**.rst'
+  # dev requires a PR; build the full wheel matrix before merging.
+  # Post-merge tests remain in test-dev.yml. For an explicit rebuild use
+  # the existing Build wheels workflow (build.yaml) with ref=dev.
   pull_request:
     branches: [dev]
     paths-ignore:
