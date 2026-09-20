@@ -5,6 +5,7 @@ on:
     branches: [master]
     tags: ["v*"]
   pull_request:
+    branches-ignore: [dev]
   workflow_dispatch:
 
 permissions:
@@ -51,23 +52,11 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v4
-        with:
-          platforms: arm64
-
       - uses: actions/checkout@v7
         with:
           submodules: recursive
 
-      - uses: pypa/cibuildwheel@v4.2.0
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: wheels-${{ runner.os }}
-          path: wheelhouse/*.whl
-          if-no-files-found: error
+      - uses: ./.github/actions/build-wheels
 
   publish:
     name: Publish to PyPI

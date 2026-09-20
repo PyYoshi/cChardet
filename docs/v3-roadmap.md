@@ -93,11 +93,16 @@ v3の破壊的変更を2.xへまとめて逆流させない。
 3.0の公開前に、`dev`の内容を`master`へ統合するrelease PRでリリース条件を確認する。
 公開tagは承認したrelease commitに付け、branch名だけを公開の根拠にしない。
 
-CIは`dev`向けPRと統合後の検証を扱えるようにする。
-現状はTest/Wheelsともpush対象が`master`、PR eventはbase branchの制限なしである。
-このため`dev`向けPRは既存の検証対象になるが、`dev`へのmerge後のpush検証は別途追加する必要がある。
-Rulesの適用範囲、必須check、prereleaseの起点も開発基盤整備で確認する。
-`dev`という名前だけで既存の保護・release設定が引き継がれるとは仮定しない。
+CIは`dev`向けPRと`dev`へのpushを専用の入口から実行し、テスト・wheel buildの本体を
+既存workflowと共有する。変更がMarkdown（`.md`）/reStructuredText（`.rst`）だけなら、
+`dev`ではworkflow自体を起動しない。code・設定・submodule更新を含む場合は通常どおり検証する。
+`master`向けPRでは既存の必須checkを維持するため、文書だけでもCIを実行する。
+release tagと手動実行も引き続き検証対象にする。
+GitHubのpath filterによる省略はPR全体の差分で判断され、code変更のあるPRへ文書commitを
+追加した場合もCIは実行される。今後`dev`に必須checkを設定する場合は、文書PRでcheckが
+未報告のままmerge待ちにならない設計を選ぶ。
+Rulesの適用範囲とprereleaseの起点も開発基盤整備で確認し、`dev`という名前だけで既存の
+保護・release設定が引き継がれるとは仮定しない。
 
 ### uchardetのブランチ運用とsubmodule連携
 
@@ -720,6 +725,13 @@ release notesは直前のstableとの差分にし、2.xの機能を新機能と�
 | 文書と実装が乖離する | 実装PRで完了の根拠と設計判断も更新 |
 
 ### 進捗の記録方法
+
+GitHubでの作業は[cChardetのv3 Issue一覧](https://github.com/PyYoshi/cChardet/issues?q=is%3Aissue+label%3Av3)
+へ集約し、ロードマップ追跡IssueからV3-01〜V3-12へリンクする。
+uchardet実装もここで追跡し、実装先repository・base branch・依存Issue・完了条件を明記する。
+実装PRは対象Issueへリンクし、native側のmergeだけでPython連携まで完了したとは扱わない。
+初期の作業は「v3 基盤整備・スコープ確定」milestoneにまとめ、期日は根拠が揃うまで設定しない。
+Rust/SIMDなどの条件付き研究を3.0の必須作業として扱わない。
 
 作業は未着手・進行中・blocked・延期・完了で管理する。
 完了にはmerge済み実装、再現command、artifact hash、受け入れ条件の根拠への参照を必要とする。

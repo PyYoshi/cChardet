@@ -1,0 +1,34 @@
+name: Build wheels (dev)
+
+on:
+  push:
+    branches: [dev]
+    paths-ignore:
+      - '**.md'
+      - '**.rst'
+  pull_request:
+    branches: [dev]
+    paths-ignore:
+      - '**.md'
+      - '**.rst'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wheels:
+    name: Wheels / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: ./.github/actions/build-wheels
