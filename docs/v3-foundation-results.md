@@ -173,3 +173,7 @@ byte一致した。native小fixtureの計測値も記録したが、最初の条
 [ranking契約のsource調査](v3-ranking-contract.md)では、threshold、既知languageの
 重複整理、同点順序、weightを別段階として整理した。入力ごとの原因証明とは分け、
 保存値照合の`UNRESOLVED`を根拠なく確定理由へ置き換えない。
+
+[日本語codec matrix](v3-japanese-codec-matrix.md)では既存validation章の2抽出profileから
+7 codec・4形式・6上限・2境界を生成し、480成功・192変換不能を区別した。
+別出力の全file一致を確認したが、profileの段落選択biasを精度向上と扱わない。

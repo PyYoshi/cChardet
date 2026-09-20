@@ -64,7 +64,8 @@ corpus hash・sample ID・source origin・サイズ・形式と結び付けて�
 ## Encoding familyの定義と集計分母
 
 mappingは `benchmarks/encoding_families.py` の明示表を正本とし、reportに
-`family_mapping_version: "codec-family-v1"` を記録する。変更時はversionを更新する。
+`family_mapping_version` を記録する。現行は `codec-family-v2`。
+v1との違いと保存観測の再分析は[family mapping記録](v3-family-mapping.md)を参照する。
 Python codec registryでaliasを正規化するため、`Windows-1251` と `cp1251` は同じcodecの集計になる。
 reportには元encodingも保持し、正規化後は `canonical_encoding` に記録する。
 
