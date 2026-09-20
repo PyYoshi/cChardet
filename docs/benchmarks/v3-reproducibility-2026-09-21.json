@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "native_detection_changed": false,
+  "independent_predictions": false,
+  "corpus_groups": {
+    "overlap_report_hash": "4a399d3722bd9eaaa512dc93da0004831922bdb66ba63f74f97539da8fbdaeb2",
+    "report_content_hash": "527622dbcf6cf25b818f13ddffb0fc16a197fcef82228af10462060fc0d067bc",
+    "source_count": 400,
+    "component_count": 386,
+    "multi_source_components": 12,
+    "sources_in_multi_source_components": 26,
+    "cross_split_components": 0,
+    "size_histogram": [{"size": 1, "count": 374}, {"size": 2, "count": 10}, {"size": 3, "count": 2}],
+    "status": "REVIEW_GROUPS_NOT_INDEPENDENT_SAMPLES"
+  },
+  "model_regeneration": {
+    "old_artifact_hash": "e754f7909043746553118be10404641ba979d09585575f09505b5e2de5c9cbaf",
+    "new_artifact_hash": "856a8ba06a4a6d8450ddb3f4afeafdf99223a2c715350ce6e381a8e271c80515",
+    "new_contract_hash": "007efecaae466c6f23066dc8088f6a63167de3f4c39e5624481bf38c575466f3",
+    "documents_equal": true,
+    "audit_equal": true,
+    "contract_fields_equal_except_provenance_and_hash": true,
+    "deployment_status": "NOT_ENGINE_CALIBRATED"
+  }
+}

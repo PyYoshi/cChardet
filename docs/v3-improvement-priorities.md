@@ -41,6 +41,9 @@ Windows-1255で、3件とも判定languageはfixtureの言語と一致してい�
 
 ## 続行する順序
 
+[保存済みconfidence診断](v3-confidence-analysis.md)も追加した。閾値を上げた際の
+残存件数とexact/compatible/decode-equivalentの分母を分離し、確率や推奨閾値とは扱わない。
+
 1. **失敗分析の再現性**: 保存観測とcorpusを照合し、family/workload別の母数、
    codec名の差、decode差、原因未確定を別々に出す。
 2. **generatorとengineの接続契約**: character-order/4-category/ratioの形式を固定し、
