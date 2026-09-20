@@ -114,3 +114,7 @@ compile行をそれぞれ各10件確認した。3.14t両architectureのsmokeに�
 この結果で「現行配布workflowによるC++20指定buildとinstalled smoke」は確認できた。
 最低runtimeの実行確認や今後追加する標準library機能のavailabilityは別gateとして残す。
 既定規格・対応platformをこの結果だけで変更しない。
+
+2026-09-21に[機能単位の独立probe](v3-reproducibility-results.md)を追加し、
+native compiler matrixでspan / bit_cast / ranges等を確認した。
+上記30 wheelは追加probeを組み込んだartifactの検証ではなく、最低runtime gateも残る。

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "report_content_hash": "fd6700bec63836f6f7633bda775b420bf7b5499970a5ac4e843905f9df7c5b0a",
+  "profile": "saved-legacy-confidence-v1",
+  "native_revision": "7993e0afe3b6c64f0ea3b43c7d4987118f6c5c12",
+  "native_executed": false,
+  "independent_holdout": false,
+  "files": 158,
+  "unscored": 0,
+  "outside_unit_interval": 0,
+  "selective": [
+    {"threshold": 0, "files": 158, "exact": 153, "compatible": 154, "decode_equivalent": 147, "decode_equivalent_evaluable": 149},
+    {"threshold": 0.25, "files": 158, "exact": 153, "compatible": 154, "decode_equivalent": 147, "decode_equivalent_evaluable": 149},
+    {"threshold": 0.5, "files": 156, "exact": 153, "compatible": 154, "decode_equivalent": 147, "decode_equivalent_evaluable": 147},
+    {"threshold": 0.75, "files": 144, "exact": 141, "compatible": 142, "decode_equivalent": 136, "decode_equivalent_evaluable": 136},
+    {"threshold": 0.9, "files": 42, "exact": 42, "compatible": 42, "decode_equivalent": 42, "decode_equivalent_evaluable": 42},
+    {"threshold": 0.95, "files": 38, "exact": 38, "compatible": 38, "decode_equivalent": 38, "decode_equivalent_evaluable": 38},
+    {"threshold": 0.99, "files": 10, "exact": 10, "compatible": 10, "decode_equivalent": 10, "decode_equivalent_evaluable": 10},
+    {"threshold": 1, "files": 2, "exact": 2, "compatible": 2, "decode_equivalent": 2, "decode_equivalent_evaluable": 2}
+  ],
+  "threshold_recommendation": null
+}
