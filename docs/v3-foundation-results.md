@@ -161,3 +161,7 @@ fresh/reuseと固定randomを含む6 scheduleでも最終候補が一致した�
 
 これはfeed後のsnapshotであり、全byteの状態遷移履歴ではない。rejectの根本原因や
 ranking理由は未解決のまま。P01保留中の作業や追加の不正入力探索は再開していない。
+
+[固定model coverageの文書平均・サイズ別評価](v3-coverage-strata.md)では、
+会話16文書が1〜4 KiBに集中し、短文・大文書の評価が欠けていることを明示した。
+microだけでなく文書macroを厳密分数で記録し、未定義分母・空区間を区別する。
