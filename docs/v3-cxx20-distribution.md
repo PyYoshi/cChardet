@@ -120,8 +120,9 @@ native compiler matrixでspan / bit_cast / ranges等を確認した。
 上記30 wheelは追加probeを組み込んだartifactの検証ではなく、最低runtime gateも残る。
 
 さらに[glibc 2.24での限定的な実行確認](v3-minimum-runtime.md)で、保存済みの
-CPython 3.11〜3.14 / 3.14tのx86_64全5 wheelのinstalled smokeが成功した。ARM64と
-最低macOS/Windowsは未確認であり、全体gateは維持する。
+CPython 3.11〜3.14 / 3.14tのx86_64全5 wheelのinstalled smokeが成功した。
+後続の[ARM64 runtime検証](v3-arm64-runtime.md)でもQEMU上で全5 ABIが成功している。
+ARM64実機と最低macOS/Windowsは未確認であり、全体gateは維持する。
 
 [sdist build要件と独立再build](v3-sdist-build.md)も記録した。tar.gzからC++20 wheelを
 再構築し独立uv環境のsmokeが成功したが、他platformの最低runtime保証とは別である。
