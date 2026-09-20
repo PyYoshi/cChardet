@@ -17,6 +17,9 @@ P01で保留した検証を再開するものではない。
 現行Python profileは`identity-unfiltered-v1`、`NOT_ENGINE_CALIBRATED`であり、
 この三点を満たしたとは主張しない。`keep_english_letters=true`だけで差を解消できない。
 
+後続の[filter入力統計診断](v3-filter-profile.md)で小fixtureのfilter前後・chunk差分を
+観測できるようにした。以下のsource調査そのものと、後続toolの実行結果は区別する。
+
 ## 読み取った処理の流れ
 
 参照先は固定revisionのsourceであり、下記は原文実装の転載ではなく観測対象の整理である。
