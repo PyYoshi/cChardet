@@ -15,7 +15,7 @@ manifestをまたぐorigin/hashのsplit漏洩と重複manifestを拒否する。
 本文を読まないsplit監査だけが必要なら、uchardetの`corpus/framework.py audit-splits`を使う。
 
 既定splitは`validation`、boundaryは`complete`のみ。
-件数はcorpus・split・言語・encoding・サイズ・形式別に出し、
+件数はcorpus・split・言語・encoding・encoding family・source kind・サイズ・形式別に出し、
 対象外のsampleも除外理由付きで残す。予測結果を使って対象を選ぶ機能はない。
 生成前にskipしたvariantはmanifestの`generation_report.counts`を別途掲載する。
 旧manifestで記録がなければ`null`であり、skipゼロを意味しない。
@@ -32,6 +32,62 @@ encodingのexact / compatible / decode-equivalent、language、両者の一致�
 top-1/3/5を分ける。decode-equivalentは評価可能件数を別途出す。
 判定基準は既存の`failure_analysis`を共有し、利用したchardetのversionを記録する。
 candidate不在からmodel不在を断定することはできない。
+
+## 観測分類と原因の分離
+
+既存の `category` は互換維持し、新しい `cause_status` を別fieldで記録する。
+
+| 観測 | `category` | `cause_status` |
+| --- | --- | --- |
+| 先頭候補がexact | `EXACT_MATCH` | `NOT_APPLICABLE` |
+| compatibleまたはdecode-equivalent | `COMPATIBLE_OR_DECODE_EQUIVALENT` | `NOT_APPLICABLE` |
+| 下位にexact候補がある | `RANKING_FAILURE` | `UNRESOLVED` |
+| exact候補がない／候補ゼロ | `EXPECTED_CANDIDATE_ABSENT` / `NO_CANDIDATE` | `UNRESOLVED` |
+| evaluator codec不在／入力・ラベル要確認 | 既存の対応category | `UNRESOLVED` |
+
+`NOT_APPLICABLE` はこのencoding観測で原因分類を要求しないという意味であり、
+language判定の正しさや一意なcodecの推定を保証しない。
+`UNRESOLVED` は原因未確定であり、未対応encoding、model不在、confidence calibration失敗を意味しない。
+たとえば下位候補の存在だけでは、重み・前処理・evidence不足のどれが原因かは決まらない。
+根拠付きの原因確定を扱う別の機能は今回導入しない。observerが提供した原因statusもそのまま採用しない。
+
+各評価済みinputの `samples[].prediction` に従来のcategory・candidate・top-kに加え、
+原因statusと `expected_family` / `predicted_family` / `family_relation` を残す。
+corpus hash・sample ID・source origin・サイズ・形式と結び付けて個別の観測を追跡できる。
+評価しなかったinputにはpredictionを作らない。
+
+## Encoding familyの定義と集計分母
+
+mappingは `benchmarks/encoding_families.py` の明示表を正本とし、reportに
+`family_mapping_version: "codec-family-v1"` を記録する。変更時はversionを更新する。
+Python codec registryでaliasを正規化するため、`Windows-1251` と `cp1251` は同じcodecの集計になる。
+reportには元encodingも保持し、正規化後は `canonical_encoding` に記録する。
+
+familyは分析用の整理単位であり、文字集合の包含、decode互換性、detector対応状況ではない。
+代表例は次の通り。完全な対応表は上記moduleに固定されている。
+
+- UTF-8／UTF-16／UTF-32／UTF-7／ASCIIは別family。
+- Shift_JIS・CP932・EUC-JP・ISO-2022-JPは `japanese`。
+- GB2312・GBK・GB18030・HZと、Big5・Big5-HKSCS・CP950は別family。
+- ISO-8859-5・Windows-1251等は `cyrillic`、ISO-8859-7・Windows-1253等は `greek`。
+- Latin系もwestern・central-european・turkish等に明示分離する。
+- 有効なPython codecでも表に未登録なら `unknown`。未知のラベルや候補不在も `unknown`。
+
+`ISO` / `Windows` 等の名前prefixだけでfamilyを推測しない。
+`SAME_FAMILY` は互換または正解ではなく、`DIFFERENT_FAMILY` も失敗原因ではない。
+片側でもunknownなら `family_relation` は `UNKNOWN` とし、unknown同士の一致を正解扱いしない。
+
+`groups` に `family:*`、`source_kind:*` と
+`workload:<corpus_hash>:<source_kind>:<format>` の内訳を追加する。
+各groupの分母は既存と同じ `available`（生成済みsample数）、`selected`（選択条件内）、
+評価時のみ `evaluated`（実際に評価した数）を分ける。schema 1を維持した追加fieldである。
+予測の集計には `cause_status:*` と `family_relation:*` の件数を追加するが、family accuracyは計算しない。
+decode-equivalentは引き続き `decode_equivalent_evaluable` を分母とし、評価不能を誤判定にしない。
+生成できなかったvariant数はcorpus単位の `generation_counts` に別掲し、sampleの分母へ混ぜない。
+
+legacy fixtureの分析でも同じmappingと原因statusを使用する。
+由来が不明なsource kindや形式は `unknown` とし、自然文・HTMLであると推測しない。
+mappingや件数の追加はdetectorを変更せず、既存の正解判定にも影響しない。
 
 入力上限は評価対象を選ぶ条件であり、長いsampleをその場で切断しない。
 上限内であることはnative実装の安全性を証明しない。

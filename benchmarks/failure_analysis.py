@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import codecs
 import hashlib
 import importlib.metadata
 import json
@@ -14,6 +13,23 @@ from collections import Counter
 from pathlib import Path
 
 from chardet.evaluation import is_correct, is_equivalent_detection, is_exact_match
+
+if __package__ in (None, ""):
+    from encoding_families import (
+        FAMILY_MAPPING_VERSION,
+        canonical_encoding,
+        cause_status,
+        encoding_family,
+        family_observation,
+    )
+else:
+    from benchmarks.encoding_families import (
+        FAMILY_MAPPING_VERSION,
+        canonical_encoding,
+        cause_status,
+        encoding_family,
+        family_observation,
+    )
 
 
 def classify(data: bytes, expected: str, candidates: list[dict]) -> dict:
@@ -56,6 +72,8 @@ def classify(data: bytes, expected: str, candidates: list[dict]) -> dict:
         exact_candidate_rank=ranks[0] if ranks else None,
         top_k={str(k): bool(ranks and ranks[0] <= k) for k in (1, 3, 5)},
         category=category,
+        cause_status=cause_status(category),
+        **family_observation(expected, predicted),
     )
 
 
@@ -97,10 +115,7 @@ def main() -> None:
             raise ValueError("native candidate count mismatch")
         data = path.read_bytes()
         expected, language = path.name.split(".", 1)[0], path.parent.name
-        try:
-            canonical = codecs.lookup(expected).name
-        except LookupError:
-            canonical = expected
+        canonical = canonical_encoding(expected)
         evidence = classify(data, expected, candidates)
         for candidate in candidates:
             candidate["confidence"] = struct.unpack(
@@ -113,6 +128,10 @@ def main() -> None:
             size_bucket=size_bucket(len(data)),
             expected_encoding=expected,
             canonical_encoding=canonical,
+            encoding_family=encoding_family(expected),
+            corpus="uchardet-legacy",
+            source_kind="unknown",
+            format="unknown",
             expected_language=language,
             expected_label_source="legacy fixture path; not independently verified",
             split="legacy-validation",
@@ -124,12 +143,18 @@ def main() -> None:
         for key in (
             "all",
             f"encoding:{canonical}",
+            f"family:{sample['encoding_family']}",
+            "corpus:uchardet-legacy",
+            "source_kind:unknown",
+            "format:unknown",
             f"language:{language}",
             f"size:{sample['size_bucket']}",
         ):
             count = grouped.setdefault(key, Counter())
             count["files"] += 1
             count[sample["category"]] += 1
+            count[f"cause_status:{sample['cause_status']}"] += 1
+            count[f"family_relation:{sample['family_relation']}"] += 1
             for metric in ("exact", "compatible", "decode_equivalent", "language_correct"):
                 count[metric] += bool(sample[metric])
             count["decode_equivalent_evaluable"] += sample["decode_equivalent"] is not None
@@ -137,6 +162,7 @@ def main() -> None:
         json.dumps(
             dict(
                 schema_version=1,
+                family_mapping_version=FAMILY_MAPPING_VERSION,
                 corpus="uchardet-legacy",
                 native_revision=args.native_revision,
                 evaluator_version=importlib.metadata.version("chardet"),
@@ -146,7 +172,7 @@ def main() -> None:
                     "Candidate absence does not prove unsupported encoding or missing model.",
                     "Ranking failure identifies a lower exact candidate, not its root cause.",
                     "Legacy fixtures are not independent holdout or new-model training data.",
-                    "No automatic confidence calibration or encoding-family causal classification.",
+                    "Encoding family groups are reporting buckets, not compatibility or causality.",
                 ],
                 grouped=grouped,
                 samples=samples,
