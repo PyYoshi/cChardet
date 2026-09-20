@@ -57,7 +57,8 @@ nativeの`models/experimental/ENGINE_PROBE.ja.md`の手順で、固定training a
 2つの実験buildを作り、`engine_comparison.py`でvalidation manifestを評価する。
 reportには入力hash、候補順序、encoding/language、confidence bits、done観測、
 build source・binary hashと集計を保持する。生corpus・生成modelはGitへ追加しない。
-実装は[uchardet PR #39](https://github.com/PyYoshi/uchardet/pull/39)で検証中。
+実装は[uchardet PR #39](https://github.com/PyYoshi/uchardet/pull/39)で11件のCI成功後、
+devへ統合した。統合SHAは`e03915e00daa036e7f172bad9b395f485530d8f5`。
 
 ローカルreport: `archives/v3-corpus/paris-full-engine-comparison-v1.json`。
 content hash: `7b4695e8ff78effdeca177f71cf761081b46c64427ae8ad5c1d58de02e7e7265`。
