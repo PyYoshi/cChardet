@@ -68,3 +68,39 @@ file SHA-256: `79654809fe9985af4e89eac06aeb9d54af20001dc01301b70c4ceb7a6435a4ca`
 次は既存French ISO系modelとの競合過程を確認し、model coverageの問題と較正の問題を
 分離する。このvalidationを調整用へ転用せず、調整する場合は別のtuning splitを用意する。
 今回の結果だけからthresholdを動かしたり、他の候補を削除したりしない。
+
+## 小規模1入力の内部観測
+
+後続の原因調査として、既存`benchmark/uchardet-trace.cpp`をfiltered実験libraryへ
+linkし、上記validationの先頭cp1252文書だけを10秒上限で観測した。
+入力は2,473 bytes、SHA-256は
+`272f13d8f2d9bb83f61c91b1dd698ff35182f3480e9005b5f45c5768822c4ea9`。
+全失敗の原因をこの1件で代表させない。
+
+feed後・end後ともSBCS groupは`detecting`だった。Frenchの3 modelはいずれも
+306文字・246 frequent文字・193 sequenceを観測していた。
+
+| model | category 0/1/2/3 | control文字 |
+| --- | --- | ---: |
+| 既存ISO-8859-1 | 0 / 0 / 6 / 187 | 5 |
+| 既存ISO-8859-15 | 0 / 0 / 6 / 187 | 5 |
+| 生成cp1252 (filtered) | 20 / 5 / 7 / 161 | 0 |
+
+raw reportのISO-8859-1/frのconfidence bitsは`3f45eb28`で、保存済みC API観測の
+先頭候補と一致した。ただしtraceのraw reportはC APIのsort/dedup後一覧ではない。
+この照合を全候補の一致試験とは扱わない。
+
+現行`nsSingleByteCharSetProber::GetConfidence()`のpositive approachは
+`(positive + probable / 4 - negative * 4) / sequences / typical_ratio`を基礎とし、
+さらにcontrol/out文字とfrequent文字の比率を掛ける。
+今回の生成modelではnegative 20件の寄与がある一方、既存ISO系にはない。
+encoding上のcontrol文字ペナルティだけでは、誤ったISO系候補を排除できていない。
+これは次の較正分析の具体的な根拠であり、係数変更の正当化ではない。
+
+観測source SHA-256は
+`20099148d16425a079cc4bef795b50a8fdd5a0bbfa011c47122c71634ad19a84`、
+観測実行file SHA-256は
+`e9eb443b9cf1ea8fe5fdf8fb0aa713ca4e26499a729163de9329cb3d12f472fe`。
+compileは`c++ -std=c++11 -O2 -Isrc/ext/uchardet/src`で、
+`archives/v3-corpus/engine-paris-filtered-v1/build/src/liblibuchardet_experimental.a`
+をlinkした。traceの引数は`0 INPUT_FILE`（one-shot）。model・入力を変更していない。
