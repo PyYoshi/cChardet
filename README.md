@@ -16,6 +16,11 @@ CPython 3.14 build. Each version is tested on Linux, macOS, and Windows.
 
 ## Development
 
+The [cChardet v3 development roadmap (Japanese)](docs/v3-roadmap.md) describes
+the native development, corpus/model, accuracy, and API work planned for the next
+major release and the v3 series. Development is integrated on `dev`, while `master`
+tracks stable releases. v3 may include breaking changes with documented migration paths.
+
 Install [uv](https://docs.astral.sh/uv/), clone this repository with its submodules,
 then create the locked development environment and run the checks:
 

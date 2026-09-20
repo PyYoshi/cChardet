@@ -1,0 +1,19 @@
+name: Build and upload wheels
+description: Build and test platform wheels, then upload the artifacts.
+
+runs:
+  using: composite
+  steps:
+    - name: Set up QEMU
+      if: runner.os == 'Linux'
+      uses: docker/setup-qemu-action@v4
+      with:
+        platforms: arm64
+
+    - uses: pypa/cibuildwheel@v4.2.0
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: wheels-${{ runner.os }}
+        path: wheelhouse/*.whl
+        if-no-files-found: error
