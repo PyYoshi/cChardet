@@ -58,6 +58,13 @@ raw byte-bigram試作、SequenceModel形式契約、training仕様の精緻化�
 2つのvalidation corpusでcategory 0が減少し、positive側の内部スコアが高い範囲になった。
 ただしpaired分離件数は旧モデルと同じで、encoding accuracy改善・標準採用の根拠にはしない。
 
+[候補競合を含めた評価](v3-full-engine-model-comparison.md)まで進めた結果、Paris validation
+のcp1252 16入力でdecode-equivalentがlegacy 16件に対しidentity 5件、filtered 7件だった。
+したがって、この固定モデルの標準採用は推奨しない。単に接続が未完了なのではなく、
+限定的ながら実際の識別品質に反証が得られた状態である。
+他言語・別domain・大入力・incremental全体については、この結果から推測しない。
+generator基盤と非デフォルト観測targetは維持し、内部選抜の分析を次の課題にする。
+
 ## 互換性とmigration
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
