@@ -45,6 +45,11 @@ raw byte-bigram試作、SequenceModel形式契約、training仕様の精緻化�
 整数counterの一致だけでconfidence校正やencoding正解率を達成したとは扱わない。
 候補競合、negative control、未使用data、性能、生成modelの権利確認が残るため採用は保留する。
 
+後続の[同一文章のencoding対照](v3-paired-encoding-controls.md)と
+[単一proberのnative計時](v3-native-model-timing.md)を追加した。
+限定的な反応差と処理コストは測定済みだが、全detectorの識別精度、confidence校正、
+リクエスト単位のtail latency・memory/allocationは未確認で、標準採用の保留は維持する。
+
 ## 互換性とmigration
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
