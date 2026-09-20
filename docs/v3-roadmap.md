@@ -7,6 +7,8 @@ PyYoshi/uchardet `7993e0a`。本書の公開をもって各作業が実装済み
 リリース日は未定。
 
 本書および今後のv3開発文書は日本語で管理する。
+承認済みの実行範囲・自走権限・予算は[実行計画](v3-execution-plan.md)、
+保留する判断は[判断ログ](v3-decision-log.md)で管理する。
 利用者向けのREADME、APIリファレンス、公開リリースノートなどは英語を基本とする。
 開発上の議論と利用者向けの説明を分け、確定した仕様は利用者向け文書にも反映する。
 
@@ -426,10 +428,10 @@ tableの次元、順序、数値型、量子化、検証条件を明示し、ま
 
 ### 新規fileのlicenseを決める時期と対象
 
-新規fileに適用するlicenseは未決定である。
-利用・組み込み・開発参加のしやすさを重視し、LGPL、MIT、Apache-2.0などを候補として比較する。
-LGPLはversionと「or later」の有無も決める。以前のMPL-2.0を第一候補とする案は固定方針にせず、
-由来に応じた条件を確認する。ここでは候補の適用可否や既存資産のrelicense可否を確定しない。
+独立した新規tool・generator・test・schema・開発文書はMITとする判断を承認した。
+[ADR 0001](decisions/0001-new-component-license.md)に適用範囲を記録する。
+既存codeの派生物・corpus・生成modelまで一律にMITとせず、由来に応じた条件を確認する。
+既存資産のrelicense可否はこの判断では確定しない。
 
 Phase 1のV3-01でlicenseの設計判断を行い、対象componentの新規実装・外部contributionを
 受け入れる前に、そのcomponentで使うlicenseとfile表記の規則を決める。
