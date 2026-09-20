@@ -73,3 +73,6 @@ library SHA-256: `cbfafc66f7aeb38952991b0fe3a621b6abf47aedf12bbc8eda3541908f2864
 限定medianだけで性能gate全体を通過したとは扱わない。trial末尾側の変動原因、
 request tail latency、全detectorのmemory/throughput、識別精度と配布条件は残る。
 この結果を理由に既定modelを置換せず、P01の保留も維持する。
+
+後続の[CPU/resource観測](v3-timing-resource-observations.md)では新たな遅い試行で
+CPU時間も増えたことを確認した。元の試行の原因を遡って確定するものではない。
