@@ -77,8 +77,10 @@ generator基盤と非デフォルト観測targetは維持し、内部選抜の�
 
 [分析から決定した開発順位](v3-improvement-priorities.md)では、SBCS filterの
 incremental証拠の一貫性を先行候補とした。これは採用決定ではない。
-現在の2試作枠との関係、状態保持・EOF・メモリ上限、候補/done変更の扱いを
-#125で決めてから実装する。保留したBOM試作を無断で置換・破棄しない。
+2026-09-22、maintainerの再開指示に基づき、第3の非デフォルト試作として
+[固定block native adapter](v3-fixed-block-pilot.md)を追加した。
+EOF/reset/evidence上限と候補/doneの実験契約を固定し、小規模tuningで比較済み。
+block長・公開APIへの採用は未決定。保留したBOM試作は置換・破棄しない。
 
 v3では必要な破壊的変更を許容する方針だが、現段階で具体的な公開API変更を決めたわけではない。
 現在の変更は両repositoryの`dev`内の基盤整備であり、v2系・`master`・releaseには反映しない。
