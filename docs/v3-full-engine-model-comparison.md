@@ -110,3 +110,38 @@ compileは`c++ -std=c++11 -O2 -Isrc/ext/uchardet/src`で、
 実行した（28 passed）。空入力・ASCII・既存の短い日本語fixtureを0/1/7-byte scheduleで
 照合する9試験を含む。最終候補の値がraw reportに存在すること等の確認であり、内部rankingの
 因果証明・全corpusの観測非干渉・精度向上の証明ではない。
+
+## 選択cacheによる代表例の確認
+
+[uchardet #45](https://github.com/PyYoshi/uchardet/pull/45)の読み取り専用traceで、
+同じ2,473-byte入力と同じfiltered実験libraryを観測した。追加のconfidence/name
+getterは呼んでいない。新fieldを除いた全snapshot/raw reportは旧traceと一致した。
+
+finalize後のSBCSはdetecting、active数121、`cached_best_index=18`だった。
+model統計との対応は18=ISO-8859-1/fr、19=ISO-8859-15/fr、20=生成cp1252/fr。
+これにより、最終候補にcp1252がない理由をmodel欠落と解釈する余地を排除できる。
+
+前節の実測counterと各modelの固定ratioを既存positive-approach式へ代入した。
+下表は観測器による追加GetConfidence呼出しではなく、binary32丸めを入れた別計算。
+
+| model | positive + probable/4 - negative×4 | ratio | 再計算score | float bits |
+| --- | ---: | ---: | ---: | --- |
+| ISO-8859-1 / ISO-8859-15 | 188.5 | 0.9990016222 | 0.7731194496 | `3f45eb28` |
+| 生成cp1252 | 82.75 | 0.9603947997 | 0.3589009047 | `3eb7c1dc` |
+
+ISO系scoreのbit列は実際のraw reportと一致する。両ISO modelはこの入力のcounterと
+ratioが同一で、groupの走査は`bestConf < cf`でのみ更新するため、同点では先の18を維持する。
+生成cp1252はnegative 20件による80の減点が大きく、control文字の減点がないことだけでは
+逆転できない。SBCSは1候補のみを公開するため、内部にあるcp1252は候補一覧に残らない。
+
+`DataEnd`ではconfidence照会の後に名前を取得してReportする。今回の正のscore、
+選択cache、reportの一致を合わせて、この代表例は内部スコアによる選択と説明できる。
+traceの汎用`selection_path`はdetecting時に`unknown`を維持する。任意のsnapshotでは
+名前取得fallbackによるcache更新と区別できず、今回の根拠を全入力へ一般化しない。
+また、これは生成model側の統計・較正の改善候補を示すもので、係数変更の採用承認ではない。
+
+再現は前節のcompile commandでtrace sourceを#45版へ置き換え、同じstatic libraryと
+入力を使う。入力hashは前節と同じ。生成modelは変更せず、独立holdoutは未開封。
+
+- trace JSONL SHA-256: `d50b76a3c1c9e2f7f1636e468faf4ad69b0450c6a70332c338c2b630fd305c2d`
+- 観測実行file SHA-256: `eda4b4bd4711c81f771eb48b82a7834bbd6f9917101201ca50e825c4650b7f26`
