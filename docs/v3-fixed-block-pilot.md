@@ -99,3 +99,28 @@ run1で14/16入力（+4.76〜9.30%）、run2で15/16入力（+4.84〜8.55%）が
 判断: 1/7は品質、64は性能に採用上の問題が残る。1024は追加評価候補だが、
 限定corpusでのtop-1件数・warm reuse性能だけでは標準採用しない。
 候補/confidenceの差、初回allocation・memory、公開契約の確認を続ける。
+
+## 追加評価: allocation API呼び出し
+
+[native PR #48](https://github.com/PyYoshi/uchardet/pull/48)で、1024-byte候補の
+構築・初回文書・warm文書・破棄を分けて観測した。64-bit Linux/GCC16.2.1、
+非LTOのstatic libraryで、既存8経路のhookを再利用する。時間計測とは別に実行した。
+全11 CI成功（run `35626978353`）後、`e5272917896eb49dc4860204fead1d1e7bdb1482`へ統合。
+cChardetのローカルpytestは365 passed / 15 skipped / 94 subtests。
+
+固定tuning16入力の全件で、adapterの構築時newが直接fixedより1回多い（1→2）。
+初回/warm文書の対象counterは直接fixedと一致し、外部whole/1-byteでも同じだった。
+破棄時deleteも直接fixedより1回多い。計測あり/なしの候補全体が一致し、
+直接fixed/adapterの結果は保存済みcanonical観測とも一致した。
+reportを再実行して全byte一致を確認した。
+
+これはselected API call countsであり、physical allocation数・要求byte数・
+live/peak memoryではない。shared library内のstrdup等は対象外なので、
+warm中のmalloc/newが0でも「allocationなし」とは呼ばない。
+対象counterだけで10%のmemory gate通過を判断しない。
+
+[native手順・制限・結果](../src/ext/uchardet/benchmark/fixed-block-allocations.ja.md)。
+report: `archives/v3-corpus/fixed-block-allocations-v2.json`、content hash:
+`f1e073ce9e72d360435be5986af752c18e4f01d48b0edd29d1fc90ccceb22dad`。
+追加3 tests成功、native benchmark suiteは41成功・5 skip。
+既定API/model/engineは不変。OOM/fuzz/P01は再開していない。
