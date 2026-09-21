@@ -3,6 +3,23 @@
 
 2026-09-20時点。Phase 1〜3全体の完了報告ではない。
 
+## native lifecycleの追加検証（2026-09-21）
+
+[uchardet #43](https://github.com/PyYoshi/uchardet/pull/43)を統合し、
+nativeを`1a13ad6186842b9defaeef01a071876e3cda9a61`へ固定した。
+[再現手順と比較範囲](../src/ext/uchardet/test/LIFECYCLE.ja.md)に従い、
+空入力・ASCII・UTF-8・cp1252の4入力を3巡する12比較をCTestへ追加した。
+finalize後のresetと途中の文書を破棄するresetについてfresh detectorを対照とし、
+同一feed後・1回のfinalize後の候補数、順序、encoding、language、confidence bit列、
+doneを比較する。languageのnullと空文字を区別し、getter再読の安定性も確認する。
+
+ローカルの154 CTestは失敗なし（既存corpusの5 skipを含む）。
+GCC・Clang sanitizer・AppleClang・MSVC等の11 CIも成功した。
+これは小規模な通常入力の再利用検証であり、accuracyやchunk間一致の保証ではない。
+nativeの繰返しfinalize、finalize後feed、weight、error/OOM、大入力、並列利用は
+このtestの対象外。Python wrapperのcloseのべき等性とnative C APIの保証を混同しない。
+engine・公開APIは変更せず、P01と#117全体は未完了のままとする。
+
 ## 統合済みnative基盤
 
 - [uchardet #10](https://github.com/PyYoshi/uchardet/pull/10): build preset、Debug/sanitizer分離、compiler CI。8構成成功。
