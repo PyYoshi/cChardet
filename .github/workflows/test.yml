@@ -51,10 +51,18 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: latest-known
-          python-version: ${{ matrix.python-version }}
+          # On Windows ARM64, uv picks an emulated x86-64 interpreter unless the
+          # request names the architecture.
+          python-version: ${{ matrix.os == 'windows-11-arm' && format('cpython-{0}-windows-aarch64-none', matrix.python-version) || matrix.python-version }}
 
       - name: Install locked dependencies
         run: uv sync --locked
+
+      - name: Check interpreter architecture
+        run: >-
+          uv run --no-sync python -c "import os, sysconfig;
+          plat = sysconfig.get_platform(); print(plat);
+          assert ('arm64' in plat or 'aarch64' in plat) == (os.environ['RUNNER_ARCH'] == 'ARM64')"
 
       - name: Lint
         if: matrix.os == 'ubuntu-26.04' && matrix.python-version == '3.14'
