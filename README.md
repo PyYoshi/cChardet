@@ -11,8 +11,9 @@ cChardet is a high-speed universal character encoding detector built on the
 
 ## Python support
 
-cChardet supports CPython 3.11 through 3.14, including the free-threaded
-CPython 3.14 build. Each version is tested on Linux, macOS, and Windows.
+cChardet supports CPython 3.11 through 3.15, including the free-threaded
+CPython 3.14 and 3.15 builds. Each version is tested on Linux, macOS, and
+Windows.
 
 ## Development
 

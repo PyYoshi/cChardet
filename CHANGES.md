@@ -1,5 +1,10 @@
 # CHANGES
 
+## Unreleased
+
+- Support Python 3.15, including the free-threaded CPython 3.15 build, with
+  tests and wheels for Linux, macOS, and Windows
+
 ## 2.3.0 (2026-09-16)
 
 - Support free-threaded CPython 3.14 without re-enabling the GIL, including
