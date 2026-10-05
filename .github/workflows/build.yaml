@@ -18,7 +18,7 @@ jobs:
   build-sdist:
     name: Source distribution
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,15 +48,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-2025, windows-11-arm, macos-26]
 
     steps:
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v4
-        with:
-          platforms: arm64
-
       - uses: actions/checkout@v7
         with:
           submodules: recursive
@@ -65,7 +59,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: wheels-${{ runner.os }}
+          name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
           if-no-files-found: error
 
@@ -73,7 +67,7 @@ jobs:
     name: Publish to PyPI
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [build-sdist, build-wheels]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment:
       name: pypi
       url: https://pypi.org/project/cchardet/

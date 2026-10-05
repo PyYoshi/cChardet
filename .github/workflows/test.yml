@@ -16,7 +16,7 @@ concurrency:
 jobs:
   native-safety:
     name: Native ASan / UBSan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-2025, windows-11-arm, macos-26]
         python-version: ["3.11", "3.12", "3.13", "3.14", "3.14t", "3.15", "3.15t"]
 
     steps:
@@ -51,17 +51,34 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: latest-known
-          python-version: ${{ matrix.python-version }}
+          # On Windows ARM64, uv picks an emulated x86-64 interpreter unless the
+          # request names the architecture.
+          python-version: ${{ matrix.os == 'windows-11-arm' && format('cpython-{0}-windows-aarch64-none', matrix.python-version) || matrix.python-version }}
 
       - name: Install locked dependencies
         run: uv sync --locked
 
+      - name: Check interpreter architecture
+        shell: bash
+        run: |
+          uv run --no-sync python - <<'EOF'
+          import os
+          import platform
+          import sysconfig
+
+          plat = sysconfig.get_platform()
+          # A universal2 build covers both macOS architectures, so check the running process.
+          arch = platform.machine() if plat.endswith("universal2") else plat
+          print(plat, arch)
+          assert ("arm64" in arch or "aarch64" in arch) == (os.environ["RUNNER_ARCH"] == "ARM64")
+          EOF
+
       - name: Lint
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        if: matrix.os == 'ubuntu-26.04' && matrix.python-version == '3.14'
         run: uv run ruff check
 
       - name: Type check
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        if: matrix.os == 'ubuntu-26.04' && matrix.python-version == '3.14'
         run: uv run mypy
 
       - name: Test
@@ -69,7 +86,7 @@ jobs:
 
   package:
     name: Verify distributions
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
