@@ -16,7 +16,7 @@ concurrency:
 jobs:
   native-safety:
     name: Native ASan / UBSan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-26.04, windows-2025, macos-26]
         python-version: ["3.11", "3.12", "3.13", "3.14", "3.14t", "3.15", "3.15t"]
 
     steps:
@@ -57,11 +57,11 @@ jobs:
         run: uv sync --locked
 
       - name: Lint
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        if: matrix.os == 'ubuntu-26.04' && matrix.python-version == '3.14'
         run: uv run ruff check
 
       - name: Type check
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        if: matrix.os == 'ubuntu-26.04' && matrix.python-version == '3.14'
         run: uv run mypy
 
       - name: Test
@@ -69,7 +69,7 @@ jobs:
 
   package:
     name: Verify distributions
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
