@@ -34,13 +34,13 @@ version = { attr = "cchardet.__version__" }
 dev = [
     "build>=1.6.1",
     "chardet>=7.6.0",
-    "charset-normalizer>=3.5.1",
-    "cython>=3.2.9,<3.4",
-    "mypy>=1.15",
+    "charset-normalizer>=3.5.2",
+    "cython>=3.3.0,<3.4",
+    "mypy>=2.4.0",
     "pyperf>=2.10.0",
     "pytest>=9.1.1",
-    "ruff>=0.16.7",
-    "setuptools>=77",
+    "ruff>=0.16.10",
+    "setuptools>=84.0.0",
     "twine>=7.0.0",
 ]
 
