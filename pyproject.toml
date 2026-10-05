@@ -73,8 +73,5 @@ archs = "auto"
 test-command = "python tools/wheel_smoke.py"
 test-sources = ["tools/wheel_smoke.py"]
 
-[tool.cibuildwheel.linux]
-archs = ["auto", "aarch64"]
-
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]

@@ -4,6 +4,10 @@
 
 - Support Python 3.15, including the free-threaded CPython 3.15 build, with
   tests and wheels for Linux, macOS, and Windows
+- Publish Windows ARM64 wheels, and build Linux aarch64 wheels on native arm64
+  runners instead of under QEMU emulation
+- Test every supported Python version on arm64 Linux and Windows in addition to
+  x86-64
 
 ## 2.3.0 (2026-09-16)
 

@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-26.04, windows-2025, macos-26]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, windows-2025, windows-11-arm, macos-26]
         python-version: ["3.11", "3.12", "3.13", "3.14", "3.14t", "3.15", "3.15t"]
 
     steps:
