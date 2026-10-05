@@ -61,7 +61,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: pypa/cibuildwheel@v4.2.0
+      - uses: pypa/cibuildwheel@v4.3.0
 
       - uses: actions/upload-artifact@v7
         with:
