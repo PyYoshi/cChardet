@@ -1,6 +1,6 @@
 # CHANGES
 
-## Unreleased
+## 2.4.0 (2026-10-11)
 
 - Support Python 3.15, including the free-threaded CPython 3.15 build, with
   tests and wheels for Linux, macOS, and Windows
