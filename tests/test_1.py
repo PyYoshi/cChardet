@@ -174,6 +174,18 @@ class TestCChardet:
             assert detector.result == weighted
             detector.reset()
 
+    def test_language_weights_survive_reset_without_new_data(self):
+        # uchardet's reset freed the candidates that its weighted view still
+        # pointed to, so closing again returned freed memory as the encoding.
+        detector = cchardet.UniversalDetector(language_weights={"en": 0.5})
+        detector.feed(b"plain ASCII text")
+        detector.close()
+        assert detector.result["encoding"] == "ASCII"
+
+        detector.reset()
+        detector.close()
+        assert detector.result == {"encoding": None, "confidence": None, "language": None}
+
     def test_language_weights_are_validated(self):
         for weights in ({"english": 1.0}, {"en": -0.1}, {"en": 1.1}, {"en": float("nan")}):
             try:
