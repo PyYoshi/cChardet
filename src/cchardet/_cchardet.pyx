@@ -2,6 +2,7 @@
 #cython: embedsignature=True, c_string_encoding=ascii, language_level=3
 #cython: freethreading_compatible=True
 
+cimport cython
 from libc.stddef cimport size_t
 
 cdef extern from *:
@@ -44,16 +45,30 @@ cdef int _handle_data(uchardet_t ud, const_char_ptr data, size_t length) except 
     return 0
 
 
-cdef void _apply_language_weights(uchardet_t ud, object language_weights):
-    cdef bytes language
+cdef list _language_weight_pairs(object language_weights):
+    """Convert the weights to (bytes, float) pairs before touching a detector."""
+    cdef list pairs = []
     cdef float weight
 
     if language_weights is None:
-        return
+        return pairs
     for language_name, language_weight in language_weights.items():
-        language = language_name.encode("ascii")
         weight = language_weight
+        pairs.append((language_name.encode("ascii"), weight))
+    return pairs
+
+
+cdef int _weigh_languages(uchardet_t ud, list pairs) except -1:
+    cdef bytes language
+    cdef float weight
+
+    for language, weight in pairs:
         uchardet_weigh_language(ud, language, weight)
+    return 0
+
+
+cdef int _apply_language_weights(uchardet_t ud, object language_weights) except -1:
+    return _weigh_languages(ud, _language_weight_pairs(language_weights))
 
 def detect_with_details(bytes msg, max_bytes=None, language_weights=None):
     cdef size_t length = len(msg)
@@ -151,6 +166,14 @@ def detect_all(bytes msg, max_bytes=None, language_weights=None):
                 uchardet_delete(ud)
 
 cdef class UniversalDetector:
+    # uchardet runs without the GIL, so concurrent calls on one detector could
+    # otherwise corrupt its native state even on regular builds. The lock
+    # serializes every method; acquiring it releases the GIL while waiting.
+    # It is not reentrant: methods must not call each other while holding it,
+    # and no Python code that could reach this detector (user mappings,
+    # finalizers run by a collection) may run under it. So Python objects are
+    # converted or built outside the lock wherever the normal path needs them.
+    cdef cython.pymutex _lock
     cdef uchardet_t _ud
     cdef int _done
     cdef int _closed
@@ -162,56 +185,68 @@ cdef class UniversalDetector:
         self._ud = uchardet_new()
 
     def __init__(self, language_weights=None):
-        self._done = 0
-        self._closed = 0
-        self._detected_charset = b""
-        self._detected_language = b""
-        self._detected_confidence = 0.0
-        _apply_language_weights(self._ud, language_weights)
+        cdef list weights = _language_weight_pairs(language_weights)
+        with self._lock:
+            self._done = 0
+            self._closed = 0
+            self._detected_charset = b""
+            self._detected_language = b""
+            self._detected_confidence = 0.0
+            _weigh_languages(self._ud, weights)
 
     def reset(self):
-        self._done = 0
-        self._closed = 0
-        self._detected_charset = b""
-        self._detected_language = b""
-        self._detected_confidence = 0.0
-        with nogil:
-            uchardet_reset(self._ud)
+        with self._lock:
+            self._done = 0
+            self._closed = 0
+            self._detected_charset = b""
+            self._detected_language = b""
+            self._detected_confidence = 0.0
+            with nogil:
+                uchardet_reset(self._ud)
 
     def feed(self, bytes msg):
         cdef size_t length
-        cdef int result
+        cdef int result = 0
         cdef const_char_ptr data
 
-        if self._closed:
-            return
+        with self._lock:
+            if self._closed:
+                return
 
-        length = len(msg)
-        if length > 0:
-            data = msg
-            with nogil:
-                result = _handle_data(self._ud, data, length)
+            length = len(msg)
+            if length > 0:
+                data = msg
+                with nogil:
+                    result = _handle_data(self._ud, data, length)
 
-            if result != 0:
-                self._closed = 1
-                raise RuntimeError("uchardet failed to handle data")
-            if uchardet_is_done(self._ud):
-                self.close()
+                if result != 0:
+                    self._closed = 1
+                elif uchardet_is_done(self._ud):
+                    self._close_locked()
+        if result != 0:
+            raise RuntimeError("uchardet failed to handle data")
 
     def close(self):
+        with self._lock:
+            self._close_locked()
+
+    @cython.final
+    cdef int _close_locked(self) except -1:
         cdef const_char_ptr language_ptr
-        if not self._closed:
-            with nogil:
-                uchardet_data_end(self._ud)
+        if self._closed:
+            return 0
+        with nogil:
+            uchardet_data_end(self._ud)
 
-            self._detected_charset = uchardet_get_encoding(self._ud, 0)
-            language_ptr = uchardet_get_language(self._ud, 0)
-            if language_ptr != NULL:
-                self._detected_language = language_ptr
-            self._detected_confidence = uchardet_get_confidence(self._ud, 0)
+        self._detected_charset = uchardet_get_encoding(self._ud, 0)
+        language_ptr = uchardet_get_language(self._ud, 0)
+        if language_ptr != NULL:
+            self._detected_language = language_ptr
+        self._detected_confidence = uchardet_get_confidence(self._ud, 0)
 
-            self._done = 1
-            self._closed = 1
+        self._done = 1
+        self._closed = 1
+        return 0
 
     def __dealloc__(self):
         if self._ud != NULL:
@@ -219,15 +254,20 @@ cdef class UniversalDetector:
 
     @property
     def done(self):
-        return bool(self._done)
+        cdef int done
+        with self._lock:
+            done = self._done
+        return bool(done)
 
     @property
     def result(self):
-        if len(self._detected_charset):
-            return (
-                self._detected_charset,
-                self._detected_language or None,
-                self._detected_confidence,
-            )
-        else:
-            return None, None, None
+        cdef bytes charset
+        cdef bytes language
+        cdef float confidence
+        with self._lock:
+            charset = self._detected_charset
+            language = self._detected_language
+            confidence = self._detected_confidence
+        if len(charset):
+            return charset, language or None, confidence
+        return None, None, None

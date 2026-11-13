@@ -15,6 +15,13 @@ cChardet supports CPython 3.11 through 3.15, including the free-threaded
 CPython 3.14 and 3.15 builds. Each version is tested on Linux and Windows on
 both x86-64 and arm64, and on macOS on Apple silicon.
 
+`detect()` and `detect_all()` can be called from many threads at once. A
+`UniversalDetector` serializes its methods with a per-instance lock, so sharing
+one between threads cannot crash the interpreter, but the calls interleave:
+every feed goes into one stream, any thread's `reset()` or `close()` affects all
+callers, and `done` and `result` wait for a feed in progress. Use one detector
+per input.
+
 ## Development
 
 Install [uv](https://docs.astral.sh/uv/), clone this repository with its submodules,
