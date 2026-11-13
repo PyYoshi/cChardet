@@ -29,6 +29,7 @@ nosetests.xml
 *.mo
 
 .idea/
+.omc/
 ext__
 ext/libcharsetdetect/mozilla_
 src/cchardet/*.c
