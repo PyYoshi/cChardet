@@ -1,6 +1,6 @@
 # CHANGES
 
-## Unreleased
+## 2.4.1 (2026-11-14)
 
 - Fix crashes when one `UniversalDetector` is used from several threads at
   once. uchardet runs without the GIL, so concurrent calls could corrupt its

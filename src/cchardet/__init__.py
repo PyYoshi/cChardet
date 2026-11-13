@@ -17,8 +17,8 @@ class ResultDict(TypedDict):
     language: str | None
 
 
-version: tuple[int, int, int] = (2, 4, 0)
-__version__ = "2.4.0"
+version: tuple[int, int, int] = (2, 4, 1)
+__version__ = "2.4.1"
 
 
 def _as_bytes(data: BytesLike) -> bytes:
