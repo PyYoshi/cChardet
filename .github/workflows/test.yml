@@ -37,6 +37,8 @@ jobs:
   test:
     name: Python ${{ matrix.python-version }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    # The thread-safety tests would hang rather than fail on a lock regression.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:

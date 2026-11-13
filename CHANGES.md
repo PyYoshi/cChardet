@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fix crashes when one `UniversalDetector` is used from several threads at
+  once. uchardet runs without the GIL, so concurrent calls could corrupt its
+  state on both regular and free-threaded builds; the detector's methods now
+  hold a per-instance lock
 - Fix `UniversalDetector` returning freed memory as its result, which could
   raise `UnicodeDecodeError`, when `close()` follows `reset()` on a detector
   created with `language_weights`. The bundled uchardet now drops its weighted

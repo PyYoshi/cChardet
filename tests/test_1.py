@@ -2,6 +2,7 @@ import glob
 import os
 import sys
 import sysconfig
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import cchardet
@@ -29,6 +30,33 @@ SKIP_LIST_DEC = [
     "zh/euc-tw.txt",
 ]
 SKIP_LIST_DEC.extend(SKIP_LIST_DETECT)
+
+
+def hammer_from_threads(detector, sample, workers=8, steps=200):
+    """Call feed/reset/close/result on one detector from several threads at once."""
+
+    def close_and_read():
+        detector.close()
+        detector.done
+        result = detector.result
+        assert (result["encoding"] is None) == (result["confidence"] is None)
+
+    # Every worker cycles through all operations so they keep overlapping.
+    operations = [
+        lambda: detector.feed(sample),
+        detector.reset,
+        lambda: detector.feed(sample),
+        close_and_read,
+    ]
+    barrier = threading.Barrier(workers)
+
+    def hammer(index):
+        barrier.wait(timeout=30)
+        for step in range(steps):
+            operations[(index + step) % len(operations)]()
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        list(executor.map(hammer, range(workers)))
 
 
 class TestCChardet:
@@ -133,6 +161,21 @@ class TestCChardet:
         with ThreadPoolExecutor(max_workers=8) as executor:
             results = list(executor.map(detect_results, repeated_samples))
         assert results == expected * 100
+
+    def test_shared_detector_survives_concurrent_calls(self):
+        # The native calls run without the GIL. Before UniversalDetector held a
+        # per-instance lock, sharing one detector across threads corrupted
+        # uchardet's state and crashed the process, even on GIL builds.
+        with open(os.path.join(TESTDATA_DIR, "ja/euc-jp.txt"), "rb") as file:
+            sample = file.read() * 16
+        for weights in (None, {"ja": 0.5}):
+            detector = cchardet.UniversalDetector(language_weights=weights)
+            hammer_from_threads(detector, sample)
+
+            detector.reset()
+            detector.feed(sample)
+            detector.close()
+            assert detector.result == cchardet.detect(sample, language_weights=weights)
 
     def test_detect_max_bytes(self):
         data = b"plain ASCII" + "日本語".encode()

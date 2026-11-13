@@ -54,6 +54,8 @@ files = ["src/cchardet", "tests/test_typing.py"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+# Dump every thread's stack if a test hangs, for example on a lock regression.
+faulthandler_timeout = 300
 
 [tool.setuptools.package-data]
 cchardet = ["*.pyi", "py.typed"]
