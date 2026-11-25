@@ -70,7 +70,6 @@ format.indent-style = "space"
 
 [tool.cibuildwheel]
 build = "cp311-* cp312-* cp313-* cp314-* cp314t-* cp315-* cp315t-*"
-skip = "*-musllinux_*"
 archs = "auto"
 test-command = "python tools/wheel_smoke.py"
 test-sources = ["tools/wheel_smoke.py"]
