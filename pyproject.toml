@@ -74,5 +74,11 @@ archs = "auto"
 test-command = "python tools/wheel_smoke.py"
 test-sources = ["tools/wheel_smoke.py"]
 
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux_*"
+test-requires = ["pytest>=9.2.0", "chardet>=7.7.0"]
+test-sources = ["pyproject.toml", "tools/wheel_smoke.py", "tests", "benchmarks", "src/ext/uchardet/test"]
+test-command = "python tools/wheel_smoke.py && python -m pytest -p no:cacheprovider tests"
+
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]

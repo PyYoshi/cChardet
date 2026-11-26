@@ -248,4 +248,5 @@ See **COPYING** file.
 
 - Windows x86, x86_64, ARM64
 - Linux x86_64, aarch64
+- Linux musl (e.g. Alpine) x86_64, aarch64
 - macOS x86_64, arm64
